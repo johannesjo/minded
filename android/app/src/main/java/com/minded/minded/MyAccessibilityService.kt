@@ -172,6 +172,10 @@ class MyAccessibilityService : AccessibilityService() {
         const val INTENT_EXTRA_CURRENT_PACKAGE_NAME = "INTENT_EXTRA_CURRENT_PACKAGE_NAME"
         const val INTENT_EXTRA_DETECTION_TIMESTAMP = "INTENT_EXTRA_DETECTION_TIMESTAMP"
         const val INTENT_EXTRA_HIDE_OVERLAY = "INTENT_EXTRA_HIDE_OVERLAY"
+
+        // Unlock fallback re-checks: ~2s after the last sign of the keyguard.
+        private const val UNLOCK_RECHECK_MS = 400L
+        private const val UNLOCK_RECHECKS = 5
         private const val TAG = "MindedAccessibility"
         private const val HEALTH_NOTIFICATION_CHANNEL_ID = "minded_health_alerts"
         private const val HEALTH_NOTIFICATION_ID = 1002
@@ -357,11 +361,37 @@ class MyAccessibilityService : AccessibilityService() {
      */
     private var isAwaitingUnlock = false
 
+    // The keyguard can still read locked for the last window change of its
+    // going-away animation, after which nothing may change until the user
+    // opens an app. So while armed, re-check a few times after each event
+    // rather than waiting for the next one.
+    private val unlockRecheckHandler = Handler(Looper.getMainLooper())
+    private var unlockRechecksLeft = 0
+    private fun armUnlockFallback() {
+        isAwaitingUnlock = true
+        unlockRechecksLeft = UNLOCK_RECHECKS
+        unlockRecheckHandler.removeCallbacks(unlockRecheck)
+        unlockRecheckHandler.postDelayed(unlockRecheck, UNLOCK_RECHECK_MS)
+    }
+
+    private val unlockRecheck = object : Runnable {
+        override fun run() {
+            if (!isAwaitingUnlock) return
+            if (getSystemService(KeyguardManager::class.java)?.isKeyguardLocked == false) {
+                traceBell("a11yEvent")
+                onDeviceUnlocked()
+            } else if (--unlockRechecksLeft > 0) {
+                unlockRecheckHandler.postDelayed(this, UNLOCK_RECHECK_MS)
+            }
+        }
+    }
+
     private val unlockReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             when (intent?.action) {
                 Intent.ACTION_SCREEN_OFF -> {
                     isAwaitingUnlock = false
+                    unlockRecheckHandler.removeCallbacks(unlockRecheck)
                     return
                 }
                 Intent.ACTION_SCREEN_ON -> traceBell("screenOn")
@@ -373,7 +403,7 @@ class MyAccessibilityService : AccessibilityService() {
             val keyguard = getSystemService(KeyguardManager::class.java)
             if (keyguard?.isKeyguardLocked == true) {
                 if (intent?.action == Intent.ACTION_USER_PRESENT) traceBell("a11yLocked")
-                isAwaitingUnlock = true
+                armUnlockFallback()
                 return
             }
             // Screen on with no keyguard (or the keyguard already gone) is an
@@ -383,14 +413,14 @@ class MyAccessibilityService : AccessibilityService() {
     }
 
     /**
-     * The device just became usable. Each wake is handed to the bell once:
-     * the receiver and the accessibility-event fallback can both see it, and
-     * [isAwaitingUnlock] (or the screen-on that clears it) keeps them from
-     * both firing for a locked wake. A duplicate would be harmless anyway -
-     * the bell's check just restarts its delay.
+     * The device just became usable. A wake can be reported twice (USER_PRESENT
+     * and the accessibility fallback both see it where USER_PRESENT works);
+     * that's harmless - the bell's check just restarts its delay and the
+     * polling burst is rate-limited.
      */
     private fun onDeviceUnlocked() {
         isAwaitingUnlock = false
+        unlockRecheckHandler.removeCallbacks(unlockRecheck)
         Log.d(TAG, "Device unlocked - triggering polling burst")
         hybridDetector?.triggerPollingBurst()
         try {
@@ -464,6 +494,7 @@ class MyAccessibilityService : AccessibilityService() {
             Log.e(TAG, "Failed to unregister packageChangeReceiver", e)
         }
 
+        unlockRecheckHandler.removeCallbacks(unlockRecheck)
         try {
             unregisterReceiver(unlockReceiver)
         } catch (e: Exception) {
@@ -975,7 +1006,7 @@ class MyAccessibilityService : AccessibilityService() {
         // until armed - the keyguard read is a binder call.
         if (isAwaitingUnlock || event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
             when (getSystemService(KeyguardManager::class.java)?.isKeyguardLocked) {
-                true -> isAwaitingUnlock = true
+                true -> armUnlockFallback()
                 false -> if (isAwaitingUnlock) {
                     traceBell("a11yEvent")
                     onDeviceUnlocked()
