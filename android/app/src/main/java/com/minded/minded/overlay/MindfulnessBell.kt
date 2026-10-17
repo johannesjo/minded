@@ -129,7 +129,7 @@ class MindfulnessBell(
             {
                 // Let a strike that already sounded ring out to its end (it
                 // releases itself on completion); free one that never played -
-                // the sun was taken over or tapped away before the strike.
+                // the sun was taken over before the strike.
                 if (sound != null && player === sound && !sound.isPlaying) release()
             },
         )
