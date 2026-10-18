@@ -7,7 +7,7 @@ import android.os.Handler
 import android.os.Looper
 import android.os.PowerManager
 import android.util.Log
-import android.view.Gravity
+import android.view.View
 import android.view.WindowManager
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -258,6 +258,7 @@ class LittleSunWindow(
         super.showWindow()
         // Make background transparent for the little sun overlay
         window?.setBackgroundColor(0x00000000)
+        window?.let { measureWindowOrigin(it) }
         windowShownAt = System.currentTimeMillis()
         Log.d(logTag, "showWindow() completed, window=${window != null}")
     }
@@ -283,10 +284,8 @@ class LittleSunWindow(
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
             PixelFormat.TRANSLUCENT,
         ).apply {
-            gravity = Gravity.TOP or Gravity.START
-            x = posX
-            y = posY
-            LittleSunPosition.applyDisplayCoordinates(this)
+            // posX/posY are display coordinates, like all the bubble geometry.
+            LittleSunPosition.placeInDisplay(ctrlSvc, windowManager, this, posX, posY)
         }
     }
 
@@ -329,6 +328,29 @@ class LittleSunWindow(
         Haptics.triggerTick(ctrlSvc.applicationContext)
         isMini = !isMini
         ctrlSvc.getSharedPreferenceService().setLittleSunMini(isMini)
+    }
+
+    /**
+     * Once the bubble's first frame is laid out, check where its window really
+     * landed and correct the placement if the estimated origin was off (see
+     * LittleSunPosition.placeInDisplay). Runs before the fade-in shows much.
+     */
+    private fun measureWindowOrigin(v: View) {
+        v.addOnLayoutChangeListener(object : View.OnLayoutChangeListener {
+            override fun onLayoutChange(
+                view: View, l: Int, t: Int, r: Int, b: Int,
+                oldL: Int, oldT: Int, oldR: Int, oldB: Int,
+            ) {
+                view.removeOnLayoutChangeListener(this)
+                if (window !== view) return
+                val params = view.layoutParams as? WindowManager.LayoutParams ?: return
+                val loc = IntArray(2)
+                view.getLocationOnScreen(loc)
+                if (LittleSunPosition.recordWindowOrigin(ctrlSvc, windowManager, params, loc[0], loc[1])) {
+                    updateLayout()
+                }
+            }
+        })
     }
 
     private fun updateLayout() {
@@ -483,10 +505,7 @@ class LittleSunWindow(
         ).apply {
             // Same display coordinate space as the bubble window, so zone-local
             // positions are display positions minus zoneTopY.
-            gravity = Gravity.TOP or Gravity.START
-            x = 0
-            y = zoneTopY
-            LittleSunPosition.applyDisplayCoordinates(this)
+            LittleSunPosition.placeInDisplay(ctrlSvc, windowManager, this, 0, zoneTopY)
         }
     }
 
