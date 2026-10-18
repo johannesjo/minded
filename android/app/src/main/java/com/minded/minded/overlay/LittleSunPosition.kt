@@ -2,6 +2,7 @@ package com.minded.minded.overlay
 
 import android.content.Context
 import android.os.Build
+import android.view.Gravity
 import android.view.WindowInsets
 import android.view.WindowManager
 import kotlin.math.roundToInt
@@ -45,30 +46,75 @@ object LittleSunPosition {
     // Keep the bubble this far in from every edge (matches LittleSunWindow).
     private fun edgeMarginPx(density: Float): Int = (8 * density).roundToInt()
 
-    /**
-     * Lay a TOP|START overlay window out in real display coordinates, so its
-     * x/y mean the same as everything else here (display bounds, gesture
-     * insets, the full-screen interaction window the morphs run in, a widget's
-     * screen bounds). Without it the window's origin sits *below the status
-     * bar* - FLAG_LAYOUT_NO_LIMITS only lets the frame extend past the screen,
-     * it doesn't move the origin - so the bubble rested a status bar lower
-     * than the departing/arriving morphs aimed for.
-     */
-    fun applyDisplayCoordinates(params: WindowManager.LayoutParams) {
-        params.flags = params.flags or
-            WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
-            WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
+    // ---- Window origin ----------------------------------------------------
+    // Everything here is in real display coordinates (display bounds, gesture
+    // insets, the full-screen interaction window the morphs run in, a widget's
+    // screen bounds). A small TOP|START overlay window's x/y aren't: its origin
+    // sits below the status bar / cutout (FLAG_LAYOUT_NO_LIMITS only lets the
+    // frame extend past the screen, it doesn't move the origin), so placed
+    // as-is the bubble rested a status bar lower than the morphs aimed for.
+    //
+    // Opting the window into display coordinates instead (FLAG_LAYOUT_IN_SCREEN
+    // + fitInsetsTypes = 0 + SHORT_EDGES cutout mode) made the bubble not show
+    // at all on a Galaxy S23 - so the windows keep their plain layout and
+    // [placeInDisplay] shifts them by where that origin really is: measured off
+    // the live bubble ([recordWindowOrigin]), or estimated from the insets
+    // until then.
+
+    // Last measured origin, with the display rotation it was measured at (the
+    // origin moves with the bars/cutout when the screen turns).
+    @Volatile
+    private var measuredOrigin: Triple<Int, Int, Int>? = null
+
+    @Suppress("DEPRECATION")
+    private fun rotation(wm: WindowManager): Int = wm.defaultDisplay.rotation
+
+    private fun windowOrigin(ctx: Context, wm: WindowManager): Pair<Int, Int> {
+        measuredOrigin?.let { (rot, x, y) -> if (rot == rotation(wm)) return x to y }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            params.fitInsetsTypes = 0
+            val insets = wm.currentWindowMetrics.windowInsets.getInsets(
+                WindowInsets.Type.systemBars() or WindowInsets.Type.displayCutout()
+            )
+            return insets.left to insets.top
         }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            params.layoutInDisplayCutoutMode =
-                WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
-        }
+        return 0 to systemDimenPx(ctx, "status_bar_height")
     }
 
-    // The full display bounds the bubble lives within (display coordinates -
-    // see applyDisplayCoordinates).
+    /**
+     * Record where a window placed by [placeInDisplay] actually landed on screen
+     * ([screenX]/[screenY], e.g. from getLocationOnScreen) for the window x/y it
+     * was given. Returns true when that corrects the origin in use, so the
+     * caller should re-place its window.
+     */
+    fun recordWindowOrigin(
+        ctx: Context,
+        wm: WindowManager,
+        params: WindowManager.LayoutParams,
+        screenX: Int,
+        screenY: Int,
+    ): Boolean {
+        val before = windowOrigin(ctx, wm)
+        val origin = (screenX - params.x) to (screenY - params.y)
+        measuredOrigin = Triple(rotation(wm), origin.first, origin.second)
+        return origin != before
+    }
+
+    /** Place a TOP|START overlay window so its top-left lands at display (x, y). */
+    fun placeInDisplay(
+        ctx: Context,
+        wm: WindowManager,
+        params: WindowManager.LayoutParams,
+        x: Int,
+        y: Int,
+    ) {
+        params.flags = params.flags or WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
+        params.gravity = Gravity.TOP or Gravity.START
+        val (ox, oy) = windowOrigin(ctx, wm)
+        params.x = x - ox
+        params.y = y - oy
+    }
+
+    // The full display bounds the bubble lives within (display coordinates).
     fun displayWidthPx(ctx: Context, wm: WindowManager): Int =
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R)
             wm.currentWindowMetrics.bounds.width()
@@ -159,8 +205,8 @@ object LittleSunPosition {
      * maps 1:1 onto its viewport for the departing morph target. The centre is
      * the same at either size, so this needs no mini flag.
      *
-     * That 1:1 holds only because the bubble window, like the interaction
-     * window, is laid out in display coordinates ([applyDisplayCoordinates]).
+     * That 1:1 holds only because the bubble is placed in display coordinates
+     * ([placeInDisplay]), like the full-screen interaction window.
      */
     fun restingCenterFractions(
         ctx: Context,
