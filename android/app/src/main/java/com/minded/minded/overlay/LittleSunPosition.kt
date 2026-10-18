@@ -35,9 +35,19 @@ object LittleSunPosition {
      * The bubble window (its touch area). Never below a 48dp touch target, so
      * the mini sun stays easy to double-tap back and to drag; at full size the
      * window is exactly the glow box.
+     *
+     * Below Android 12 the window keeps its full size even when mini (only the
+     * disc shrinks): before BLAST, a resize + move could show the old frame at
+     * the new position for a frame - a small jump in the sun. From 12 on the
+     * new geometry lands with the next drawn frame, so the window can shrink.
      */
-    fun bubbleSizePx(density: Float, mini: Boolean = false): Int =
-        maxOf(glowSizePx(density, mini), (48 * density).roundToInt())
+    fun bubbleSizePx(density: Float, mini: Boolean = false): Int {
+        val resizes = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+        return maxOf(
+            glowSizePx(density, mini && resizes),
+            (48 * density).roundToInt(),
+        )
+    }
 
     /** Diameter of the bubble's disc (half the glow box), in dp. */
     fun discDp(mini: Boolean): Float = 30 * (if (mini) MINI_SCALE else 1f)
