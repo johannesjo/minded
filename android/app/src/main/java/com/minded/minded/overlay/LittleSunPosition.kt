@@ -32,50 +32,43 @@ object LittleSunPosition {
         (60 * (if (mini) MINI_SCALE else 1f) * density).roundToInt()
 
     /**
-     * The bubble window (its touch area). Never below a 48dp touch target, so
-     * the mini sun stays easy to double-tap back and to drag; at full size the
-     * window is exactly the glow box.
-     *
-     * Below Android 12 the window keeps its full size even when mini (only the
-     * disc shrinks): before BLAST, a resize + move could show the old frame at
-     * the new position for a frame - a small jump in the sun. From 12 on the
-     * new geometry lands with the next drawn frame, so the window can shrink.
+     * The bubble window (its touch area): always the full sun's glow box. The
+     * mini sun only shrinks its disc inside it - the window never resizes, since
+     * a window resize + move isn't synced with the redraw and shows the old
+     * frame at the new position for a frame (a jiggle as it reaches mini).
      */
-    fun bubbleSizePx(density: Float, mini: Boolean = false): Int {
-        val resizes = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
-        return maxOf(
-            glowSizePx(density, mini && resizes),
-            (48 * density).roundToInt(),
-        )
-    }
+    fun bubbleSizePx(density: Float): Int = glowSizePx(density)
 
     /** Diameter of the bubble's disc (half the glow box), in dp. */
     fun discDp(mini: Boolean): Float = 30 * (if (mini) MINI_SCALE else 1f)
 
-    // How far the mini bubble's top-left sits inside the full one's, so the two
-    // share a centre. Positions are stored and clamped as the FULL bubble's
-    // top-left; the mini window is that rect shrunk around its centre. That way
-    // growing back never needs a clamp shift - the sun grows exactly in place.
-    private fun miniInsetPx(density: Float): Int =
-        (bubbleSizePx(density) - bubbleSizePx(density, mini = true)) / 2
-
-    /** The window top-left for a bubble whose full-size top-left is (x, y). */
-    fun windowTopLeft(density: Float, x: Int, y: Int, mini: Boolean): Pair<Int, Int> {
-        val inset = if (mini) miniInsetPx(density) else 0
-        return (x + inset) to (y + inset)
-    }
-
-    /** The full-size top-left for a window at (x, y) - the inverse of [windowTopLeft]. */
-    fun fullTopLeft(density: Float, x: Int, y: Int, mini: Boolean): Pair<Int, Int> {
-        val inset = if (mini) miniInsetPx(density) else 0
-        return (x - inset) to (y - inset)
-    }
-
     // Keep the bubble this far in from every edge (matches LittleSunWindow).
     private fun edgeMarginPx(density: Float): Int = (8 * density).roundToInt()
 
-    // The full display bounds the bubble lives within (gravity TOP|START +
-    // FLAG_LAYOUT_NO_LIMITS → real display coordinate space, behind the bars).
+    /**
+     * Lay a TOP|START overlay window out in real display coordinates, so its
+     * x/y mean the same as everything else here (display bounds, gesture
+     * insets, the full-screen interaction window the morphs run in, a widget's
+     * screen bounds). Without it the window's origin sits *below the status
+     * bar* - FLAG_LAYOUT_NO_LIMITS only lets the frame extend past the screen,
+     * it doesn't move the origin - so the bubble rested a status bar lower
+     * than the departing/arriving morphs aimed for.
+     */
+    fun applyDisplayCoordinates(params: WindowManager.LayoutParams) {
+        params.flags = params.flags or
+            WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
+            WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            params.fitInsetsTypes = 0
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            params.layoutInDisplayCutoutMode =
+                WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
+        }
+    }
+
+    // The full display bounds the bubble lives within (display coordinates -
+    // see applyDisplayCoordinates).
     fun displayWidthPx(ctx: Context, wm: WindowManager): Int =
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R)
             wm.currentWindowMetrics.bounds.width()
@@ -127,30 +120,14 @@ object LittleSunPosition {
         return x.coerceIn(minX, maxX) to y.coerceIn(minY, maxY)
     }
 
-    /**
-     * Clamp a window top-left for the current size. The mini bubble keeps its
-     * centre inside the same range as the full one (see [miniInsetPx]).
-     */
-    fun clampWindow(ctx: Context, wm: WindowManager, x: Int, y: Int, mini: Boolean): Pair<Int, Int> {
-        val density = ctx.resources.displayMetrics.density
-        val (fx, fy) = fullTopLeft(density, x, y, mini)
-        val (cx, cy) = clamp(ctx, wm, fx, fy)
-        return windowTopLeft(density, cx, cy, mini)
-    }
-
-    /**
-     * The bubble window's resting top-left (saved full-size position or the
-     * default), clamped, for the bubble at its full or [mini] size.
-     */
+    /** The bubble's resting top-left (saved position or the default), clamped. */
     fun restingTopLeft(
         ctx: Context,
         wm: WindowManager,
         saved: Pair<Int, Int>?,
-        mini: Boolean = false,
     ): Pair<Int, Int> {
         val (x, y) = saved ?: defaultTopLeft(ctx, wm)
-        val (cx, cy) = clamp(ctx, wm, x, y)
-        return windowTopLeft(ctx.resources.displayMetrics.density, cx, cy, mini)
+        return clamp(ctx, wm, x, y)
     }
 
     // --- Leave zone ("horizon") geometry ---------------------------------
@@ -181,6 +158,9 @@ object LittleSunPosition {
      * full-screen interaction WebView covers the same display, so this fraction
      * maps 1:1 onto its viewport for the departing morph target. The centre is
      * the same at either size, so this needs no mini flag.
+     *
+     * That 1:1 holds only because the bubble window, like the interaction
+     * window, is laid out in display coordinates ([applyDisplayCoordinates]).
      */
     fun restingCenterFractions(
         ctx: Context,

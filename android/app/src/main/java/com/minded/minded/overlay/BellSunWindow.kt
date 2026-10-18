@@ -122,13 +122,13 @@ class BellSunWindow(
             LittleSunPosition.displayHeightPx(ctrlSvc, windowManager),
             WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
-                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or
-                WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
             PixelFormat.TRANSLUCENT,
         ).apply {
             gravity = Gravity.TOP or Gravity.START
             x = 0
             y = 0
+            LittleSunPosition.applyDisplayCoordinates(this)
             // Android 12+ blocks touches beneath another app's overlay - even a
             // not-touchable one - whose window alpha is above the maximum
             // obscuring opacity (0.8). At exactly that, taps on the app (or the

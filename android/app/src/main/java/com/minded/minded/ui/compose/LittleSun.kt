@@ -105,8 +105,8 @@ fun LittleSun(
     // bubble's own disc fades out so the sun never appears twice.
     discHidden: Boolean = false,
     // The disc's eased scale: 1 at full size, MINI_SCALE once double-tapped
-    // small. The window resizes around it (see LittleSunWindow.toggleMini);
-    // here the disc is just drawn at it, centred in whatever box it is given.
+    // small. The window keeps its full size; the disc is just drawn at this
+    // scale, centred in it, so it shrinks and grows in place.
     discScale: Float = 1f,
     onDoubleTap: () -> Unit = {},
     onDragStart: () -> Unit = {},
@@ -127,7 +127,7 @@ fun LittleSun(
 
     Box(
         modifier = Modifier
-            // The window is sized exactly to the bubble (full or mini).
+            // The window is sized exactly to the full bubble.
             .fillMaxSize()
             .alpha(discAlpha)
             // Claim the bubble's bounds from system gestures so a drag that
@@ -157,8 +157,6 @@ fun LittleSun(
             clockString = clockString,
             scale = discScale,
             clockAlpha = miniClockAlpha(discScale),
-            // Full-size box, centred: while the window is mini it simply
-            // overhangs (the scaled-down sun still fits inside).
             modifier = Modifier.requiredSize(60.dp),
         )
     }

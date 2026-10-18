@@ -440,12 +440,11 @@ class InteractionWindow(
                         ctrlSvc,
                         windowManager,
                         prefs.getLittleSunPosition(),
-                        mini,
                     )
                     // The disc is drawn at its glow size, centred in the
-                    // bubble's (possibly larger, touch-sized) window.
+                    // bubble's window (larger than the glow when mini).
                     val density = ctrlSvc.resources.displayMetrics.density
-                    val inset = (LittleSunPosition.bubbleSizePx(density, mini) -
+                    val inset = (LittleSunPosition.bubbleSizePx(density) -
                         LittleSunPosition.glowSizePx(density, mini)) / 2
                     (x + inset) to (y + inset)
                 }
