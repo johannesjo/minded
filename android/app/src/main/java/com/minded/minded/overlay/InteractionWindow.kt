@@ -433,11 +433,14 @@ class InteractionWindow(
                 // The same resting spot the bubble parks at; the arriving web sun
                 // targets this exact point too (getLittleSunRestCenter), so the
                 // disc, the bubble that just left, and the web sun all line up.
+                val prefs = ctrlSvc.getSharedPreferenceService()
+                val mini = remember { prefs.isLittleSunMini() }
                 val rest = remember {
                     LittleSunPosition.restingTopLeft(
                         ctrlSvc,
                         windowManager,
-                        ctrlSvc.getSharedPreferenceService().getLittleSunPosition(),
+                        prefs.getLittleSunPosition(),
+                        mini,
                     )
                 }
                 Box(
@@ -462,7 +465,14 @@ class InteractionWindow(
                     // amber→white change instead rides the frame where the whole
                     // screen swaps from the blocked app to our sky, so it is part
                     // of the scene change, not a jolt in the sun.
-                    SunDisc(onOwnSky = true)
+                    // At the bubble's size too - a double-tapped mini sun
+                    // arrives mini, then grows on the glide home.
+                    val discDp = LittleSunPosition.discDp(mini)
+                    SunDisc(
+                        onOwnSky = true,
+                        glowSize = (discDp * 2).dp,
+                        discSize = discDp.dp,
+                    )
                 }
             }
         }
@@ -679,7 +689,10 @@ class InteractionWindow(
             savedPosition,
         )
         val density = ctrlSvc.resources.displayMetrics.density
-        val discWidthPx = LittleSunPosition.bubbleSizePx(density) / 2f
+        val discWidthPx = LittleSunPosition.bubbleSizePx(
+            density,
+            ctrlSvc.getSharedPreferenceService().isLittleSunMini(),
+        ) / 2f
         return ArrivalSunTarget(
             centerXFraction = centerXFraction,
             centerYFraction = centerYFraction,

@@ -20,7 +20,37 @@ import kotlin.math.roundToInt
  */
 object LittleSunPosition {
 
-    fun bubbleSizePx(density: Float): Int = (60 * density).roundToInt()
+    /**
+     * The mini bubble (double-tap the Little Sun) is the same sun at this
+     * scale, so it covers less of the app beneath. One sun, two sizes: it
+     * shrinks/grows in place around the same centre.
+     */
+    const val MINI_SCALE = 0.5f
+
+    fun bubbleSizePx(density: Float, mini: Boolean = false): Int =
+        (60 * (if (mini) MINI_SCALE else 1f) * density).roundToInt()
+
+    /** Diameter of the bubble's disc (half the glow box), in dp. */
+    fun discDp(mini: Boolean): Float = 30 * (if (mini) MINI_SCALE else 1f)
+
+    // How far the mini bubble's top-left sits inside the full one's, so the two
+    // share a centre. Positions are stored and clamped as the FULL bubble's
+    // top-left; the mini window is that rect shrunk around its centre. That way
+    // growing back never needs a clamp shift - the sun grows exactly in place.
+    private fun miniInsetPx(density: Float): Int =
+        (bubbleSizePx(density) - bubbleSizePx(density, mini = true)) / 2
+
+    /** The window top-left for a bubble whose full-size top-left is (x, y). */
+    fun windowTopLeft(density: Float, x: Int, y: Int, mini: Boolean): Pair<Int, Int> {
+        val inset = if (mini) miniInsetPx(density) else 0
+        return (x + inset) to (y + inset)
+    }
+
+    /** The full-size top-left for a window at (x, y) - the inverse of [windowTopLeft]. */
+    fun fullTopLeft(density: Float, x: Int, y: Int, mini: Boolean): Pair<Int, Int> {
+        val inset = if (mini) miniInsetPx(density) else 0
+        return (x - inset) to (y - inset)
+    }
 
     // Keep the bubble this far in from every edge (matches LittleSunWindow).
     private fun edgeMarginPx(density: Float): Int = (8 * density).roundToInt()
@@ -78,14 +108,30 @@ object LittleSunPosition {
         return x.coerceIn(minX, maxX) to y.coerceIn(minY, maxY)
     }
 
-    /** The bubble's resting top-left (saved position or default), clamped. */
+    /**
+     * Clamp a window top-left for the current size. The mini bubble keeps its
+     * centre inside the same range as the full one (see [miniInsetPx]).
+     */
+    fun clampWindow(ctx: Context, wm: WindowManager, x: Int, y: Int, mini: Boolean): Pair<Int, Int> {
+        val density = ctx.resources.displayMetrics.density
+        val (fx, fy) = fullTopLeft(density, x, y, mini)
+        val (cx, cy) = clamp(ctx, wm, fx, fy)
+        return windowTopLeft(density, cx, cy, mini)
+    }
+
+    /**
+     * The bubble window's resting top-left (saved full-size position or the
+     * default), clamped, for the bubble at its full or [mini] size.
+     */
     fun restingTopLeft(
         ctx: Context,
         wm: WindowManager,
         saved: Pair<Int, Int>?,
+        mini: Boolean = false,
     ): Pair<Int, Int> {
         val (x, y) = saved ?: defaultTopLeft(ctx, wm)
-        return clamp(ctx, wm, x, y)
+        val (cx, cy) = clamp(ctx, wm, x, y)
+        return windowTopLeft(ctx.resources.displayMetrics.density, cx, cy, mini)
     }
 
     // --- Leave zone ("horizon") geometry ---------------------------------
@@ -114,7 +160,8 @@ object LittleSunPosition {
     /**
      * The bubble centre as a fraction (0..1) of the display bounds. The
      * full-screen interaction WebView covers the same display, so this fraction
-     * maps 1:1 onto its viewport for the departing morph target.
+     * maps 1:1 onto its viewport for the departing morph target. The centre is
+     * the same at either size, so this needs no mini flag.
      */
     fun restingCenterFractions(
         ctx: Context,

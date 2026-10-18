@@ -33,6 +33,23 @@ describe("getInteractionCornerSettle", () => {
       }),
     ).toEqual(sunDepartSettleAt(restCenter));
   });
+  it("on Android lands at the bubble's reported disc size (the mini sun)", () => {
+    const mini = { ...restCenter, discPx: 15 };
+    expect(
+      getInteractionCornerSettle({
+        platform: "android",
+        isArriving: true,
+        restCenter: mini,
+      }),
+    ).toEqual(sunArriveSettleAt(restCenter, 15));
+    expect(
+      getInteractionCornerSettle({
+        platform: "android",
+        isArriving: false,
+        restCenter: mini,
+      }),
+    ).toEqual(sunDepartSettleAt(restCenter, 15));
+  });
   it("on Android without a reported centre uses the Android corner constants", () => {
     expect(
       getInteractionCornerSettle({
@@ -96,6 +113,15 @@ describe("readLittleSunRestCenter", () => {
   it("reads the bubble's rest centre from the bridge", () => {
     expect(
       readLittleSunRestCenter(() => '{"fracX":0.07,"fracY":0.86}'),
+    ).toEqual({ x: 0.07, y: 0.86 });
+  });
+
+  it("reads the bubble's disc size when reported, ignoring a bad one", () => {
+    expect(
+      readLittleSunRestCenter(() => '{"fracX":0.07,"fracY":0.86,"discPx":15}'),
+    ).toEqual({ x: 0.07, y: 0.86, discPx: 15 });
+    expect(
+      readLittleSunRestCenter(() => '{"fracX":0.07,"fracY":0.86,"discPx":-1}'),
     ).toEqual({ x: 0.07, y: 0.86 });
   });
 

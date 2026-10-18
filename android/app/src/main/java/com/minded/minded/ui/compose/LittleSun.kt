@@ -6,7 +6,10 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.systemGestureExclusion
@@ -28,6 +31,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.minded.minded.overlay.LittleSunPosition
 import com.minded.minded.util.isDarkModeNow
 
 // Match the web extension's little sun: a solid white disc with a soft, warm
@@ -85,7 +89,9 @@ internal fun littleSunClockString(elapsedSeconds: Int): String =
  * bottom-centre of the screen; carrying the sun into it and releasing lets the
  * sun set below the horizon and opens minded. Any other drag just repositions
  * the bubble (parkable anywhere the clamp allows); a plain tap does nothing (so
- * a stray touch neither ejects the user nor detonates a surface).
+ * a stray touch neither ejects the user nor detonates a surface). A double tap
+ * shrinks the sun to its [mini] size, so it covers less of the app beneath,
+ * and the next double tap grows it back - always eased in place, never a cut.
  *
  * This composable is only the disc and its drag gesture - the zone, the capture
  * test and the leave commit live in LittleSunWindow, which knows the screen
@@ -98,6 +104,11 @@ fun LittleSun(
     // True while the leave zone draws the disc snapped to its magnet - the
     // bubble's own disc fades out so the sun never appears twice.
     discHidden: Boolean = false,
+    // The double-tapped small size. The window resizes around this (see
+    // LittleSunWindow.toggleMini); here the disc only eases between scales,
+    // centred in whatever box the window currently gives it.
+    mini: Boolean = false,
+    onDoubleTap: () -> Unit = {},
     onDragStart: () -> Unit = {},
     onDrag: (dxPx: Float, dyPx: Float) -> Unit = { _, _ -> },
     // Fired on release AND on cancel - the window decides whether the drop
@@ -113,15 +124,32 @@ fun LittleSun(
         animationSpec = tween(durationMillis = DISC_HANDOFF_FADE_MS),
         label = "littleSunDiscAlpha",
     )
+    val discScale by animateFloatAsState(
+        targetValue = if (mini) LittleSunPosition.MINI_SCALE else 1f,
+        animationSpec = tween(durationMillis = MINI_MORPH_MS),
+        label = "littleSunMiniScale",
+    )
+    // The clock is unreadable at the mini size - let it fade with the shrink.
+    val clockAlpha by animateFloatAsState(
+        targetValue = if (mini) 0f else 1f,
+        animationSpec = tween(durationMillis = MINI_MORPH_MS),
+        label = "littleSunClockAlpha",
+    )
 
     Box(
         modifier = Modifier
-            .size(60.dp)
+            // The window is sized exactly to the bubble (full or mini).
+            .fillMaxSize()
             .alpha(discAlpha)
             // Claim the bubble's bounds from system gestures so a drag that
             // starts near a screen edge stays ours instead of triggering the
             // system back-gesture (no-op below API 29).
             .systemGestureExclusion()
+            // Double tap only - no onTap, so a single tap still does nothing. A
+            // drag consumes its moves first, which cancels the tap here.
+            .pointerInput(Unit) {
+                detectTapGestures(onDoubleTap = { onDoubleTap() })
+            }
             .pointerInput(Unit) {
                 detectDragGestures(
                     onDragStart = { onDragStart() },
@@ -136,12 +164,22 @@ fun LittleSun(
             },
         contentAlignment = Alignment.Center,
     ) {
-        SunDisc(clockString = clockString)
+        SunDisc(
+            clockString = clockString,
+            scale = discScale,
+            clockAlpha = clockAlpha,
+            // Full-size box, centred: while the window is mini it simply
+            // overhangs (the scaled-down sun still fits inside).
+            modifier = Modifier.requiredSize(60.dp),
+        )
     }
 }
 
 /** Bubble disc ↔ zone disc crossfade duration (both sides use it). */
 internal const val DISC_HANDOFF_FADE_MS = 150
+
+/** Full ↔ mini shrink/grow duration. */
+const val MINI_MORPH_MS = 300
 
 @Composable
 internal fun SunDisc(
@@ -166,6 +204,7 @@ internal fun SunDisc(
     // a caller morphing into the Little Sun passes its glide duration and the
     // colour arrives exactly as the disc lands.
     glowMorphMs: Int = DISC_HANDOFF_FADE_MS,
+    clockAlpha: Float = 1f,
     modifier: Modifier = Modifier,
 ) {
     // At night the companion becomes the moon - cool silver body, cool halo -
@@ -223,7 +262,7 @@ internal fun SunDisc(
                     fontSize = 10.sp,
                     textAlign = TextAlign.Center,
                     fontWeight = FontWeight.Bold,
-                    color = textColor,
+                    color = textColor.copy(alpha = clockAlpha),
                     maxLines = 1,
                 )
             }
@@ -236,6 +275,8 @@ internal fun SunDisc(
 @Composable
 fun LittleSunPreview() {
     Surface(color = Color.White) {
-        LittleSun(elapsedSeconds = 1000)
+        Box(modifier = Modifier.size(60.dp)) {
+            LittleSun(elapsedSeconds = 1000)
+        }
     }
 }
