@@ -9,8 +9,11 @@ import android.os.PowerManager
 import android.util.Log
 import android.view.Gravity
 import android.view.WindowManager
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -92,7 +95,14 @@ class LittleSunWindow(
     // never jumps. posX/posY are always the window's own top-left.
     private var isMini by mutableStateOf(false)
     private var windowMini = false
-    private val applyMiniWindow = Runnable { resizeWindow(mini = true) }
+    // The window never resizes under a drag (it would move beneath the
+    // finger); a shrink that comes due mid-drag waits for the release.
+    private var isDragging = false
+    private val applyMiniWindow = Runnable { if (!isDragging) resizeWindow(mini = true) }
+
+    // The bubble's live, eased disc scale - shared with the leave zone so a
+    // capture mid-shrink snaps the disc at the size it actually is.
+    private var liveDiscScale by mutableStateOf(1f)
 
     // ---- Leave zone ("horizon") state -----------------------------------
     // A second, non-touchable overlay shown only while the bubble is being
@@ -118,10 +128,17 @@ class LittleSunWindow(
             startTimer(initialTime)
         }
 
+        val discScale by animateFloatAsState(
+            targetValue = if (isMini) LittleSunPosition.MINI_SCALE else 1f,
+            animationSpec = tween(durationMillis = MINI_MORPH_MS),
+            label = "littleSunMiniScale",
+        )
+        SideEffect { liveDiscScale = discScale }
+
         LittleSun(
             elapsedSeconds = elapsedSeconds,
             discHidden = isDiscInZone,
-            mini = isMini,
+            discScale = discScale,
             onDoubleTap = { toggleMini() },
             onDragStart = { onDragStart() },
             onDrag = { dx, dy -> onDrag(dx, dy) },
@@ -292,6 +309,7 @@ class LittleSunWindow(
         handler.removeCallbacks(applyMiniWindow)
         isMini = prefs.isLittleSunMini()
         windowMini = isMini
+        isDragging = false
         val (x, y) = LittleSunPosition.restingTopLeft(
             ctrlSvc,
             windowManager,
@@ -370,14 +388,18 @@ class LittleSunWindow(
     /** The bubble as a sun the mindfulness bell can ring through, while it's shown. */
     fun bellHost(): BellHost? {
         if (!isWindowShown()) return null
-        val size = LittleSunPosition.bubbleSizePx(ctrlSvc.resources.displayMetrics.density, windowMini)
-        return BellHost(posX + size / 2, posY + size / 2, size, BellHost.Kind.LITTLE_SUN)
+        val density = ctrlSvc.resources.displayMetrics.density
+        val half = LittleSunPosition.bubbleSizePx(density, windowMini) / 2
+        // Rings through the sun as drawn, not its (larger) touch area.
+        val size = LittleSunPosition.glowSizePx(density, isMini)
+        return BellHost(posX + half, posY + half, size, BellHost.Kind.LITTLE_SUN)
     }
 
     private fun onDragStart() {
         // A bell ringing through the bubble stays where it rang - let it go
         // rather than leave its light behind as the sun moves.
         ctrlSvc.onBellHostLeaving(BellHost.Kind.LITTLE_SUN)
+        isDragging = true
         // Resolve the zone geometry fresh - insets/orientation may have changed
         // since the last drag.
         val density = ctrlSvc.resources.displayMetrics.density
@@ -432,6 +454,7 @@ class LittleSunWindow(
     }
 
     private fun onDragEnd() {
+        isDragging = false
         if (isLeaveCommitted) return
         if (isDiscInZone) {
             commitLeave()
@@ -440,6 +463,8 @@ class LittleSunWindow(
         // Rest wherever it was dropped - a free-floating companion, parkable
         // anywhere, not edge-locked. clampPosition keeps it on-screen and a
         // margin in from every edge, clear of the system gesture zones.
+        // A shrink deferred by the drag lands now, around the dropped centre.
+        if (isMini && !windowMini) resizeWindow(mini = true)
         clampPosition()
         rawX = posX.toFloat()
         rawY = posY.toFloat()
@@ -533,7 +558,7 @@ class LittleSunWindow(
                     committed = isLeaveCommitted,
                     fingerDiscCenter = zoneFingerCenter,
                     magnetCenter = zoneMagnetCenter,
-                    mini = isMini,
+                    discScale = liveDiscScale,
                     // The sun has fully set and minded is already showing -
                     // remove the spent window at once, no second fade. Posted:
                     // don't remove the view from inside its own composition.

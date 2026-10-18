@@ -31,7 +31,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.minded.minded.overlay.LittleSunPosition
 import com.minded.minded.util.isDarkModeNow
 import kotlin.math.roundToInt
 
@@ -81,9 +80,9 @@ fun LittleSunLeaveZone(
     fingerDiscCenter: Offset,
     // The magnet centre (zone-local px).
     magnetCenter: Offset,
-    // The bubble is at its double-tapped mini size - the snapped disc matches
-    // it, so the hop onto the magnet is never a size change.
-    mini: Boolean = false,
+    // The bubble's live disc scale (double-tapped mini, or easing there) - the
+    // snapped disc matches it, so the hop onto the magnet is never a size change.
+    discScale: Float = 1f,
     onSetComplete: () -> Unit = {},
 ) {
     val density = LocalDensity.current
@@ -196,8 +195,9 @@ fun LittleSunLeaveZone(
                 .alpha(discAlpha),
         ) {
             SunDisc(
-                clockString = if (mini) "" else littleSunClockString(elapsedSeconds),
-                scale = if (mini) LittleSunPosition.MINI_SCALE else 1f,
+                clockString = littleSunClockString(elapsedSeconds),
+                scale = discScale,
+                clockAlpha = miniClockAlpha(discScale),
             )
         }
     }

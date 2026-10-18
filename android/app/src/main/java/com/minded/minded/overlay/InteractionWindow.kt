@@ -436,12 +436,18 @@ class InteractionWindow(
                 val prefs = ctrlSvc.getSharedPreferenceService()
                 val mini = remember { prefs.isLittleSunMini() }
                 val rest = remember {
-                    LittleSunPosition.restingTopLeft(
+                    val (x, y) = LittleSunPosition.restingTopLeft(
                         ctrlSvc,
                         windowManager,
                         prefs.getLittleSunPosition(),
                         mini,
                     )
+                    // The disc is drawn at its glow size, centred in the
+                    // bubble's (possibly larger, touch-sized) window.
+                    val density = ctrlSvc.resources.displayMetrics.density
+                    val inset = (LittleSunPosition.bubbleSizePx(density, mini) -
+                        LittleSunPosition.glowSizePx(density, mini)) / 2
+                    (x + inset) to (y + inset)
                 }
                 Box(
                     modifier = Modifier
@@ -689,7 +695,7 @@ class InteractionWindow(
             savedPosition,
         )
         val density = ctrlSvc.resources.displayMetrics.density
-        val discWidthPx = LittleSunPosition.bubbleSizePx(
+        val discWidthPx = LittleSunPosition.glowSizePx(
             density,
             ctrlSvc.getSharedPreferenceService().isLittleSunMini(),
         ) / 2f

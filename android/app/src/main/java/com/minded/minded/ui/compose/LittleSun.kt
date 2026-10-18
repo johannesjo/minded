@@ -90,7 +90,7 @@ internal fun littleSunClockString(elapsedSeconds: Int): String =
  * sun set below the horizon and opens minded. Any other drag just repositions
  * the bubble (parkable anywhere the clamp allows); a plain tap does nothing (so
  * a stray touch neither ejects the user nor detonates a surface). A double tap
- * shrinks the sun to its [mini] size, so it covers less of the app beneath,
+ * shrinks the sun to its mini size ([discScale]), so it covers less of the app beneath,
  * and the next double tap grows it back - always eased in place, never a cut.
  *
  * This composable is only the disc and its drag gesture - the zone, the capture
@@ -104,10 +104,10 @@ fun LittleSun(
     // True while the leave zone draws the disc snapped to its magnet - the
     // bubble's own disc fades out so the sun never appears twice.
     discHidden: Boolean = false,
-    // The double-tapped small size. The window resizes around this (see
-    // LittleSunWindow.toggleMini); here the disc only eases between scales,
-    // centred in whatever box the window currently gives it.
-    mini: Boolean = false,
+    // The disc's eased scale: 1 at full size, MINI_SCALE once double-tapped
+    // small. The window resizes around it (see LittleSunWindow.toggleMini);
+    // here the disc is just drawn at it, centred in whatever box it is given.
+    discScale: Float = 1f,
     onDoubleTap: () -> Unit = {},
     onDragStart: () -> Unit = {},
     onDrag: (dxPx: Float, dyPx: Float) -> Unit = { _, _ -> },
@@ -123,17 +123,6 @@ fun LittleSun(
         targetValue = if (discHidden) 0f else 1f,
         animationSpec = tween(durationMillis = DISC_HANDOFF_FADE_MS),
         label = "littleSunDiscAlpha",
-    )
-    val discScale by animateFloatAsState(
-        targetValue = if (mini) LittleSunPosition.MINI_SCALE else 1f,
-        animationSpec = tween(durationMillis = MINI_MORPH_MS),
-        label = "littleSunMiniScale",
-    )
-    // The clock is unreadable at the mini size - let it fade with the shrink.
-    val clockAlpha by animateFloatAsState(
-        targetValue = if (mini) 0f else 1f,
-        animationSpec = tween(durationMillis = MINI_MORPH_MS),
-        label = "littleSunClockAlpha",
     )
 
     Box(
@@ -167,7 +156,7 @@ fun LittleSun(
         SunDisc(
             clockString = clockString,
             scale = discScale,
-            clockAlpha = clockAlpha,
+            clockAlpha = miniClockAlpha(discScale),
             // Full-size box, centred: while the window is mini it simply
             // overhangs (the scaled-down sun still fits inside).
             modifier = Modifier.requiredSize(60.dp),
@@ -180,6 +169,11 @@ internal const val DISC_HANDOFF_FADE_MS = 150
 
 /** Full ↔ mini shrink/grow duration. */
 const val MINI_MORPH_MS = 300
+
+/** The clock is unreadable at the mini size - it fades out with the shrink. */
+internal fun miniClockAlpha(discScale: Float): Float =
+    ((discScale - LittleSunPosition.MINI_SCALE) / (1f - LittleSunPosition.MINI_SCALE))
+        .coerceIn(0f, 1f)
 
 @Composable
 internal fun SunDisc(

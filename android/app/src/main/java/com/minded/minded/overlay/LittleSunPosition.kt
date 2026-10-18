@@ -27,8 +27,17 @@ object LittleSunPosition {
      */
     const val MINI_SCALE = 0.5f
 
-    fun bubbleSizePx(density: Float, mini: Boolean = false): Int =
+    /** The sun as drawn - its glow box - at full or mini size. */
+    fun glowSizePx(density: Float, mini: Boolean = false): Int =
         (60 * (if (mini) MINI_SCALE else 1f) * density).roundToInt()
+
+    /**
+     * The bubble window (its touch area). Never below a 48dp touch target, so
+     * the mini sun stays easy to double-tap back and to drag; at full size the
+     * window is exactly the glow box.
+     */
+    fun bubbleSizePx(density: Float, mini: Boolean = false): Int =
+        maxOf(glowSizePx(density, mini), (48 * density).roundToInt())
 
     /** Diameter of the bubble's disc (half the glow box), in dp. */
     fun discDp(mini: Boolean): Float = 30 * (if (mini) MINI_SCALE else 1f)
