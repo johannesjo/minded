@@ -80,6 +80,9 @@ fun LittleSunLeaveZone(
     fingerDiscCenter: Offset,
     // The magnet centre (zone-local px).
     magnetCenter: Offset,
+    // The bubble's live disc scale (double-tapped mini, or easing there) - the
+    // snapped disc matches it, so the hop onto the magnet is never a size change.
+    discScale: Float = 1f,
     onSetComplete: () -> Unit = {},
 ) {
     val density = LocalDensity.current
@@ -191,7 +194,11 @@ fun LittleSunLeaveZone(
                 }
                 .alpha(discAlpha),
         ) {
-            SunDisc(clockString = littleSunClockString(elapsedSeconds))
+            SunDisc(
+                clockString = littleSunClockString(elapsedSeconds),
+                scale = discScale,
+                clockAlpha = miniClockAlpha(discScale),
+            )
         }
     }
 }

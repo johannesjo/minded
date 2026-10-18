@@ -87,9 +87,10 @@ class InteractionWindowJavaScriptInterface(
     /**
      * Where the native Little Sun bubble will rest (the user's parked drag
      * position, or its default), as the bubble centre in fractions of the
-     * display: `{"fracX":..,"fracY":..}`. The departing-sun morph reads this so
-     * it glides to the bubble's real spot instead of a fixed corner the bubble
-     * no longer rests at. Computed via the same LittleSunPosition geometry the
+     * display, plus its disc diameter in CSS px (the double-tapped mini sun is
+     * smaller): `{"fracX":..,"fracY":..,"discPx":..}`. The departing-sun
+     * morph reads this so it glides to the bubble's real spot and size instead
+     * of a fixed corner the bubble no longer rests at. Computed via the same LittleSunPosition geometry the
      * bubble itself uses, so the two can't drift. Returns "" on failure, in
      * which case the web side falls back to the corner.
      */
@@ -103,6 +104,12 @@ class InteractionWindowJavaScriptInterface(
             JSONObject()
                 .put("fracX", fracX.toDouble())
                 .put("fracY", fracY.toDouble())
+                .put(
+                    "discPx",
+                    LittleSunPosition.discDp(
+                        ctrlSvc.getSharedPreferenceService().isLittleSunMini(),
+                    ).toDouble(),
+                )
                 .toString()
         } catch (e: Exception) {
             Log.e(logTag, "getLittleSunRestCenter failed", e)

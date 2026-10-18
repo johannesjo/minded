@@ -14,12 +14,14 @@ import type { SessionPlatform } from "@src/dataInterface/syncData";
 
 /**
  * Where the native Android Little Sun bubble will rest, as viewport fractions,
- * from the bridge's `{"fracX":..,"fracY":..}`. Null (→ the fixed corner) when
+ * from the bridge's `{"fracX":..,"fracY":..,"discPx":..}`. `discPx` is the
+ * bubble's disc size - smaller when the user double-tapped it to its mini size -
+ * and is left out when absent or invalid (older app). Null (→ the fixed corner) when
  * unavailable, unreadable, or the bridge throws. Number.isFinite (not typeof)
  * so a NaN can't slip through to NaN offsets; clamped to the viewport so a bad
  * value can't fling the disc off-screen.
  */
-export type LittleSunRestCenter = { x: number; y: number };
+export type LittleSunRestCenter = { x: number; y: number; discPx?: number };
 
 export const readLittleSunRestCenter = (
   read: () => string | null | undefined,
@@ -27,12 +29,23 @@ export const readLittleSunRestCenter = (
   try {
     const raw = read();
     if (!raw) return null;
-    const parsed = JSON.parse(raw) as { fracX?: number; fracY?: number };
+    const parsed = JSON.parse(raw) as {
+      fracX?: number;
+      fracY?: number;
+      discPx?: number;
+    };
     if (!Number.isFinite(parsed.fracX) || !Number.isFinite(parsed.fracY)) {
       return null;
     }
     const clamp01 = (n: number) => Math.min(1, Math.max(0, n));
-    return { x: clamp01(parsed.fracX!), y: clamp01(parsed.fracY!) };
+    const center: LittleSunRestCenter = {
+      x: clamp01(parsed.fracX!),
+      y: clamp01(parsed.fracY!),
+    };
+    if (Number.isFinite(parsed.discPx) && parsed.discPx! > 0) {
+      center.discPx = parsed.discPx;
+    }
+    return center;
   } catch {
     return null;
   }
@@ -56,13 +69,15 @@ const littleSunPx = (platform: SessionPlatform | undefined) =>
 export const getInteractionCornerSettle = (opts: {
   platform: SessionPlatform | undefined;
   isArriving: boolean;
-  restCenter: { x: number; y: number } | null;
+  restCenter: LittleSunRestCenter | null;
 }): SunSettle | null => {
   const { cornerPx, discPx } = littleSunPx(opts.platform);
   if (opts.platform === "android" && opts.restCenter) {
+    const { x, y, discPx: restDiscPx } = opts.restCenter;
+    const restDisc = restDiscPx ?? discPx;
     return opts.isArriving
-      ? sunArriveSettleAt(opts.restCenter)
-      : sunDepartSettleAt(opts.restCenter);
+      ? sunArriveSettleAt({ x, y }, restDisc)
+      : sunDepartSettleAt({ x, y }, restDisc);
   }
   if (opts.isArriving) return sunArriveSettle(cornerPx, discPx);
   return getSunSettleForPhase(

@@ -20,6 +20,7 @@ class SharedPreferenceService(context: Context) {
     private val DB_NAME = "mindedData"
     private val LITTLE_SUN_POS_X_KEY = "littleSunPosX"
     private val LITTLE_SUN_POS_Y_KEY = "littleSunPosY"
+    private val LITTLE_SUN_MINI_KEY = "littleSunMini"
     private val BELL_SALT_KEY = "mindfulnessBellSalt"
     private val BELL_DAY_KEY = "mindfulnessBellDay"
     private val BELL_RUNG_MASK_KEY = "mindfulnessBellRungMask"
@@ -104,6 +105,13 @@ class SharedPreferenceService(context: Context) {
         if (!sharedPreferences.contains(LITTLE_SUN_POS_X_KEY)) return null
         return sharedPreferences.getInt(LITTLE_SUN_POS_X_KEY, 0) to
             sharedPreferences.getInt(LITTLE_SUN_POS_Y_KEY, 0)
+    }
+
+    /** Whether the Little Sun was double-tapped down to its mini size. */
+    fun isLittleSunMini(): Boolean = sharedPreferences.getBoolean(LITTLE_SUN_MINI_KEY, false)
+
+    fun setLittleSunMini(mini: Boolean) {
+        sharedPreferences.edit().putBoolean(LITTLE_SUN_MINI_KEY, mini).apply()
     }
 
     /**

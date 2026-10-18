@@ -323,7 +323,12 @@ describe("the overlay's native suns follow the rule too", () => {
     // The corner placeholder waits on our loading sky for a web sun that now
     // arrives white too (sunArriveSettleAt) - so it is white, not the amber it
     // wore while it was still the Little Sun over the blocked app.
-    expect(cornerHandoff.replace(/\s/g, "")).toBe("SunDisc(onOwnSky=true)");
+    // (It may also be sized - a double-tapped mini Little Sun arrives mini - but
+    // its halo is a literal white, never a state that could warm.)
+    expect(cornerHandoff.replace(/\s/g, "")).toMatch(
+      /^SunDisc\(onOwnSky=true[,)]/,
+    );
+    expect(cornerHandoff).not.toMatch(/glowMorphMs/);
 
     // The fresh disc tracks which sky is under it: white while it waits on ours,
     // warming back to amber once tapping it turns the disc into the Little Sun.

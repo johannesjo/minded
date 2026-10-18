@@ -433,12 +433,21 @@ class InteractionWindow(
                 // The same resting spot the bubble parks at; the arriving web sun
                 // targets this exact point too (getLittleSunRestCenter), so the
                 // disc, the bubble that just left, and the web sun all line up.
+                val prefs = ctrlSvc.getSharedPreferenceService()
+                val mini = remember { prefs.isLittleSunMini() }
                 val rest = remember {
-                    LittleSunPosition.restingTopLeft(
+                    val (x, y) = LittleSunPosition.restingTopLeft(
                         ctrlSvc,
                         windowManager,
-                        ctrlSvc.getSharedPreferenceService().getLittleSunPosition(),
+                        prefs.getLittleSunPosition(),
+                        mini,
                     )
+                    // The disc is drawn at its glow size, centred in the
+                    // bubble's (possibly larger, touch-sized) window.
+                    val density = ctrlSvc.resources.displayMetrics.density
+                    val inset = (LittleSunPosition.bubbleSizePx(density, mini) -
+                        LittleSunPosition.glowSizePx(density, mini)) / 2
+                    (x + inset) to (y + inset)
                 }
                 Box(
                     modifier = Modifier
@@ -462,7 +471,14 @@ class InteractionWindow(
                     // amber→white change instead rides the frame where the whole
                     // screen swaps from the blocked app to our sky, so it is part
                     // of the scene change, not a jolt in the sun.
-                    SunDisc(onOwnSky = true)
+                    // At the bubble's size too - a double-tapped mini sun
+                    // arrives mini, then grows on the glide home.
+                    val discDp = LittleSunPosition.discDp(mini)
+                    SunDisc(
+                        onOwnSky = true,
+                        glowSize = (discDp * 2).dp,
+                        discSize = discDp.dp,
+                    )
                 }
             }
         }
@@ -679,7 +695,10 @@ class InteractionWindow(
             savedPosition,
         )
         val density = ctrlSvc.resources.displayMetrics.density
-        val discWidthPx = LittleSunPosition.bubbleSizePx(density) / 2f
+        val discWidthPx = LittleSunPosition.glowSizePx(
+            density,
+            ctrlSvc.getSharedPreferenceService().isLittleSunMini(),
+        ) / 2f
         return ArrivalSunTarget(
             centerXFraction = centerXFraction,
             centerYFraction = centerYFraction,
