@@ -1,0 +1,1 @@
+import{a2 as o,bo as n,ad as r,V as t}from"./Styleguide-xlkr--ZK.js";const e=document.getElementById("minded-6622");if(!e)throw new Error("Cannot find #minded-6622 root element");o();n(()=>r(t,{}),e);
