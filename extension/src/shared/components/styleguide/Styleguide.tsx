@@ -762,6 +762,7 @@ const DashboardCardPreview = (props: {
       classList={{
         cardDashboard: true,
         [dashboardStyles.box]: true,
+        [dashboardStyles.onSky]: true,
         [dashboardStyles.singleCard]: props.singleCard,
       }}
     >

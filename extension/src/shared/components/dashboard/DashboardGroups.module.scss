@@ -233,6 +233,24 @@
       }
     }
   }
+
+  // The user's reflections - the look-back grid and the single-card greeting -
+  // rest directly on the sky like the passive greetings: words, not tiles. The
+  // card class stays for its padding and radius, so the frosted fill can still
+  // ease in under the pointer as the "this opens" cue - at the resting card
+  // tone, since the brighter hover step would flash a white slab out of bare
+  // sky. The daily-questions offer keeps its card: it is a door, not a
+  // reflection.
+  &.onSky {
+    background: transparent;
+    box-shadow: none;
+
+    @media (hover: hover) {
+      &.interactive:hover {
+        background: var(--dashboard-card-bg);
+      }
+    }
+  }
 }
 
 // Elevate the card content in the single-item arrival view. The production
@@ -263,7 +281,7 @@
 
 // Passive arrival greetings need no frosted container: they are part of the
 // sky, not another surface to act on. Padding preserves the same calm reading
-// measure as the card-backed personal reflection without adding any chrome.
+// measure as the personal reflection (see `.onSky`) without adding any chrome.
 .skyGreeting {
   padding: var(--space-md);
   text-align: center;

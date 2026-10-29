@@ -20,6 +20,18 @@ describe("collapsed dashboard presentation", () => {
     expect(component).toContain("[styles.skyGreeting]: isSkyGreeting");
   });
 
+  it("rests the user's reflections on the sky, with the fill only under the pointer", () => {
+    // Look-back grid and single-card greeting alike: no resting card fill.
+    expect(component).toContain("[styles.onSky]: true");
+    expect(styles).toMatch(
+      /&\.onSky\s*\{[\s\S]*background:\s*transparent;[\s\S]*box-shadow:\s*none;/,
+    );
+    // The hover cue stays, at the quiet resting tone rather than the bright step.
+    expect(styles).toMatch(
+      /&\.onSky\s*\{[\s\S]*&\.interactive:hover\s*\{\s*background:\s*var\(--dashboard-card-bg\);/,
+    );
+  });
+
   it("greets with a card only when that card may greet right now - otherwise an empty sky", () => {
     // No filler card exists any more, so the hero slot can hold something that
     // must not greet (a stale recap). The view checks before showing it.

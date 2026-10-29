@@ -539,6 +539,7 @@ export const DashboardGroups: (props: {
         classList={{
           ["cardDashboard"]: !isSkyGreeting,
           [styles.box]: true,
+          [styles.onSky]: true,
           [styles.singleCard]: isSingleCard,
           [styles.skyGreeting]: isSkyGreeting,
           [styles.interactive]: isInteractive(),
