@@ -13,7 +13,6 @@ import editSvg from "@assets/img/edit.svg";
 import penSvg from "@assets/img/pen.svg";
 import infoSvg from "@assets/img/info.svg";
 import checkSvg from "@assets/img/check.svg";
-import bellSvg from "@assets/img/bell.svg";
 
 const ICO_MAP = {
   settings: settingsSvg,
@@ -30,7 +29,6 @@ const ICO_MAP = {
   pen: penSvg,
   info: infoSvg,
   check: checkSvg,
-  bell: bellSvg,
 } as const;
 
 export type IcoName = keyof typeof ICO_MAP;

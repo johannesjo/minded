@@ -29,7 +29,6 @@ import com.minded.minded.util.UserCfg
 import com.minded.minded.util.bellPlayerVolume
 import com.minded.minded.util.bellVoice
 import com.minded.minded.util.getForegroundAppReliable
-import org.json.JSONObject
 import java.time.LocalDateTime
 import kotlin.math.abs
 
@@ -101,7 +100,6 @@ class MindfulnessBell(
         if (slot == null && !isFirstRing) return
 
         val moment = moment(isOtherOverlayShown, littleSun, isBlockedPackage)
-        recordCheck(moment)
         if (moment is Moment.Skip) {
             // The slot stays open - a later unlock inside its window may still ring.
             Log.d(logTag, "Bell due (slot $slot) but skipped: ${moment.reason}")
@@ -144,27 +142,6 @@ class MindfulnessBell(
     private sealed class Moment {
         class Ring(val host: BellHost?) : Moment()
         class Skip(val reason: String) : Moment()
-    }
-
-    /** Keep the outcome of a due bell for the settings' "last bell" line. */
-    private fun recordCheck(moment: Moment) {
-        try {
-            val through = when ((moment as? Moment.Ring)?.host?.kind) {
-                BellHost.Kind.LITTLE_SUN -> "the Little Sun"
-                BellHost.Kind.WIDGET -> "the sun widget"
-                null -> null
-            }
-            prefs.setMindfulnessBellLastCheck(
-                JSONObject()
-                    .put("atMs", System.currentTimeMillis())
-                    .put("rang", moment is Moment.Ring)
-                    .put("reason", (moment as? Moment.Skip)?.reason ?: JSONObject.NULL)
-                    .put("through", through ?: JSONObject.NULL)
-                    .toString(),
-            )
-        } catch (e: Exception) {
-            Log.e(logTag, "Failed to record bell check", e)
-        }
     }
 
     private var cachedRaw: String? = null

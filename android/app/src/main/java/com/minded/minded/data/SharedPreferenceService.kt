@@ -25,7 +25,6 @@ class SharedPreferenceService(context: Context) {
     private val BELL_DAY_KEY = "mindfulnessBellDay"
     private val BELL_RUNG_MASK_KEY = "mindfulnessBellRungMask"
     private val BELL_LAST_RUNG_MINUTE_KEY = "mindfulnessBellLastRungMinute"
-    private val BELL_LAST_CHECK_KEY = "mindfulnessBellLastCheck"
     private val BELL_FIRST_RING_KEY = "mindfulnessBellFirstRing"
     private val sharedPreferences: SharedPreferences =
         context.getSharedPreferences(DB_NAME, Context.MODE_PRIVATE)
@@ -160,20 +159,6 @@ class SharedPreferenceService(context: Context) {
             apply()
         }
     }
-
-    /**
-     * The last time a bell was due and what came of it - rang, or the reason it
-     * stayed quiet - as JSON `{"atMs":…,"rang":…,"reason":…,"through":…}`
-     * (through: the sun it rang through, if one was already there). Only so the
-     * settings can show why a bell hasn't been heard; overwritten each time,
-     * never a history. Local only, like the rest of the bell's bookkeeping.
-     */
-    fun setMindfulnessBellLastCheck(json: String) {
-        sharedPreferences.edit().putString(BELL_LAST_CHECK_KEY, json).apply()
-    }
-
-    fun getMindfulnessBellLastCheck(): String? =
-        sharedPreferences.getString(BELL_LAST_CHECK_KEY, null)
 
     /**
      * The first bell after the bell is switched on: it rings at the next good
