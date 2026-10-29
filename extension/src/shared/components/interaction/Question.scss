@@ -127,6 +127,13 @@
 
 #minded-6622-question {
   display: inline-block;
+  // Same reading measure as .interaction-heading: a long question otherwise
+  // runs as one wide line, overhanging the narrower answer field below it.
+  // Centred in its own right: the wrapper rule above makes this a block-level
+  // flex box, which a max-width alone would leave hugging the left edge.
+  max-width: 18em;
+  margin-inline: auto;
+  text-align: center;
   cursor: pointer;
   transition: opacity var(--dur-quick) var(--ease-out);
 

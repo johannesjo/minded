@@ -53,7 +53,13 @@
     height: 20px;
     background: var(--c-fg-full-emphasis);
     border-radius: 50%;
-    transition: transform var(--dur-quick) var(--ease-out);
+    // Off rests muted, on comes to full ink: with the knob at full emphasis
+    // both ways, on and off differed only by a faint change in the pill, and
+    // every off switch still drew a hard black dot down the page.
+    opacity: 0.4;
+    transition:
+      transform var(--dur-quick) var(--ease-out),
+      opacity var(--dur-quick) var(--ease-out);
     // No drop shadow: the near-black knob already separates cleanly from the
     // frosted pill, the surface system deliberately uses no elevation cues -
     // and in dark mode the knob flips near-white, where a black shadow on the
@@ -65,6 +71,7 @@
 
     &::after {
       transform: translateX(22px);
+      opacity: 1;
     }
   }
 }
