@@ -123,15 +123,6 @@ open class MainActivityJavaScriptInterface(
     }
 
     /**
-     * The last time the mindfulness bell was due and what came of it (JSON, see
-     * SharedPreferenceService.getMindfulnessBellLastCheck), or "" if never.
-     */
-    @JavascriptInterface
-    fun getMindfulnessBellLastCheck(): String {
-        return SharedPreferenceService(context).getMindfulnessBellLastCheck() ?: ""
-    }
-
-    /**
      * The bell was just switched on: its first bell rings at the next good
      * unlock (see SharedPreferenceService.setMindfulnessBellFirstRingArmed).
      */
