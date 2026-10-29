@@ -20,6 +20,32 @@ describe("collapsed dashboard presentation", () => {
     expect(component).toContain("[styles.skyGreeting]: isSkyGreeting");
   });
 
+  it("rests the user's reflections on the sky, with the fill only on hover or press", () => {
+    // Look-back grid and single-card greeting alike: no resting card fill.
+    expect(component).toContain("[styles.onSky]: !isSkyGreeting");
+    const onSkyBlock = styles.match(/&\.onSky\s*\{([\s\S]*?)\n {2}\}/)?.[1];
+    expect(onSkyBlock).toMatch(
+      /^\s*background:\s*transparent;\s*box-shadow:\s*none;/,
+    );
+    // The cue stays at the quiet resting tone rather than the bright hover
+    // step: under the pointer, and on press for touch (which has no hover).
+    expect(onSkyBlock).toMatch(
+      /&\.interactive:active\s*\{\s*background:\s*var\(--dashboard-card-bg\);/,
+    );
+    expect(onSkyBlock).toMatch(
+      /@media \(hover: hover\)\s*\{\s*&\.interactive:hover\s*\{\s*background:\s*var\(--dashboard-card-bg\);/,
+    );
+  });
+
+  it("keeps the daily-questions offer on its card", () => {
+    const banner = component.slice(
+      component.indexOf("const renderDailyQuestionsBanner"),
+      component.indexOf("const renderEmptySky"),
+    );
+    expect(banner).toContain('["cardDashboard"]: true');
+    expect(banner).not.toContain("onSky");
+  });
+
   it("greets with a card only when that card may greet right now - otherwise an empty sky", () => {
     // No filler card exists any more, so the hero slot can hold something that
     // must not greet (a stale recap). The view checks before showing it.
