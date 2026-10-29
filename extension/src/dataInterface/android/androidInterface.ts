@@ -91,6 +91,14 @@ interface InteractionWindowJavaScriptInterface {
   armMindfulnessBellFirstRing?: () => void;
   /** Whether that first bell is still waiting for an unlock. */
   isMindfulnessBellFirstRingArmed?: () => boolean;
+  /**
+   * The redirect: open an accepted alternative (an http(s) website, or an
+   * installed app by package name) over the blocked app, then fade the
+   * overlay. Returns false when nothing could be opened. Optional: older
+   * native builds won't have them - guard with `?.()`.
+   */
+  openUrl?: (url: string) => boolean;
+  openApp?: (packageName: string) => boolean;
   test: () => void;
 }
 
