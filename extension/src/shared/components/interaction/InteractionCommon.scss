@@ -323,6 +323,13 @@
 .interaction-heading {
   padding-top: var(--space-xl);
   padding-bottom: var(--space-xl);
+  // A reading measure for the serif voice: left to the 990px box, a longer
+  // prompt (a pattern insight) ran out to ~90 characters a line - a sentence
+  // you scan rather than one spoken to you. ~18em keeps it at a calm 40-odd
+  // characters, balanced (displayVoice) over a few short lines; em-relative,
+  // so it tracks the size and never binds on a phone.
+  max-width: 18em;
+  margin-inline: auto;
 }
 
 .interaction-static-text {

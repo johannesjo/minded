@@ -63,6 +63,9 @@
 
   p {
     margin: 0;
+    // --fz-s like every shared settings description below it, so the
+    // section intros don't read a size louder than their neighbours.
+    font-size: var(--fz-s);
     color: var(--h4-c);
   }
 }

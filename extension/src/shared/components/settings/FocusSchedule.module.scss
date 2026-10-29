@@ -16,6 +16,8 @@
 }
 
 .description {
+  // --fz-s, the size every other settings description uses.
+  font-size: var(--fz-s);
   margin: 0 var(--settings-description-margin-inline, 0) var(--space-lg);
   max-width: var(--settings-description-max-width, none);
   // --h4-c, not a one-off opacity: every settings description shares the
