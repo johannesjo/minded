@@ -14,9 +14,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.systemGestureExclusion
 import androidx.compose.material3.Surface
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -33,6 +35,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.minded.minded.overlay.LittleSunPosition
 import com.minded.minded.util.isDarkModeNow
+import kotlin.math.exp
+import kotlin.math.pow
 
 // Match the web extension's little sun: a solid white disc with a soft, warm
 // amber glow around it.
@@ -72,11 +76,37 @@ private val SUN_COLOR_NIGHT = Color(0xFFEEF2FF)
 private val SUN_TEXT_COLOR_NIGHT = Color(0xFF33405E)
 internal val GLOW_COLOR_NIGHT = Color(0xFFBED2FF)
 
-/** The bubble's timer text - shared with the leave zone's snapped disc. */
+/**
+ * The bubble's timer text - shared with the leave zone's snapped disc. No
+ * padding: a leading space for single-digit minutes is centred along with the
+ * digits, so it nudged the time off the middle of the disc - no pad, like the
+ * M:SS branch of the web Little Sun's formatSessionTime.
+ */
 internal fun littleSunClockString(elapsedSeconds: Int): String =
     if (elapsedSeconds >= 0)
-        String.format("%2d:%02d", elapsedSeconds / 60, elapsedSeconds % 60)
+        String.format("%d:%02d", elapsedSeconds / 60, elapsedSeconds % 60)
     else ""
+
+private const val GLOW_FALLOFF_STEPS = 8
+private const val GLOW_RIM_ALPHA = 0.85f
+// Puts the halo at ~0.30 alpha halfway out (0.7), where the old stops had it.
+private const val GLOW_FALLOFF_K = 4.2f
+
+/**
+ * The halo's falloff from the disc's rim (0.5 of the glow radius) out to
+ * nothing (0.9, inside the layout bound so the wrap-content window never
+ * hard-cuts it): a gaussian-like curve, like light, instead of straight
+ * segments, whose corners showed as a faint band around the disc. Same
+ * strength at the rim and about the same reach as before; it holds a little
+ * more light near the body and lets the far edge dissolve instead of ending.
+ * It is also closer to the blurred box-shadow halo of the web sun this disc
+ * cross-fades into when an intervention opens.
+ */
+private val GLOW_FALLOFF: List<Pair<Float, Float>> = (0..GLOW_FALLOFF_STEPS).map { i ->
+    val t = i / GLOW_FALLOFF_STEPS.toFloat()
+    val alpha = GLOW_RIM_ALPHA * exp(-GLOW_FALLOFF_K * t * t) * (1f - t.pow(6))
+    (0.5f + 0.4f * t) to alpha
+}
 
 /**
  * The little sun overlay: a small, draggable companion bubble (like a chat-head)
@@ -226,15 +256,14 @@ internal fun SunDisc(
         // Soft glow, drawn behind the disc so only the halo around the body
         // shows - mirrors the web extension's box-shadow glow. The disc radius
         // is 0.5 of the glow radius, so the colour is saturated right where the
-        // body edge sits and then feathers to fully transparent before the
-        // layout bound (0.9), so the wrap-content window never hard-cuts the halo.
-        val glowBrush = Brush.radialGradient(
-            colorStops = arrayOf(
-                0.5f to glowColor.copy(alpha = 0.85f),
-                0.7f to glowColor.copy(alpha = 0.30f),
-                0.9f to Color.Transparent,
-            ),
-        )
+        // body edge sits and then feathers away along GLOW_FALLOFF.
+        val glowBrush = remember(glowColor) {
+            Brush.radialGradient(
+                colorStops = GLOW_FALLOFF
+                    .map { (offset, alpha) -> offset to glowColor.copy(alpha = alpha) }
+                    .toTypedArray(),
+            )
+        }
         Canvas(
             modifier = Modifier.size(glowSize),
             onDraw = { drawCircle(glowBrush) },
@@ -254,6 +283,10 @@ internal fun SunDisc(
                     fontSize = 10.sp,
                     textAlign = TextAlign.Center,
                     fontWeight = FontWeight.Bold,
+                    // The clock ticks every second: tabular digits keep the
+                    // time from wobbling on the disc as it changes (as the web
+                    // Little Sun's font-variant-numeric: tabular-nums).
+                    style = LocalTextStyle.current.copy(fontFeatureSettings = "tnum"),
                     color = textColor.copy(alpha = clockAlpha),
                     maxLines = 1,
                 )

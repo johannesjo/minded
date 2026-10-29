@@ -49,8 +49,9 @@ const WIDGET_NIGHTFALL_SKY =
   WIDGET_NIGHT_SKY;
 
 // One real WAKING_PROMPTS line (WidgetPrompts), shown on every day card so the
-// sky is the only thing that varies across them.
-const SAMPLE_LINE = "Feel both feet on the floor.";
+// sky is the only thing that varies across them. Its last two words held by a
+// no-break space, as the widget shows it (WidgetPrompts.withoutOrphan).
+const SAMPLE_LINE = "Feel both feet on the\u00A0floor.";
 
 const discSvg = (key: "day" | "night"): string =>
   SUN_WIDGET_PREVIEWS.find((p) => p.key === key)?.svg ?? "";

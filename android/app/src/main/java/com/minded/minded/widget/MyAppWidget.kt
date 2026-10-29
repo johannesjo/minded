@@ -190,7 +190,7 @@ class MyAppWidget : GlanceAppWidget() {
         ) {
             if (prompt != null) {
                 Text(
-                    text = prompt,
+                    text = WidgetPrompts.withoutOrphan(prompt),
                     style = TextStyle(
                         // --c-fg-full-emphasis (light theme): rgba(0,0,0,.85).
                         // Only ever rendered on the light sky - night has no text,

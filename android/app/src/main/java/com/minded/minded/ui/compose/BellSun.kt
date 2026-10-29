@@ -28,6 +28,8 @@ import androidx.compose.ui.unit.dp
 import com.minded.minded.util.isDarkModeNow
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.math.PI
+import kotlin.math.cos
 import kotlin.math.hypot
 import kotlin.math.roundToInt
 
@@ -170,8 +172,8 @@ fun BellSun(
             val dim = DIM_COLOR.copy(alpha = DIM_ALPHA * p)
             drawRect(
                 Brush.radialGradient(
-                    0f to Color.Transparent,
-                    clearEnd to Color.Transparent,
+                    0f to DIM_COLOR.copy(alpha = 0f),
+                    clearEnd to DIM_COLOR.copy(alpha = 0f),
                     fullAt to dim,
                     1f to dim,
                     center = center,
@@ -190,13 +192,12 @@ fun BellSun(
             // light filling the middle would wash it out.
             val inner = maxOf(ring - halfWidth, sunRadiusPx * 0.85f)
             // These read as ~0.72 through the window's alpha.
-            val peak = glowColor.copy(alpha = 0.9f * s * p)
+            val peakAlpha = 0.9f * s * p
+            val innerStop = inner / outer
+            val crestStop = (ring / outer).coerceAtLeast(innerStop + 0.001f)
             drawCircle(
                 Brush.radialGradient(
-                    0f to Color.Transparent,
-                    (inner / outer) to Color.Transparent,
-                    (ring / outer).coerceAtLeast(inner / outer + 0.001f) to peak,
-                    1f to Color.Transparent,
+                    colorStops = ringStops(innerStop, crestStop, glowColor, peakAlpha),
                     center = center,
                     radius = outer,
                 ),
@@ -223,9 +224,50 @@ fun BellSun(
     }
 }
 
+/**
+ * The ring's band of light: clear inside [innerStop], cresting at [crestStop],
+ * clear again at the edge - with an eased (cosine) rise and fall either side of
+ * the crest rather than straight lines, so the band reads as a soft swell of
+ * light with no sharp line along its brightest edge.
+ */
+private fun ringStops(
+    innerStop: Float,
+    crestStop: Float,
+    color: Color,
+    peakAlpha: Float,
+): Array<Pair<Float, Color>> {
+    // The ring's own colour at zero alpha, not Color.Transparent (transparent
+    // *black*): gradients blend unpremultiplied, so black edges would grey it.
+    val clear = color.copy(alpha = 0f)
+    val stops = mutableListOf(0f to clear, innerStop to clear)
+    RING_EASE.forEachIndexed { i, rise ->
+        val t = (i + 1) / RING_EASE_STEPS.toFloat()
+        stops += (innerStop + (crestStop - innerStop) * t) to color.copy(alpha = peakAlpha * rise)
+    }
+    stops += crestStop to color.copy(alpha = peakAlpha)
+    RING_EASE.forEachIndexed { i, _ ->
+        val t = (i + 1) / RING_EASE_STEPS.toFloat()
+        // The fall mirrors the rise: 1 - rise(t) == rise(1 - t).
+        val fall = RING_EASE[RING_EASE.size - 1 - i]
+        stops += (crestStop + (1f - crestStop) * t) to color.copy(alpha = peakAlpha * fall)
+    }
+    stops += 1f to clear
+    return stops.toTypedArray()
+}
+
+private const val RING_EASE_STEPS = 5
+
+/** The cosine rise at each inner step, 0 → 1 exclusive, computed once. */
+private val RING_EASE: List<Float> = (1 until RING_EASE_STEPS).map { i ->
+    0.5f - 0.5f * cos(PI.toFloat() * i / RING_EASE_STEPS)
+}
+
 // The dim's depth as seen (0.35) through the window's 0.8 alpha.
 private const val DIM_ALPHA = 0.44f
-private val DIM_COLOR = Color.Black
+// Not black: the deep blue of minded's night sky (--c-gradient-1, a touch
+// lifted), so the world quiets the way it does at dusk rather than greying out
+// like a dialog's scrim - and the amber ring sits on its complement.
+private val DIM_COLOR = Color(0xFF0B1226)
 // The dim is clear out to this many sun radii, and full from this many.
 private const val DIM_CLEAR_RADII = 1.4f
 private const val DIM_FULL_RADII = 4f
