@@ -86,6 +86,11 @@ internal fun littleSunClockString(elapsedSeconds: Int): String =
         String.format("%d:%02d", elapsedSeconds / 60, elapsedSeconds % 60)
     else ""
 
+private const val GLOW_FALLOFF_STEPS = 8
+private const val GLOW_RIM_ALPHA = 0.85f
+// Puts the halo at ~0.30 alpha halfway out (0.7), where the old stops had it.
+private const val GLOW_FALLOFF_K = 4.2f
+
 /**
  * The halo's falloff from the disc's rim (0.5 of the glow radius) out to
  * nothing (0.9, inside the layout bound so the wrap-content window never
@@ -101,10 +106,6 @@ private val GLOW_FALLOFF: List<Pair<Float, Float>> = (0..GLOW_FALLOFF_STEPS).map
     val alpha = GLOW_RIM_ALPHA * exp(-GLOW_FALLOFF_K * t * t) * (1f - t.pow(6))
     (0.5f + 0.4f * t) to alpha
 }
-private const val GLOW_FALLOFF_STEPS = 8
-private const val GLOW_RIM_ALPHA = 0.85f
-// Puts the halo at ~0.30 alpha halfway out (0.7), where the old stops had it.
-private const val GLOW_FALLOFF_K = 4.2f
 
 /**
  * The little sun overlay: a small, draggable companion bubble (like a chat-head)
