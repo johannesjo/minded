@@ -2,6 +2,8 @@ package com.minded.minded.overlay
 
 import android.content.Context
 import android.content.Intent
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
@@ -39,6 +41,26 @@ internal fun parseSessionLimitPayload(payloadJson: String): SessionLimitPayload?
         null
     }
 }
+
+/**
+ * App alternatives are typed, not picked ("Kindle"), so resolve one only on an
+ * exact, case-insensitive launcher-name match - and only when exactly one app
+ * matches: opening the wrong app would be worse than opening none.
+ */
+internal fun findPackageByLabel(label: String, apps: List<Pair<String, String>>): String? {
+    val wanted = label.trim().lowercase()
+    if (wanted.isEmpty()) return null
+    return apps
+        .filter { (name, _) -> name.trim().lowercase() == wanted }
+        .map { it.second }
+        .distinct()
+        .singleOrNull()
+}
+
+// How long the overlay stays up after the alternative's launch is sent, so the
+// alternative has surfaced underneath before the window fades (same reasoning
+// as closeCurrentApp's delay, without its celebratory linger).
+private const val ALTERNATIVE_HANDOFF_MS = 700L
 
 class InteractionWindowJavaScriptInterface(
     override val webView: WebView,
@@ -204,6 +226,33 @@ class InteractionWindowJavaScriptInterface(
             Log.d(logTag, "closeCurrentApp() - hiding window after delay")
             win.hideWindow()
         }, 1300)
+    }
+
+    /**
+     * The redirect: open the app the user named as their alternative. Never
+     * minded itself or the app being intervened on (that would just bounce
+     * back into an intervention). Returns false when no single app matches,
+     * so the web side falls back to its plain leave.
+     */
+    @JavascriptInterface
+    fun openAppNamed(label: String): Boolean {
+        Log.v(logTag, "openAppNamed()")
+        val pm = ctrlSvc.packageManager
+        val excluded = setOf(ctrlSvc.packageName, sharedOverlayViewModel.sharedData.value.currentApp)
+        val launchers = pm.queryIntentActivities(
+            Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER), 0
+        )
+            .filter { it.activityInfo.packageName !in excluded }
+            .map { it.loadLabel(pm).toString() to it.activityInfo.packageName }
+        val packageName = findPackageByLabel(label, launchers) ?: return false
+        val intent = pm.getLaunchIntentForPackage(packageName) ?: return false
+        return openAlternative(intent)
+    }
+
+    private fun openAlternative(intent: Intent): Boolean {
+        if (!ctrlSvc.openAlternative(intent)) return false
+        Handler(Looper.getMainLooper()).postDelayed({ win.hideWindow() }, ALTERNATIVE_HANDOFF_MS)
+        return true
     }
 
     @JavascriptInterface

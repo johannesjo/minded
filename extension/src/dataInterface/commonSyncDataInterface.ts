@@ -239,6 +239,14 @@ export const markAlternativeShown = (alternative: Alternative): Promise<void> =>
   markAlternative(alternative, "shown");
 
 /**
+ * Accepted, but nothing was opened ("Yes" on an activity): the user leaves to
+ * go do it. A leave counts no sun tap, so friction isn't raised for it.
+ */
+export const markAlternativeOpened = (
+  alternative: Alternative,
+): Promise<void> => markAlternative(alternative, "opened");
+
+/**
  * Build the sunTaps counter + recent-timestamps update for a single tap.
  * Shared by countSunTap and markAlternativeOpenedAndCountSunTap.
  */

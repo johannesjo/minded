@@ -85,6 +85,14 @@ interface InteractionWindowJavaScriptInterface {
   armMindfulnessBellFirstRing?: () => void;
   /** Whether that first bell is still waiting for an unlock. */
   isMindfulnessBellFirstRingArmed?: () => boolean;
+  /**
+   * The redirect: open the installed app whose launcher name matches an
+   * accepted app alternative's typed label, over the blocked app, then fade
+   * the overlay. Resolved natively at tap time so showing the offer never
+   * scans the installed apps. Returns false when no single app matches.
+   * Optional: older native builds won't have it - guard with `?.()`.
+   */
+  openAppNamed?: (label: string) => boolean;
   test: () => void;
 }
 

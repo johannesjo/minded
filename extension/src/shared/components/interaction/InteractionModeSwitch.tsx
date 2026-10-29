@@ -60,6 +60,8 @@ export interface InteractionModeSwitchProps {
    * closes/locks. Only meaningful for the WIND_DOWN_SETTLE mode.
    */
   isBedtimeGoodnight?: boolean;
+  /** The sun took over (tap → intent/time, fling, drag): mode content stands down. */
+  isSuperseded?: boolean;
   onCancelCountdown: () => void;
   onSuccess: (answer?: Answer) => void;
   onSkip: () => void;
@@ -204,6 +206,8 @@ export const InteractionModeSwitch: Component<InteractionModeSwitchProps> = (
           <ShowAlternativeInteraction
             syncData={props.syncData}
             onCancelCountdown={props.onCancelCountdown}
+            onLeaveNow={props.onLeaveNow}
+            isSuperseded={() => !!props.isSuperseded}
             onAddBetterAlternative={props.onAddBetterAlternative}
           />
         )}

@@ -1258,6 +1258,23 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         }
     }
 
+    /**
+     * Launch the app alternative the user accepted over the blocked one.
+     * Debounced like goToApp so the switch itself can't raise a fresh
+     * intervention. Returns false if the launch was refused (background-launch
+     * restrictions) so the caller can fall back.
+     */
+    fun openAlternative(intent: Intent): Boolean {
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        lastGoToAppTimestamp = System.currentTimeMillis()
+        return try {
+            startActivity(intent)
+            true
+        } catch (e: Exception) {
+            Log.e(logTag, "openAlternative() - failed to launch", e)
+            false
+        }
+    }
 
     companion object {
         // Live service instance so the flag below reflects actual window
