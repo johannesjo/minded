@@ -26,6 +26,7 @@ import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
@@ -151,9 +152,16 @@ fun LittleSunLeaveZone(
         Canvas(modifier = Modifier.fillMaxSize()) {
             val center = Offset(size.width / 2f, size.height)
             val radius = glowRadius.coerceAtLeast(1f)
+            // Eased rather than straight-line falloff: a linear fade's even
+            // slope showed as the glow's edge, like a lamp; this one thins out
+            // the way light near a horizon does.
             drawCircle(
                 brush = Brush.radialGradient(
-                    colors = listOf(glowColor.copy(alpha = glowAlpha), Color.Transparent),
+                    0f to glowColor.copy(alpha = glowAlpha),
+                    0.35f to glowColor.copy(alpha = glowAlpha * 0.62f),
+                    0.65f to glowColor.copy(alpha = glowAlpha * 0.22f),
+                    0.85f to glowColor.copy(alpha = glowAlpha * 0.05f),
+                    1f to Color.Transparent,
                     center = center,
                     radius = radius,
                 ),
@@ -176,10 +184,14 @@ fun LittleSunLeaveZone(
                 }
                 .graphicsLayer { alpha = labelAlpha },
             textAlign = TextAlign.Center,
-            fontSize = 13.sp,
+            fontSize = 15.sp,
+            // An invitation, so it's said in the app's serif voice - like the
+            // web sun-drag hints ("to let go") and the widget's prompt - not
+            // in chrome sans.
+            fontFamily = FontFamily.Serif,
             color = Color.White,
             style = TextStyle(
-                shadow = Shadow(color = Color.Black.copy(alpha = 0.4f), blurRadius = 10f),
+                shadow = Shadow(color = Color.Black.copy(alpha = 0.35f), blurRadius = 14f),
             ),
         )
 
