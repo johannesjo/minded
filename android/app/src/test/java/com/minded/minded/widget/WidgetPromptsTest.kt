@@ -216,4 +216,18 @@ class WidgetPromptsTest {
         assertTrue(WidgetSun.momentAt(next, berlin).isNight)
         assertEquals(WidgetSky.NIGHT, WidgetSky.forMoment(WidgetSun.momentAt(next, berlin)))
     }
+
+    @Test
+    fun `the card never leaves one word alone on the last line`() {
+        assertEquals("Feel both feet on the\u00A0floor.", WidgetPrompts.withoutOrphan("Feel both feet on the floor."))
+        // Only the last gap is held, so the line still wraps everywhere else.
+        assertEquals(4, WidgetPrompts.withoutOrphan("Feel both feet on the floor.").count { it == ' ' })
+        // Two words or one: left as they are.
+        assertEquals("Look up.", WidgetPrompts.withoutOrphan("Look up."))
+        assertEquals("Breathe.", WidgetPrompts.withoutOrphan("Breathe."))
+        // Display only: the held text no longer matches the allow-list, which is
+        // why the tap hands over the line itself.
+        val line = WidgetPrompts.WAKING_PROMPTS.first { it.count { c -> c == ' ' } >= 2 }
+        assertFalse(WidgetPrompts.isWidgetSafeLine(WidgetPrompts.withoutOrphan(line)))
+    }
 }

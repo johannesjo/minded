@@ -219,6 +219,21 @@ object WidgetPrompts {
     fun isWidgetSafeLine(line: String): Boolean = line in WAKING_PROMPTS
 
     /**
+     * [line] as the card shows it: its last two words held together by a
+     * no-break space, so it never ends on one word alone ("Feel both feet on
+     * the / floor."). In app the same lines are balanced (displayVoice's
+     * text-wrap: balance); a widget can't ask for that, but it can refuse the
+     * orphan. Display only - the tap hands over [line] itself, which
+     * [isWidgetSafeLine] matches exactly.
+     */
+    fun withoutOrphan(line: String): String {
+        val last = line.lastIndexOf(' ')
+        // Two words or fewer: nothing to hold together that wouldn't fit anyway.
+        if (last <= 0 || line.indexOf(' ') == last) return line
+        return line.substring(0, last) + '\u00A0' + line.substring(last + 1)
+    }
+
+    /**
      * When the card's face next changes after [nowMillis] (epoch ms), timed to
      * the real sun: by day the next 15-minute line step or the dusk flip,
      * whichever is first; across the wordless night the dawn that brings the

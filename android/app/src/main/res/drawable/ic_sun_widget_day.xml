@@ -19,7 +19,10 @@
         android:viewportWidth="108"
         android:viewportHeight="108">
 
-    <!-- Soft warm glow (the sun's bloom + idle-breath halo), gentle and low-alpha -->
+    <!-- Soft warm glow (the sun's bloom + idle-breath halo), gentle and low-alpha.
+         The peak sits on the disc's rim (r 36 / 53 ≈ 0.68), so the light starts
+         where the body ends; a peak further out left a dimmer band between the
+         two that read as a dark outline round the sun. -->
     <path android:pathData="M54,54 m-53,0 a53,53 0 1,0 106,0 a53,53 0 1,0 -106,0">
         <aapt:attr name="android:fillColor">
             <gradient
@@ -29,7 +32,7 @@
                     android:gradientRadius="53">
                 <item android:offset="0.0" android:color="#00FFD877" />
                 <item android:offset="0.56" android:color="#00FFD877" />
-                <item android:offset="0.74" android:color="#47FFD673" />
+                <item android:offset="0.68" android:color="#47FFD673" />
                 <item android:offset="1.0" android:color="#00FFCB5A" />
             </gradient>
         </aapt:attr>

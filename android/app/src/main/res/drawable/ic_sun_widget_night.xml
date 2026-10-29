@@ -54,7 +54,7 @@
                     android:gradientRadius="53">
                 <item android:offset="0.0" android:color="#00D8E5FF" />
                 <item android:offset="0.56" android:color="#00D8E5FF" />
-                <item android:offset="0.74" android:color="#52D8E5FF" />
+                <item android:offset="0.68" android:color="#52D8E5FF" />
                 <item android:offset="1.0" android:color="#00B2CAFF" />
             </gradient>
         </aapt:attr>

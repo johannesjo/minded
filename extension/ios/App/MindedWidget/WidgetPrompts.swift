@@ -203,6 +203,20 @@ enum WidgetPrompts {
         return wakingPrompts[((index % count) + count) % count]
     }
 
+    /// `line` as the card shows it: its last two words held together by a
+    /// no-break space, so it never ends on one word alone ("Feel both feet on
+    /// the / floor."). In app the same lines are balanced (displayVoice's
+    /// `text-wrap: balance`); a widget can't ask for that, but it can refuse the
+    /// orphan. Display only - the twin of Kotlin's `withoutOrphan`.
+    static func withoutOrphan(_ line: String) -> String {
+        guard let last = line.lastIndex(of: " "),
+              let first = line.firstIndex(of: " "),
+              first != last,
+              last != line.startIndex
+        else { return line }
+        return line.replacingCharacters(in: last...last, with: "\u{00A0}")
+    }
+
     /// The line for a moment: the slot from its local wall clock, the night from
     /// its light (the real sun where the zone has a place).
     static func prompt(at date: Date, calendar: Calendar = .current) -> String? {

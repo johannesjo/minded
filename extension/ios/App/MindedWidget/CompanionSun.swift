@@ -109,7 +109,7 @@ struct CompanionSun: View {
                     gradient: Gradient(stops: [
                         .init(color: rgb(216, 229, 255, 0), location: 0.00),
                         .init(color: rgb(216, 229, 255, 0), location: 0.56),
-                        .init(color: rgb(216, 229, 255, 0.32), location: 0.74),
+                        .init(color: rgb(216, 229, 255, 0.32), location: 0.68),
                         .init(color: rgb(178, 202, 255, 0), location: 1.00),
                     ]),
                     center: .center,
@@ -227,19 +227,22 @@ struct CompanionSun: View {
     // rim. Spans the full tile (Android gradientRadius 53 over a 108 viewport ≈ the
     // whole circle). Amber on the wallpaper, white on our own sky - same stops and
     // same alpha either way, so only the colour changes (see `onOwnSky` above and
-    // the Android twins ic_sun_widget_day{,_on_sky}.xml).
+    // the Android twins ic_sun_widget_day{,_on_sky}.xml). The peak sits on the
+    // disc's rim (≈ 0.68 of the glow's radius, as on Android), so the light starts
+    // where the body ends - a peak further out left a dim band that read as a
+    // dark outline round the sun.
     private func glow(side: CGFloat) -> some View {
         let stops: [Gradient.Stop] = onOwnSky
             ? [
                 .init(color: rgb(255, 255, 255, 0), location: 0.00),
                 .init(color: rgb(255, 255, 255, 0), location: 0.56),
-                .init(color: rgb(255, 255, 255, 0.28), location: 0.74),
+                .init(color: rgb(255, 255, 255, 0.28), location: 0.68),
                 .init(color: rgb(255, 255, 255, 0), location: 1.00),
             ]
             : [
                 .init(color: rgb(255, 216, 119, 0), location: 0.00),
                 .init(color: rgb(255, 216, 119, 0), location: 0.56),
-                .init(color: rgb(255, 214, 115, 0.28), location: 0.74),
+                .init(color: rgb(255, 214, 115, 0.28), location: 0.68),
                 .init(color: rgb(255, 203, 90, 0), location: 1.00),
             ]
         return Circle()

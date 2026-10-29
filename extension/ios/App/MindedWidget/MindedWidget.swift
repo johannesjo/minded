@@ -170,7 +170,7 @@ private struct PromptCard: View {
     var body: some View {
         VStack(spacing: 8) {
             if let prompt = entry.prompt {
-                Text(prompt)
+                Text(WidgetPrompts.withoutOrphan(prompt))
                     // The app's own serif voice (Newsreader - displayVoice()),
                     // bundled with the widget as a static Regular
                     // (scripts/gen_widget_font.py).
