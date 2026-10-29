@@ -204,6 +204,7 @@ export const InteractionModeSwitch: Component<InteractionModeSwitchProps> = (
           <ShowAlternativeInteraction
             syncData={props.syncData}
             onCancelCountdown={props.onCancelCountdown}
+            onLeaveNow={props.onLeaveNow}
             onAddBetterAlternative={props.onAddBetterAlternative}
           />
         )}
