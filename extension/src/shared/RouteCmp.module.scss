@@ -28,6 +28,13 @@
   position: relative;
   overflow: auto;
   margin-top: var(--safe-area-inset-top);
+
+  // A mobile shell's top banner (permissions / widget invitation) already
+  // clears the status bar itself, so below one the content needs no inset of
+  // its own - with it, an empty status-bar-tall band opened under the banner.
+  :global(:is(.missingCapabilitiesMsg, .setupInvitationMsg)) ~ & {
+    margin-top: 0;
+  }
 }
 
 // The single shell-owned sun lives here. Fixed + viewport-centred so the sun's

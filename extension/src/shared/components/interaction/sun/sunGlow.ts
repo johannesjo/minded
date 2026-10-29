@@ -65,15 +65,29 @@ export const sunGlowTemp = (
       ? dragColorTemp
       : (settleWarmth ?? 0);
 
-/** The transient scale layered on the disc for pointer feedback. */
+/** The disc's lift while a finger holds it. */
+export const PRESS_SCALE = 1.06;
+
+/**
+ * The transient scale layered on the disc for pointer feedback. `pressLift`
+ * (0..1) is eased in on grab and out on release (Sun.tsx easePressLift) rather
+ * than switched with the drag: the transform's CSS ease is off while a finger
+ * or a JS glide drives the disc, so a plain flag would pop the disc ~5px
+ * bigger on touch-down and back again on a snap-back or fling.
+ */
 export const interactionScaleFor = (state: {
   isCompletionStarted: boolean;
-  isDragging: boolean;
+  pressLift: number;
   isHovered: boolean;
   isPointerOver: boolean;
 }): number => {
-  if (state.isCompletionStarted) return 1;
-  if (state.isDragging) return 1.06;
-  if (state.isHovered) return COMPANION_HOVER_SCALE;
-  return state.isPointerOver ? 1.04 : 1;
+  const settled = state.isCompletionStarted
+    ? 1
+    : state.isHovered
+      ? COMPANION_HOVER_SCALE
+      : state.isPointerOver
+        ? 1.04
+        : 1;
+  const lift = Math.min(Math.max(state.pressLift, 0), 1);
+  return settled + (PRESS_SCALE - settled) * lift;
 };

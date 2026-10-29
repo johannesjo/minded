@@ -21,7 +21,8 @@
   transition:
     transform var(--dur-quick) var(--ease-out),
     background var(--dur-quick) var(--ease-out),
-    border-color var(--dur-quick) var(--ease-out);
+    border-color var(--dur-quick) var(--ease-out),
+    opacity var(--dur-quick) var(--ease-out);
   font-weight: normal;
   text-decoration: none;
   vertical-align: middle;
@@ -67,7 +68,10 @@
     &,
     &:hover,
     &:active {
-      transition: none;
+      // Only the dim eases (in both directions - the base transition carries
+      // it back), so a button that turns (in)active beside fading form rows
+      // settles with them instead of snapping; no press feedback while off.
+      transition: opacity var(--dur-quick) var(--ease-out);
       cursor: not-allowed;
       opacity: 0.3;
       transform: scale(1);
@@ -243,7 +247,8 @@
     transition:
       transform var(--dur-quick) var(--ease-out),
       background var(--dur-quick) var(--ease-out),
-      border-radius var(--dur-quick) var(--ease-out);
+      border-radius var(--dur-quick) var(--ease-out),
+      opacity var(--dur-quick) var(--ease-out);
     background: var(--btn-bg-not-selected);
   }
 

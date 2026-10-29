@@ -34,9 +34,10 @@ import {
   matchWidgetLine,
   observeClassChanges,
 } from "@src/shared/components/interaction/interactionCommonHelpers";
+import { createPostSunStep } from "@src/shared/components/interaction/postSunStep";
 import {
-  getInteractionCornerSettle,
-  getLocalSunSettleForPhase,
+  createCornerSettles,
+  pickInteractionSunSettle,
   readLittleSunRestCenter,
   type LittleSunRestCenter,
 } from "@src/shared/components/interaction/interactionCornerSettle";
@@ -60,7 +61,6 @@ import {
 } from "@src/shared/components/interaction/sun/sunAccessibility";
 import {
   restingSunAnchorFromRect,
-  sunRestingSettle,
   type SunPhase,
 } from "@src/shared/components/interaction/sun/sunSettle";
 import {
@@ -101,7 +101,6 @@ import {
   batch,
   Component,
   createEffect,
-  createMemo,
   createSignal,
   onCleanup,
   onMount,
@@ -306,58 +305,18 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     );
   }
 
-  // The Little Sun's resting spot, expressed as a sun settle (corner, exact disc
-  // size). The departing hand-off glides *to* it; the arriving morph mounts the
-  // disc *at* it and glides home - both must target the same point so the two
-  // morphs line up on the same spot. On Android the native Little Sun is a
-  // free-floating bubble the user can park anywhere (the persisted spot is read on
-  // mount), so glide to its real centre; fall back to the fixed corner when the
-  // position is unknown (older app, read failed). Disc size + corner differ per
-  // platform (native overlay is smaller), so match the right ones.
-  //
-  // Position and size mirror; the halo does not. Only the *departing* target is
-  // amber - it is on its way onto arbitrary app content - while the arriving one
-  // is white all the way home, because it is on its way onto our own sky (THE
-  // HALO RULE in sunSettle.ts). Hence two targets rather than one.
-  //
-  // Memoized so each returns a STABLE object identity (they only re-derive when
-  // the Android bubble position signal changes). getSunSettle is read reactively,
-  // and the <Sun> settle effect keys off object identity - a fresh object each
-  // call would risk a spurious corner→corner glide on the Android branch, which
-  // reads getLittleSunRestCenter(). Pure constants on web, computed once there.
-  const cornerSettle = (isArriving: boolean) =>
-    getInteractionCornerSettle({
+  const corners = createCornerSettles(
+    () => props.interactionPlatform,
+    getLittleSunRestCenter,
+  );
+  const getSunSettle = () =>
+    pickInteractionSunSettle({
+      isArrivingFromCorner: getIsArrivingFromCorner(),
+      phase: getSunPhase(),
+      getRestingAnchor: getRestingSunAnchor,
+      corners,
       platform: props.interactionPlatform,
-      isArriving,
-      restCenter:
-        props.interactionPlatform === "android"
-          ? getLittleSunRestCenter()
-          : null,
     });
-  const getArriveCornerSettle = createMemo(() => cornerSettle(true));
-  const getDepartCornerSettle = createMemo(() => cornerSettle(false));
-
-  const getSunSettle = () => {
-    // Arriving: hold the disc at the Little Sun's corner so it mounts exactly
-    // where the timer rested; clearing the flag (post-mount) drops the settle to
-    // the interactive rest and the sun glides home - the reverse of departing.
-    if (getIsArrivingFromCorner()) {
-      return getArriveCornerSettle();
-    }
-    // Resting: tuck under the measured choices block (mirrors the shell sun's
-    // getSunSettleForCurrentRole), falling back to the static rest target until
-    // the choices are measured.
-    if (getSunPhase() === "resting") {
-      const anchor = getRestingSunAnchor();
-      if (anchor) return sunRestingSettle(anchor);
-    }
-    // Departing: glide to the Little Sun's corner so the persistent timer reads as
-    // the same sun settling in rather than a new element popping up.
-    if (getSunPhase() === "departing") {
-      return getDepartCornerSettle();
-    }
-    return getLocalSunSettleForPhase(getSunPhase(), props.interactionPlatform);
-  };
 
   // Launch the arrive-from-corner glide: the disc has mounted snapped to the
   // Little Sun's corner (settle = getArriveCornerSettle while arriving), so
@@ -430,10 +389,14 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   // companion sun hands off to the interactive sun (it moves like a regular
   // intervention) instead of just vanishing straight into the question.
   const getIsSunInFlow = () => true;
+  // True while a cancel fades the post-sun screen out (cancelPostSunScreen): the
+  // sun is already gliding home, so it must stay shown over the fading choices.
+  const [getIsCancellingPostSun, setIsCancellingPostSun] = createSignal(false);
   const getIsInteractionSunShown = () =>
     getIsSunInFlow() &&
     (getSunPhase() !== "interactive" ||
       getIsAdvancingToChoices() ||
+      getIsCancellingPostSun() ||
       (!getIsExitingInteraction() && !getShowPostSunOverlay()));
 
   let frameNr: number | undefined;
@@ -441,7 +404,11 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   let modeTransitionTimeout: number | undefined;
   let modeTransitionFadeInFrame: number | undefined;
   let timeSelectionTimeout: number | undefined;
-  let postSunScreenTransitionTimeout: number | undefined;
+  const postSunStep = createPostSunStep({
+    isDisposed: () => isDisposed,
+    setIsScreenFading: setIsPostSunScreenFading,
+  });
+  let interactionContentEl: HTMLDivElement | undefined;
   let successTimeout: number | undefined;
   let fadeInAnimationFrame: number | undefined;
   let initFadeOutTimeout: number | undefined;
@@ -716,6 +683,12 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
       setIsContentSwapInstant(true);
       setInteractionOpacity(0);
     });
+    // Commit the instant hide now. A rAF callback runs *before* its frame's
+    // style recalc, so without this flush the restored transition below lands
+    // in the same style change as the hide: the new block would start a 700ms
+    // fade *out* from full opacity and then turn round - appearing at once
+    // with a faint dip instead of easing in.
+    void interactionContentEl?.offsetHeight;
 
     modeTransitionFadeInFrame = requestAnimationFrame(() => {
       modeTransitionFadeInFrame = undefined;
@@ -778,14 +751,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
       // Glide the sun up to its breath anchor, then show the breath pause after
       // the interaction content has faded out (sequential, not concurrent).
       setSunPhase("breathing");
-      if (postSunScreenTransitionTimeout) {
-        window.clearTimeout(postSunScreenTransitionTimeout);
-      }
-      postSunScreenTransitionTimeout = window.setTimeout(() => {
-        postSunScreenTransitionTimeout = undefined;
-        if (isDisposed) return;
-        setShowBreathPause(true);
-      }, SCREEN_TRANSITION_MS);
+      postSunStep.after(SCREEN_TRANSITION_MS, () => setShowBreathPause(true));
       return;
     }
 
@@ -795,19 +761,14 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     // before the choices arrive, so they never overlap (no misclicks) - and the
     // sun never detours via the static fallback.
     setIsAdvancingToChoices(true);
-    if (postSunScreenTransitionTimeout) {
-      window.clearTimeout(postSunScreenTransitionTimeout);
-    }
-    postSunScreenTransitionTimeout = window.setTimeout(() => {
-      postSunScreenTransitionTimeout = undefined;
-      if (isDisposed) return;
+    postSunStep.after(QUESTION_FADE_OUT_MS, () => {
       if (shouldAskIntent(getFrictionLevel())) {
         showIntentSelectionAfterOverlayTransition();
       } else {
         showTimeSelectionAfterOverlayTransition();
       }
       enterRestingForChoices();
-    }, QUESTION_FADE_OUT_MS);
+    });
   };
 
   // A tap on the disc is the app-wide, learned slip-out ("tap the sun to get
@@ -876,6 +837,36 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     });
   };
 
+  // Step back out of the post-sun screen (breath / choices) the way every other
+  // hand-off leaves a surface: fade it, then drop it - never a one-frame cut of
+  // the whole screen. The sun answers the tap at once and glides home while the
+  // screen fades (isCancellingPostSun keeps it shown meanwhile); the question
+  // fades back in only once the screen has gone, sequential like the way in.
+  const cancelPostSunScreen = (clear: () => void) => {
+    setIsCancellingPostSun(true);
+    setIsPostSunScreenFading(true);
+    setSunPhase("interactive");
+    postSunStep.after(SCREEN_TRANSITION_MS, () => {
+      // Back on the instructions step, its overlay remounts: start it at 0 and
+      // raise it once that frame has painted, so it rides the interaction
+      // opacity ramp in (sunInstructionsVisibility.ts) instead of popping in.
+      const isBackToInstructions = getShowSunInstructions();
+      batch(() => {
+        clear();
+        setIsCancellingPostSun(false);
+        if (isBackToInstructions) setInteractionOpacity(0);
+      });
+      if (isBackToInstructions) {
+        requestAnimationFrame(() =>
+          requestAnimationFrame(() => {
+            if (!isDisposed) setInteractionOpacity(1);
+          }),
+        );
+      }
+      requestInteractiveSunFocus();
+    });
+  };
+
   const handleBreathPauseComplete = () => {
     if (isDisposed) return;
     hasBreathed = true;
@@ -884,22 +875,29 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     // Drop the breath origin now the pause is over, so a re-opened pause glides
     // in and re-publishes a fresh clock rather than reading this stale one.
     setBreathStartedAt(undefined);
-    setShowBreathPause(false);
-    setIsIntentSelectionArmed(true);
-    setShowIntentSelection(true);
-    // Same one-motion hand-off as the no-breath path: the sun stays visible as
-    // "breathing" for the one frame until the slot is measured, then glides to it.
-    enterRestingForChoices();
+    // The breath screen fades before the choices replace it (the same
+    // out-then-in beat as intent → time), so its quiet "cancel" eases away
+    // instead of cutting out under the arriving words. Then the same
+    // one-motion hand-off as the no-breath path: the sun stays visible as
+    // "breathing" for the one frame until the slot is measured, then glides.
+    postSunStep.fadeScreenThen(SCREEN_TRANSITION_MS, () => {
+      batch(() => {
+        setShowBreathPause(false);
+        setIsIntentSelectionArmed(true);
+        setShowIntentSelection(true);
+      });
+      enterRestingForChoices();
+    });
   };
 
   const handleBreathPauseCancel = () => {
     cancelCountdown();
-    setPendingIntent(undefined);
     setBreathStartedAt(undefined);
-    setShowBreathPause(false);
-    setSunPhase("interactive");
     setIsIntentSelectionArmed(false);
-    requestInteractiveSunFocus();
+    cancelPostSunScreen(() => {
+      setPendingIntent(undefined);
+      setShowBreathPause(false);
+    });
   };
 
   const clearIntentSelectionArmTimeout = () => {
@@ -987,17 +985,11 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   };
 
   const showTimeSelectionAfterIntent = (intent: SessionIntent | undefined) => {
-    if (postSunScreenTransitionTimeout) {
-      window.clearTimeout(postSunScreenTransitionTimeout);
-    }
-
     clearIntentSelectionArmTimeout();
     clearTimeSelectionArmTimeout();
     setIsIntentSelectionArmed(false);
     setIsTimeSelectionArmed(false);
-    setIsPostSunScreenFading(true);
-    postSunScreenTransitionTimeout = window.setTimeout(() => {
-      postSunScreenTransitionTimeout = undefined;
+    postSunStep.fadeScreenThen(SCREEN_TRANSITION_MS, () => {
       advanceIntentSelectionToTime(
         intent,
         setPendingIntent,
@@ -1005,8 +997,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
         setShowTimeSelection,
       );
       armTimeSelectionAfterOverlayTransition();
-      requestAnimationFrame(() => setIsPostSunScreenFading(false));
-    }, SCREEN_TRANSITION_MS);
+    });
   };
 
   const handleStartBackgroundAnimation = (direction: "up" | "down") => {
@@ -1513,7 +1504,6 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     for (const timeout of [
       modeTransitionTimeout,
       timeSelectionTimeout,
-      postSunScreenTransitionTimeout,
       intentSelectionArmTimeout,
       timeSelectionArmTimeout,
       successTimeout,
@@ -1525,6 +1515,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     ]) {
       if (timeout) clearTimeout(timeout);
     }
+    postSunStep.clear();
     rootThemeObserver?.disconnect();
     wrapperThemeObserver?.disconnect();
     skipFlow.dispose();
@@ -1618,16 +1609,9 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
               restingSunObserver.observe(el);
             }
           }}
-          style={{
-            position: "fixed",
-            inset: "0",
-            "z-index": 1100,
-            display: "flex",
-            "flex-direction": "column",
-            "align-items": "center",
-            "justify-content": "center",
-            "pointer-events": "auto",
-          }}
+          // Layout lives on .time-selection-overlay; the z-index stays inline,
+          // paired with the wrapper's 1101 below (sunInstructionsVisibility).
+          style={{ "z-index": 1100 }}
         >
           <div
             class="post-sun-screen"
@@ -1647,12 +1631,12 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
                 onCancel={() => {
                   setIsIntentSelectionArmed(false);
                   clearIntentSelectionArmTimeout();
-                  setSunPhase("interactive");
-                  cancelIntentSelection(
-                    setPendingIntent,
-                    setShowIntentSelection,
+                  cancelPostSunScreen(() =>
+                    cancelIntentSelection(
+                      setPendingIntent,
+                      setShowIntentSelection,
+                    ),
                   );
-                  requestInteractiveSunFocus();
                 }}
                 onCancelCountdown={cancelCountdown}
               />
@@ -1665,9 +1649,9 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
                 onCancel={() => {
                   setIsTimeSelectionArmed(false);
                   clearTimeSelectionArmTimeout();
-                  setSunPhase("interactive");
-                  cancelTimeSelection(setPendingIntent, setShowTimeSelection);
-                  requestInteractiveSunFocus();
+                  cancelPostSunScreen(() =>
+                    cancelTimeSelection(setPendingIntent, setShowTimeSelection),
+                  );
                 }}
               />
             )}
@@ -1721,6 +1705,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
           </Btn>
         )}
         <div
+          ref={interactionContentEl}
           class="interaction-content"
           inert={getShowSunInstructions() ? true : undefined}
           classList={{
@@ -1735,8 +1720,15 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
               getShowPostSunOverlay() || getIsExitingInteraction(),
           }}
           style={{
+            // Held at 0 until the content is ready, so `.interaction-content`'s
+            // gentle opacity transition carries every mode's entrance - with the
+            // inline value set from the first paint, a block without its own
+            // word-by-word reveal (show-reason, finger rest, the breath invite)
+            // used to pop in at full opacity wherever the host doesn't fade.
             opacity:
-              getIsExitingInteraction() || getShowPostSunOverlay()
+              !getIsContentReady() ||
+              getIsExitingInteraction() ||
+              getShowPostSunOverlay()
                 ? 0
                 : getShowSunInstructions()
                   ? 0
@@ -1940,24 +1932,27 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
         )}
       </div>
 
-      {props.isFromDashboard &&
-        !getShowLetGoOffer() &&
-        !getIsFinalAnimation() && (
-          // Drop the back arrow the instant a terminal gesture begins, not only
-          // once an offer has opened: the let-go question now waits for the sun to
-          // fly off first, so without this the opaque arrow would hover over the
-          // whole flight. (A down-drag's grounding offer covers it anyway.)
-          <div class="back-button-wrapper">
-            <Btn
-              variant="icon"
-              plain
-              onClick={() => props.onSkip()}
-              aria-label="Go back"
-            >
-              <Ico name="arrowBack" />
-            </Btn>
-          </div>
-        )}
+      {props.isFromDashboard && !getShowLetGoOffer() && (
+        // Ease the back arrow away the instant a terminal gesture begins, not
+        // only once an offer has opened: the let-go question now waits for the
+        // sun to fly off first, so without this the opaque arrow would hover
+        // over the whole flight. (A down-drag's grounding offer covers it
+        // anyway.) A fade, not an unmount, so it doesn't cut out at release.
+        <div
+          class="back-button-wrapper"
+          classList={{ "is-leaving": getIsFinalAnimation() }}
+          inert={getIsFinalAnimation() ? true : undefined}
+        >
+          <Btn
+            variant="icon"
+            plain
+            onClick={() => props.onSkip()}
+            aria-label="Go back"
+          >
+            <Ico name="arrowBack" />
+          </Btn>
+        </div>
+      )}
     </>
   );
 };

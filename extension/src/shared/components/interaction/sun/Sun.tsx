@@ -73,6 +73,8 @@ import {
   type SunAccessibleActivation,
 } from "./sunAccessibility";
 import { createVariantMorph, sunHaloTransition } from "./sunVariantMorph";
+import { createSettleHalo, settleGlideMs } from "./sunGlideTiming";
+import { createAfterPaint, createFrameEase } from "./sunFrameEase";
 
 // (The moon used to preload a texture here - #246. Its face is drawn in CSS
 // now, so there is nothing to fetch and no first-paint gap to cover.)
@@ -228,13 +230,7 @@ export interface SunSettle {
   breathPattern?: BreathPattern;
 }
 
-/**
- * Duration of a glide to/from a companion-style rest (the bottom-bar home).
- * Exported so a caller sequencing a hand-off around the glide (the Android
- * onboarding waits for the disc to land before swapping in the dashboard
- * shell) shares the real duration instead of a drifting copy.
- */
-export const COMPANION_GLIDE_MS = 900;
+export { COMPANION_GLIDE_MS } from "./sunGlideTiming";
 
 export const Sun: Component<SunProps> = (props) => {
   let sunEl!: HTMLDivElement;
@@ -437,7 +433,7 @@ export const Sun: Component<SunProps> = (props) => {
         setRestOffset(target);
         setScale(restScaleForSettle(props.settle));
         restingSettle = props.settle;
-        requestAnimationFrame(() => setIsAnimating(false));
+        snapRelease.schedule();
       }
     }
 
@@ -448,6 +444,7 @@ export const Sun: Component<SunProps> = (props) => {
     cancelCompletionFrame();
     cancelSettleFrame();
     cancelRevealReach();
+    pressLift.cancel();
     if (tapTimer) {
       clearTimeout(tapTimer);
     }
@@ -494,28 +491,12 @@ export const Sun: Component<SunProps> = (props) => {
     };
   };
 
-  // --- Post-interaction settle: the sun stays on screen and transforms across
-  // the breath pause and the intent/time choices instead of being hidden and
-  // replaced by a separate sun. ---
-  const GLIDE_DURATION_MS = 650;
-  const EXIT_GLIDE_MS = 500;
-  // The reverse of the departing hand-off: the intervention sun mounts snapped at
-  // the Little Sun's corner (tiny + amber) and glides home, growing to full size.
-  // At the normal EXIT_GLIDE_MS this reveal reads as the sun "growing strong and
-  // moving fast" - a ~3x scale jump plus a diagonal corner→centre traverse in half
-  // a second, too abrupt for the calm premise. Give the arrival its own, much
-  // slower duration (on the gentle side of the companion rise it echoes) so the
-  // disc eases up and grows softly into place. Scoped to the corner arrival only
-  // (see exitSettle): every other exit-to-base transition keeps its snappier feel.
-  const ARRIVE_FROM_CORNER_MS = 1100;
-  // Glides to/from the dashboard companion (the bottom-bar rest rising into the
-  // interaction, and the return home) get a gentler, slower duration than other
-  // transitions (e.g. cancelling the intent/time choices), which keep the
-  // snappier default. (COMPANION_GLIDE_MS lives at module scope, exported.)
   // Returning home *after a fling* doesn't glide - the disc is off-screen, so a
   // glide would streak it across the whole screen. It fades in at the rest over
   // this instead (see settleInAtRest).
   const COMPANION_FADE_IN_MS = 500;
+  // The halo eases with the settle glide it travels with (sunGlideTiming).
+  const settleHalo = createSettleHalo(() => props.settle ?? null);
   // The companion is the only settle anchored by a fixed bottom px with no fixed
   // x (see sunSettle.ts: ratio-based breathing/resting, corner-anchored
   // departing, top-px interactive). Used to give its glides the slower duration.
@@ -538,7 +519,12 @@ export const Sun: Component<SunProps> = (props) => {
       cancelAnimationFrame(settleFrame);
       settleFrame = undefined;
     }
+    snapRelease.cancel();
   };
+  // After a snap, hand the transform back to its CSS ease once it has painted.
+  const snapRelease = createAfterPaint(() => setIsAnimating(false));
+  // The grab's lift (sunGlow PRESS_SCALE) eases in and out rather than popping.
+  const pressLift = createFrameEase(180, prefersReducedMotion);
 
   // The moon's corner-arrival glow ramp runs on its own frame (parallel to the
   // offset/scale glide on settleFrame) so it can ease --glow-reach open across
@@ -638,6 +624,7 @@ export const Sun: Component<SunProps> = (props) => {
     // the timed spring and still lands exactly on `duration` (sunRelease.ts).
     releaseVelocity?: SunPosition,
   ) => {
+    snapRelease.cancel();
     setIsAnimating(true); // suppress the CSS transform-transition while JS drives it
     const startOffset = startOffsetOverride ?? getDragOffset();
     if (startOffsetOverride) setDragOffset(startOffsetOverride);
@@ -816,6 +803,7 @@ export const Sun: Component<SunProps> = (props) => {
     const releaseVelocity = releaseHandoffVelocity;
     releaseHandoffVelocity = null;
     setIsDragging(false);
+    pressLift.easeTo(0);
     // A fresh settle target interrupts any in-flight reveal ramp; the new
     // target's reach takes over.
     cancelRevealReach();
@@ -864,8 +852,9 @@ export const Sun: Component<SunProps> = (props) => {
       setRestOffset(reanchorTarget);
       setScale(restScaleForSettle(settle));
       restingSettle = settle;
+      settleHalo.land(settle);
       setIsSettlingIntoRole(false); // snapped, not gliding - grabbable at once
-      requestAnimationFrame(() => setIsAnimating(false));
+      snapRelease.schedule();
       return;
     }
 
@@ -902,19 +891,13 @@ export const Sun: Component<SunProps> = (props) => {
     // This anchor is now the disc's rest, so a drag release snaps back here
     // (the interactive shell sun rests on its placeholder, not the base).
     setRestOffset(target);
-    // The rise out of the companion glides slower; an arrival from outside the
-    // app (discPx without warmth: the widget's sun) slowest, like exitSettle's.
-    const duration =
-      fromSettle?.discPx != null && !fromSettle.warmth
-        ? ARRIVE_FROM_CORNER_MS
-        : shouldResetTerminalStateForSettle(fromSettle)
-          ? COMPANION_GLIDE_MS
-          : GLIDE_DURATION_MS;
+    const duration = settleGlideMs(settle, fromSettle);
 
     const onSettled = () => {
       // The glide has landed; the disc is grabbable again (the breath loop that
       // may start below is take-over-safe, unlike the glide).
       restingSettle = settle;
+      settleHalo.land(settle);
       setIsSettlingIntoRole(false);
       if (settle.breathe) {
         startBreathCycle(
@@ -938,6 +921,7 @@ export const Sun: Component<SunProps> = (props) => {
       setDragOffset(target);
       setScale(restScale);
       restingSettle = settle;
+      settleHalo.land(settle);
       setIsAnimating(false);
       setIsSettlingIntoRole(false); // snapped, not gliding - grabbable at once
       return;
@@ -980,23 +964,15 @@ export const Sun: Component<SunProps> = (props) => {
     // Gliding back to base - inert until it lands (see getIsSettlingIntoRole).
     setIsSettlingIntoRole(true);
     // Returns the disc to its untransformed base (e.g. the plain interactive sun
-    // with no placeholder). A return from the companion keeps the slower glide.
-    // Leaving a settle that pins a disc size (discPx) is the arrive-from-corner
-    // reveal - the sun gliding out of the Little Sun's corner as an intervention
-    // begins; only that settle shape carries discPx (the departing/corner
-    // targets), so it uniquely identifies the arrival. Give it the gentle,
-    // much-slower duration so the reveal eases in softly instead of growing fast.
+    // with no placeholder); see settleGlideMs for the durations.
     const isCornerReveal = fromSettle?.discPx != null;
-    const duration = isCornerReveal
-      ? ARRIVE_FROM_CORNER_MS
-      : shouldResetTerminalStateForSettle(fromSettle)
-        ? COMPANION_GLIDE_MS
-        : EXIT_GLIDE_MS;
+    const duration = settleGlideMs(null, fromSettle);
     // The base becomes the rest again.
     setRestOffset({ x: 0, y: 0 });
     if (prefersReducedMotion()) {
       setDragOffset({ x: 0, y: 0 });
       setScale(1);
+      settleHalo.land(null);
       setIsAnimating(false);
       setIsSettlingIntoRole(false);
       return;
@@ -1013,6 +989,7 @@ export const Sun: Component<SunProps> = (props) => {
       1,
       duration,
       () => {
+        settleHalo.land(null);
         setIsAnimating(false);
         setIsSettlingIntoRole(false);
       },
@@ -1164,6 +1141,7 @@ export const Sun: Component<SunProps> = (props) => {
       discSamples = [{ x: caughtAt.x, y: caughtAt.y, t: performance.now() }];
       // Immediately set dragging state to disable transitions
       setIsDragging(true);
+      pressLift.easeTo(1);
       // Reset haptic threshold tracking
       lastHapticPointIndex = -1;
       // One faint tick as the sun is caught (Android only).
@@ -1322,6 +1300,7 @@ export const Sun: Component<SunProps> = (props) => {
 
       // Always reset dragging state
       setIsDragging(false);
+      pressLift.easeTo(0);
       setDragProgress(0);
       setDragDirection("none");
       // Don't reset beyond threshold here - let it persist during completion animation
@@ -1434,7 +1413,6 @@ export const Sun: Component<SunProps> = (props) => {
     const animateSnapBack = (releaseVelocity: SunPosition) => {
       setIsAnimating(true); // JS drives the transform; no CSS transition
       setIsBeyondThreshold(false);
-      setGlowIntensity(0);
       const startOffset = getDragOffset();
       const startScale = getScale();
       const startOpacity = getOpacity();
@@ -1684,7 +1662,7 @@ export const Sun: Component<SunProps> = (props) => {
   const getInteractionScale = () =>
     interactionScaleFor({
       isCompletionStarted: getIsCompletionStarted(),
-      isDragging: getIsDragging(),
+      pressLift: pressLift.value(),
       isHovered: !!props.isHovered,
       isPointerOver: getIsPointerOver(),
     });
@@ -1744,13 +1722,18 @@ export const Sun: Component<SunProps> = (props) => {
         // shifts), so let it ease whenever the finger isn't on the disc: that way
         // the departing hand-off's white→amber glow warms softly mid-glide rather
         // than snapping (a hard cut would betray the calm premise). Only an active
-        // drag, where the glow tracks the finger, needs it instant.
+        // drag, where the glow tracks the finger, needs it instant. Under
+        // reduced motion the settles snap the offset instead of gliding, so the
+        // transform ease must go too - left on, it would turn each snap into a
+        // fast 160ms zip across the screen, the opposite of what was asked.
         transition:
           [
-            getIsDragging() || getIsAnimating()
+            getIsDragging() || getIsAnimating() || prefersReducedMotion()
               ? null
               : "transform 160ms ease-out, opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1)",
-            getIsDragging() ? null : sunHaloTransition(getIsVariantMorphing()),
+            getIsDragging()
+              ? null
+              : sunHaloTransition(getIsVariantMorphing(), settleHalo.glideMs()),
           ]
             .filter(Boolean)
             .join(", ") || "none",

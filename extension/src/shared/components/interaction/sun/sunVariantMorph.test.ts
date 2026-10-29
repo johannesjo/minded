@@ -10,4 +10,13 @@ describe("sunHaloTransition", () => {
     );
     expect(sunHaloTransition(false)).toBe("box-shadow 160ms ease-out");
   });
+
+  it("lands the halo with a settle glide, never ahead of it", () => {
+    expect(sunHaloTransition(false, 650)).toBe(
+      "box-shadow 650ms var(--ease-sky-turn)",
+    );
+    // The sun↔moon turn still wins; no glide falls back to the quick bloom.
+    expect(sunHaloTransition(true, 650)).toBe(sunHaloTransition(true));
+    expect(sunHaloTransition(false, null)).toBe(sunHaloTransition(false));
+  });
 });

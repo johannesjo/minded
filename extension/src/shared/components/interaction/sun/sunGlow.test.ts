@@ -1,6 +1,7 @@
 import {
   COMPANION_HOVER_SCALE,
   interactionScaleFor,
+  PRESS_SCALE,
   sunGlowTemp,
 } from "./sunGlow";
 
@@ -21,27 +22,41 @@ describe("sunGlowTemp", () => {
 describe("interactionScaleFor", () => {
   const rest = {
     isCompletionStarted: false,
-    isDragging: false,
+    pressLift: 0,
     isHovered: false,
     isPointerOver: false,
   };
-  it("is neutral once a completion has started, whatever else is true", () => {
+  it("eases out of the press once a completion has started", () => {
     expect(
       interactionScaleFor({
         ...rest,
         isCompletionStarted: true,
-        isDragging: true,
+        isPointerOver: true,
       }),
     ).toBe(1);
-  });
-  it("ranks drag over hover over pointer-over", () => {
     expect(
-      interactionScaleFor({ ...rest, isDragging: true, isHovered: true }),
-    ).toBe(1.06);
+      interactionScaleFor({ ...rest, isCompletionStarted: true, pressLift: 1 }),
+    ).toBe(PRESS_SCALE);
+    expect(
+      interactionScaleFor({
+        ...rest,
+        isCompletionStarted: true,
+        pressLift: 0.5,
+      }),
+    ).toBeCloseTo(1.03);
+  });
+  it("ranks a held press over hover over pointer-over", () => {
+    expect(
+      interactionScaleFor({ ...rest, pressLift: 1, isPointerOver: true }),
+    ).toBe(PRESS_SCALE);
     expect(interactionScaleFor({ ...rest, isHovered: true })).toBe(
       COMPANION_HOVER_SCALE,
     );
     expect(interactionScaleFor({ ...rest, isPointerOver: true })).toBe(1.04);
     expect(interactionScaleFor(rest)).toBe(1);
+  });
+  it("lifts gradually as the press eases in, never in one step", () => {
+    expect(interactionScaleFor({ ...rest, pressLift: 0.5 })).toBeCloseTo(1.03);
+    expect(interactionScaleFor({ ...rest, pressLift: 2 })).toBe(PRESS_SCALE);
   });
 });

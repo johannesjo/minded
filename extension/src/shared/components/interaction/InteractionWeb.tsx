@@ -36,6 +36,12 @@ export const InteractionWeb: (props: {
   const [getQuestion, setQuestion] = createSignal<QuestionForPrompt>();
 
   const [getIsShowLittleSun, setIsShowLittleSun] = createSignal(false);
+  // Whether the Little Sun takes over from a sun that already glided into its
+  // corner (a chosen session's departing hand-off). Then it must appear in place,
+  // fully opaque - the .aniIn fade would blink the sun out and back in at the
+  // very spot the glide just landed. Every other way in (skip, a finished
+  // interaction fading out) still fades it in.
+  const [getIsLittleSunInPlace, setIsLittleSunInPlace] = createSignal(false);
   // Whether the next full intervention should glide in from the Little Sun corner
   // (the reverse of the departing hand-off). Seeded from the prop for the very
   // first intervention; set true whenever a Little Sun shown *here* hands back to
@@ -172,7 +178,8 @@ export const InteractionWeb: (props: {
       // Rest of day: hide everything completely
       teardown();
     } else {
-      // Timed session: show little sun countdown
+      // Timed session: show little sun countdown, where the sun just landed
+      setIsLittleSunInPlace(true);
       setIsShowLittleSun(true);
     }
   };
@@ -211,7 +218,10 @@ export const InteractionWeb: (props: {
           component recreation when unrelated signals change */}
       <Switch>
         <Match when={getIsShowLittleSun()}>
-          <div class="aniIn" style={{ opacity: "1" }}>
+          <div
+            class={getIsLittleSunInPlace() ? "" : "aniIn"}
+            style={{ opacity: "1" }}
+          >
             <LittleSunComponent
               host={props.host}
               teardown={teardown}
@@ -220,6 +230,7 @@ export const InteractionWeb: (props: {
                 // genuinely ran out), so it's always fresh for the next mount and
                 // can't go stale into a later re-question/tap re-show.
                 setMorphInFromCorner(morph);
+                setIsLittleSunInPlace(false);
                 // Arm the sky fade-in BEFORE the Switch flips, so the re-mounted
                 // wrapper carries `is-arriving` from its first paint.
                 beginSkyArriving(canMorphIn());

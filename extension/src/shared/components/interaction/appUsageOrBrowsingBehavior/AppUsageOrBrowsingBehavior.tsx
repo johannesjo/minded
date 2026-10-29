@@ -89,7 +89,15 @@ export const AppUsageOrBrowsingBehavior: (props: {
         <Match when={getStep() === 0}>
           <Show when={getObservation()}>
             {(observation) => (
-              <div>
+              // Arrives once the usage read resolves - ease it in rather than
+              // pop it into the empty box (--dur-soft is 0 under reduced
+              // motion, so it simply appears there).
+              <div
+                style={{
+                  animation:
+                    "minded6622fadeIn var(--dur-soft) var(--ease-out) backwards",
+                }}
+              >
                 {/* Today's observed fact only - deliberately no "usually by
                     now" baseline: a comparison against a personal average
                     reads as a benchmark, the register the app avoids. */}

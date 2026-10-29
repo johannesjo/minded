@@ -23,6 +23,13 @@
 .options {
   margin-top: var(--space-md);
   text-align: var(--settings-text-align, center);
+
+  // Eases in as the toggle turns the feature on, never snapping open.
+  animation: var(--dur-soft) var(--ease-out);
+
+  :global {
+    animation-name: minded6622fadeIn;
+  }
 }
 
 .optionsLabel {

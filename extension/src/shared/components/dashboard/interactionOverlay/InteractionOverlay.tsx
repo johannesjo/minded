@@ -1,8 +1,12 @@
-import { JSX, onMount } from "solid-js";
+import { JSX, onCleanup, onMount } from "solid-js";
 import { fadeOut } from "@src/util/animation";
 import styles from "./InteractionOverlay.module.scss";
 import InteractionCommon from "@src/shared/components/interaction/InteractionCommon";
-import { setSunRole } from "@src/shared/components/interaction/sun/sunStore";
+import {
+  setBreathStartedAt,
+  setIsShellSunHidden,
+  setSunRole,
+} from "@src/shared/components/interaction/sun/sunStore";
 import {
   ON_SHOW_INTERACTION_OVERLAY_EV,
   RE_GREET_DASHBOARD_HIDDEN_EV,
@@ -35,6 +39,7 @@ export const InteractionOverlay: (props: {
   onClosingStarted?: () => void;
 }) => JSX.Element = (props) => {
   let wrapperEl: HTMLDivElement = undefined!;
+  let hasStartedClosing = false;
 
   onMount(() => {
     window.dispatchEvent(new Event(ON_SHOW_INTERACTION_OVERLAY_EV));
@@ -44,7 +49,19 @@ export const InteractionOverlay: (props: {
     wrapperEl.focus({ preventScroll: true });
   });
 
+  // Torn down without its closing fade (iOS swaps the whole shell out when the
+  // app is backgrounded): the shell sun lives in a module-level store and would
+  // otherwise wake still holding the pause's role - a disc stranded mid-screen
+  // over the dashboard, its handlers gone. Hand it back home, as the close does.
+  onCleanup(() => {
+    if (hasStartedClosing) return;
+    setBreathStartedAt(undefined);
+    setIsShellSunHidden(false);
+    setSunRole("companion");
+  });
+
   const handleHideWithFade = () => {
+    hasStartedClosing = true;
     // Let an embedding flow (the onboarding demo) reclaim its disc before the
     // role flip below would send it to the shell's companion anchor.
     props.onClosingStarted?.();

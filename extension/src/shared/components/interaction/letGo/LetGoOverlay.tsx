@@ -8,6 +8,8 @@ import {
   LET_GO_FADE_MS,
   LET_GO_QUESTION,
 } from "@src/shared/components/interaction/letGo/letGo.const";
+import { voiceFollowStyle } from "@src/shared/components/interaction/voiceReveal/voiceRevealTiming";
+import { formatQuestionText } from "@src/util/formatQuestionText";
 
 interface LetGoOverlayProps {
   /** Prior answers, so the standard Question can offer them as before. */
@@ -90,7 +92,12 @@ export const LetGoOverlay: Component<LetGoOverlayProps> = (props) => {
       }}
       style={{ "--let-go-fade-ms": `${LET_GO_FADE_MS}ms` }}
     >
-      <div class={styles.panel}>
+      {/* "Not now" follows the question's last word like any choice under a
+          spoken prompt, instead of arriving with the surface ahead of it. */}
+      <div
+        class={`${styles.panel} voice-follow-scope`}
+        style={voiceFollowStyle(formatQuestionText(LET_GO_QUESTION.t))}
+      >
         <Question
           initialQuestion={LET_GO_QUESTION}
           answers={props.answers}
@@ -99,7 +106,9 @@ export const LetGoOverlay: Component<LetGoOverlayProps> = (props) => {
           onCancelCountdown={onEngage}
           onUpdateQuestion={() => undefined}
         />
-        <Btn onClick={close}>Not now</Btn>
+        <Btn class="voice-follow" onClick={close}>
+          Not now
+        </Btn>
       </div>
     </div>
   );

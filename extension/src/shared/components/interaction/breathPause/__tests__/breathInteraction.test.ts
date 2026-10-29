@@ -41,7 +41,7 @@ describe("the BREATH intervention", () => {
     // Back to the invitation with the sun interactive again - the sun remains
     // the way out of the intervention itself. No success, nothing marked.
     expect(normalized).toMatch(
-      /const cancel = \(\): void => \{ if \(hasFinished\) return; stopKeepAlive\(\); props\.onCancelCountdown\(\); props\.onSunBreathEnd\(\); .*?setPhase\("invite"\); \};/,
+      /const cancel = \(\): void => \{ if \(hasFinished\) return; stopKeepAlive\(\); props\.onCancelCountdown\(\); props\.onSunBreathEnd\(\); .*?setPhase\("invite"\)\); \};/,
     );
   });
 

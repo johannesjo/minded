@@ -28,7 +28,7 @@
 
   p {
     margin: 0;
-    opacity: 0.76;
+    // Its quiet 0.76 is folded into the inline cue opacity (BreathingExercise).
   }
 
   strong {
@@ -39,5 +39,20 @@
     // The count changes every second; fixed-width digits keep it centered
     // instead of shifting with each new number.
     font-variant-numeric: tabular-nums;
+  }
+}
+
+// The Start button eases away once tapped but keeps its slot, so the moon and
+// copy above it stay put instead of recentring as it leaves.
+.start {
+  transition: opacity 400ms var(--ease-out);
+
+  &.isGone {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
   }
 }

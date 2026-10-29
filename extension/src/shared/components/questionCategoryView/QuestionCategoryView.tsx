@@ -36,6 +36,11 @@ export const QuestionCategoryView: (props: {
   const [getRemovedAnswer, setRemovedAnswer] = createSignal<Answer | null>(
     null,
   );
+  // Whether the first read of the answers has come back. Until then the list
+  // stays unmounted: rendered against the initial `[]`, it flashed "Your
+  // reflections will gather here." to someone who had just tapped a card
+  // full of them, then cut it for the real list.
+  const [getIsLoaded, setIsLoaded] = createSignal(false);
   const questionCategoryId = props.params
     .questionCategoryId as QuestionCategoryId;
 
@@ -53,18 +58,20 @@ export const QuestionCategoryView: (props: {
     questionCategoryId === QuestionCategoryId.MyQuestions;
 
   onMount(() => {
-    getSyncData().then((syncData) => {
-      if (syncData.answers?.length) {
-        setAnswersForCategory(
-          syncData.answers
-            .filter(
-              (answer) => answer.questionCategoryId === questionCategoryId,
-            )
-            .sort((a, b) => b.ts - a.ts),
-        );
-      }
-      setCustomQuestions(syncData.customQuestions ?? []);
-    });
+    getSyncData()
+      .then((syncData) => {
+        if (syncData.answers?.length) {
+          setAnswersForCategory(
+            syncData.answers
+              .filter(
+                (answer) => answer.questionCategoryId === questionCategoryId,
+              )
+              .sort((a, b) => b.ts - a.ts),
+          );
+        }
+        setCustomQuestions(syncData.customQuestions ?? []);
+      })
+      .finally(() => setIsLoaded(true));
   });
 
   // The in-flight delete write, so undo can sequence behind it (below).
@@ -147,15 +154,17 @@ export const QuestionCategoryView: (props: {
       {isAnswerListCategory() && (
         <div class={styles.answers}>
           {/*<div class="h3">Your Answers</div>*/}
-          <AnswerListEditable
-            isShowAdd={true}
-            questionCategoryId={questionCategoryId}
-            answers={getAnswersForCategory()}
-            customQuestions={getCustomQuestions()}
-            onEdit={editAnswer}
-            onRemove={removeAnswerI}
-            onAdd={addAnswerI}
-          />
+          <Show when={getIsLoaded()}>
+            <AnswerListEditable
+              isShowAdd={true}
+              questionCategoryId={questionCategoryId}
+              answers={getAnswersForCategory()}
+              customQuestions={getCustomQuestions()}
+              onEdit={editAnswer}
+              onRemove={removeAnswerI}
+              onAdd={addAnswerI}
+            />
+          </Show>
 
           <Show when={getRemovedAnswer()}>
             <div class={styles.removedStatus} aria-live="polite">

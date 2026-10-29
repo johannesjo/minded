@@ -1,6 +1,7 @@
 import {
   getInteractionCornerSettle,
   getLocalSunSettleForPhase,
+  pickInteractionSunSettle,
   readLittleSunRestCenter,
 } from "@src/shared/components/interaction/interactionCornerSettle";
 import {
@@ -12,6 +13,7 @@ import {
   sunArriveSettle,
   sunArriveSettleAt,
   sunDepartSettleAt,
+  sunRestingSettle,
 } from "@src/shared/components/interaction/sun/sunSettle";
 
 const restCenter = { x: 0.07, y: 0.86 };
@@ -142,5 +144,51 @@ describe("readLittleSunRestCenter", () => {
         throw new Error("bridge gone");
       }),
     ).toBeNull();
+  });
+});
+
+describe("pickInteractionSunSettle", () => {
+  const arrive = sunArriveSettle();
+  const depart = sunDepartSettleAt(restCenter);
+  const corners = { arrive: () => arrive, depart: () => depart };
+  const base = {
+    isArrivingFromCorner: false,
+    phase: "interactive" as const,
+    getRestingAnchor: () => null,
+    corners,
+    platform: "web" as const,
+  };
+
+  it("holds the disc at the corner while it arrives, whatever the phase", () => {
+    expect(
+      pickInteractionSunSettle({
+        ...base,
+        isArrivingFromCorner: true,
+        phase: "departing",
+      }),
+    ).toBe(arrive);
+  });
+
+  it("rests under the measured choices, else on the static rest", () => {
+    const anchor = { x: 180, y: 520 };
+    expect(
+      pickInteractionSunSettle({
+        ...base,
+        phase: "resting",
+        getRestingAnchor: () => anchor,
+      }),
+    ).toEqual(sunRestingSettle(anchor));
+    expect(pickInteractionSunSettle({ ...base, phase: "resting" })).toEqual(
+      getLocalSunSettleForPhase("resting", "web"),
+    );
+  });
+
+  it("departs to the Little Sun's corner, and otherwise follows the phase", () => {
+    expect(pickInteractionSunSettle({ ...base, phase: "departing" })).toBe(
+      depart,
+    );
+    expect(pickInteractionSunSettle(base)).toEqual(
+      getLocalSunSettleForPhase("interactive", "web"),
+    );
   });
 });

@@ -68,7 +68,7 @@ $shadow: var(--little-sun-shadow);
 }
 
 #minded-6622-little-sun-sun-wrapper {
-  transition: all 0.5s var(--ease-out);
+  transition: transform 0.5s var(--ease-out);
   position: relative;
   z-index: 3;
 
@@ -166,6 +166,22 @@ $shadow: var(--little-sun-shadow);
   text-align: left;
   animation: minded6622littleSunHintIn 0.25s var(--ease-out);
   transform-origin: bottom left;
+
+  // Eases back the way it came before unmounting (HINT_OUT_MS in LittleSun.tsx).
+  &.isLeaving {
+    animation: minded6622littleSunHintOut 0.3s var(--ease-out) forwards;
+  }
+}
+
+@keyframes minded6622littleSunHintOut {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(6px) scale(0.96);
+  }
 }
 
 @keyframes minded6622littleSunOut {
@@ -193,5 +209,10 @@ $shadow: var(--little-sun-shadow);
 @media (prefers-reduced-motion: reduce) {
   #minded-6622-little-sun-hint {
     animation: none;
+
+    &.isLeaving {
+      animation: none;
+      opacity: 0;
+    }
   }
 }

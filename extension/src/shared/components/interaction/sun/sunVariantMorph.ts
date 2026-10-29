@@ -59,12 +59,20 @@ export const createVariantMorph = (
 };
 
 /**
- * The disc's box-shadow transition: the quick bloom ease normally (the glow
- * shifts on phase changes and must keep up with the glide), the face's own
- * turn - same beat, same wait for the sky's front - while a sun↔moon flip is
- * turning the disc.
+ * The disc's box-shadow transition: the face's own turn - same beat, same wait
+ * for the sky's front - while a sun↔moon flip is turning the disc; across a
+ * settle glide, the glide's own duration and in-out curve (--ease-sky-turn is
+ * the CSS twin of easeInOut), so the halo's new shape and colour land *with*
+ * the position - the departing amber arrives as the sun reaches the corner, not
+ * in the first instant of take-off over our still-visible sky; otherwise the
+ * quick bloom ease (the glow shifts on hover and phase changes).
  */
-export const sunHaloTransition = (isVariantMorphing: boolean): string =>
+export const sunHaloTransition = (
+  isVariantMorphing: boolean,
+  settleGlideMs?: number | null,
+): string =>
   isVariantMorphing
     ? "box-shadow var(--dur-sky-turn) var(--ease-sky-turn) var(--sky-turn-delay, 0ms)"
-    : "box-shadow 160ms ease-out";
+    : settleGlideMs
+      ? `box-shadow ${settleGlideMs}ms var(--ease-sky-turn)`
+      : "box-shadow 160ms ease-out";

@@ -19,7 +19,7 @@
   width: 100%;
 
   > * {
-    animation: 1s;
+    animation: 1s var(--ease-out);
 
     :global {
       animation-name: minded6622fadeIn;
@@ -31,7 +31,15 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  animation: minded6622fadeIn 0.6s var(--ease-out);
+  // Same-specificity rule after `.interactionWrapper > *`, so this re-declares
+  // the closing line's own, shorter entrance. The keyframe name must
+  // be re-set under :global, as above - in this module it would otherwise be
+  // hashed to a name with no keyframes, and the line popped in.
+  animation: 0.6s var(--ease-out);
+
+  :global {
+    animation-name: minded6622fadeIn;
+  }
 
   // The closing line sits just above the shell sun, which blooms just below the
   // vertical centre (sunDailyQuestionsSuccessSettle); the centred text lands
