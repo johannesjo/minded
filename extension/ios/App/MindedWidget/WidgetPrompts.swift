@@ -211,8 +211,7 @@ enum WidgetPrompts {
     static func withoutOrphan(_ line: String) -> String {
         guard let last = line.lastIndex(of: " "),
               let first = line.firstIndex(of: " "),
-              first != last,
-              last != line.startIndex
+              first != last
         else { return line }
         return line.replacingCharacters(in: last...last, with: "\u{00A0}")
     }

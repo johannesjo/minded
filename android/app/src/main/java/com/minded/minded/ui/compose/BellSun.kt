@@ -172,8 +172,8 @@ fun BellSun(
             val dim = DIM_COLOR.copy(alpha = DIM_ALPHA * p)
             drawRect(
                 Brush.radialGradient(
-                    0f to Color.Transparent,
-                    clearEnd to Color.Transparent,
+                    0f to DIM_COLOR.copy(alpha = 0f),
+                    clearEnd to DIM_COLOR.copy(alpha = 0f),
                     fullAt to dim,
                     1f to dim,
                     center = center,
@@ -236,23 +236,31 @@ private fun ringStops(
     color: Color,
     peakAlpha: Float,
 ): Array<Pair<Float, Color>> {
-    val stops = mutableListOf(0f to Color.Transparent, innerStop to Color.Transparent)
-    for (i in 1 until RING_EASE_STEPS) {
-        val t = i / RING_EASE_STEPS.toFloat()
-        val rise = 0.5f - 0.5f * cos(PI.toFloat() * t)
+    // The ring's own colour at zero alpha, not Color.Transparent (transparent
+    // *black*): gradients blend unpremultiplied, so black edges would grey it.
+    val clear = color.copy(alpha = 0f)
+    val stops = mutableListOf(0f to clear, innerStop to clear)
+    RING_EASE.forEachIndexed { i, rise ->
+        val t = (i + 1) / RING_EASE_STEPS.toFloat()
         stops += (innerStop + (crestStop - innerStop) * t) to color.copy(alpha = peakAlpha * rise)
     }
     stops += crestStop to color.copy(alpha = peakAlpha)
-    for (i in 1 until RING_EASE_STEPS) {
-        val t = i / RING_EASE_STEPS.toFloat()
-        val fall = 0.5f + 0.5f * cos(PI.toFloat() * t)
+    RING_EASE.forEachIndexed { i, _ ->
+        val t = (i + 1) / RING_EASE_STEPS.toFloat()
+        // The fall mirrors the rise: 1 - rise(t) == rise(1 - t).
+        val fall = RING_EASE[RING_EASE.size - 1 - i]
         stops += (crestStop + (1f - crestStop) * t) to color.copy(alpha = peakAlpha * fall)
     }
-    stops += 1f to Color.Transparent
+    stops += 1f to clear
     return stops.toTypedArray()
 }
 
 private const val RING_EASE_STEPS = 5
+
+/** The cosine rise at each inner step, 0 → 1 exclusive, computed once. */
+private val RING_EASE: List<Float> = (1 until RING_EASE_STEPS).map { i ->
+    0.5f - 0.5f * cos(PI.toFloat() * i / RING_EASE_STEPS)
+}
 
 // The dim's depth as seen (0.35) through the window's 0.8 alpha.
 private const val DIM_ALPHA = 0.44f

@@ -14,9 +14,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.systemGestureExclusion
 import androidx.compose.material3.Surface
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -25,7 +27,6 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -78,8 +79,8 @@ internal val GLOW_COLOR_NIGHT = Color(0xFFBED2FF)
 /**
  * The bubble's timer text - shared with the leave zone's snapped disc. No
  * padding: a leading space for single-digit minutes is centred along with the
- * digits, so it nudged the time off the middle of the disc. Same shape as the
- * web Little Sun's formatSessionTime.
+ * digits, so it nudged the time off the middle of the disc - no pad, like the
+ * M:SS branch of the web Little Sun's formatSessionTime.
  */
 internal fun littleSunClockString(elapsedSeconds: Int): String =
     if (elapsedSeconds >= 0)
@@ -256,11 +257,13 @@ internal fun SunDisc(
         // shows - mirrors the web extension's box-shadow glow. The disc radius
         // is 0.5 of the glow radius, so the colour is saturated right where the
         // body edge sits and then feathers away along GLOW_FALLOFF.
-        val glowBrush = Brush.radialGradient(
-            colorStops = GLOW_FALLOFF
-                .map { (offset, alpha) -> offset to glowColor.copy(alpha = alpha) }
-                .toTypedArray(),
-        )
+        val glowBrush = remember(glowColor) {
+            Brush.radialGradient(
+                colorStops = GLOW_FALLOFF
+                    .map { (offset, alpha) -> offset to glowColor.copy(alpha = alpha) }
+                    .toTypedArray(),
+            )
+        }
         Canvas(
             modifier = Modifier.size(glowSize),
             onDraw = { drawCircle(glowBrush) },
@@ -283,7 +286,7 @@ internal fun SunDisc(
                     // The clock ticks every second: tabular digits keep the
                     // time from wobbling on the disc as it changes (as the web
                     // Little Sun's font-variant-numeric: tabular-nums).
-                    style = TextStyle(fontFeatureSettings = "tnum"),
+                    style = LocalTextStyle.current.copy(fontFeatureSettings = "tnum"),
                     color = textColor.copy(alpha = clockAlpha),
                     maxLines = 1,
                 )

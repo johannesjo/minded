@@ -229,7 +229,7 @@ object WidgetPrompts {
     fun withoutOrphan(line: String): String {
         val last = line.lastIndexOf(' ')
         // Two words or fewer: nothing to hold together that wouldn't fit anyway.
-        if (last <= 0 || line.indexOf(' ') == last) return line
+        if (line.indexOf(' ') == last) return line
         return line.substring(0, last) + '\u00A0' + line.substring(last + 1)
     }
 

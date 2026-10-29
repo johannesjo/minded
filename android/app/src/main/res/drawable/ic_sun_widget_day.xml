@@ -19,7 +19,7 @@
         android:viewportWidth="108"
         android:viewportHeight="108">
 
-    <!-- Soft warm glow (the sun's bloom + idle-breath halo), gentle and low-alpha.
+    <!-- Soft warm glow (the sun's bloom), gentle and low-alpha.
          The peak sits on the disc's rim (r 36 / 53 ≈ 0.68), so the light starts
          where the body ends; a peak further out left a dimmer band between the
          two that read as a dark outline round the sun. -->

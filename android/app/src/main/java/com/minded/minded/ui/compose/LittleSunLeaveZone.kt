@@ -161,7 +161,7 @@ fun LittleSunLeaveZone(
                     0.35f to glowColor.copy(alpha = glowAlpha * 0.62f),
                     0.65f to glowColor.copy(alpha = glowAlpha * 0.22f),
                     0.85f to glowColor.copy(alpha = glowAlpha * 0.05f),
-                    1f to Color.Transparent,
+                    1f to glowColor.copy(alpha = 0f),
                     center = center,
                     radius = radius,
                 ),
