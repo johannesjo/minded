@@ -2,7 +2,6 @@ package com.minded.minded.overlay
 
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
@@ -44,22 +43,19 @@ internal fun parseSessionLimitPayload(payloadJson: String): SessionLimitPayload?
 }
 
 /**
- * The web side hands over an alternative's website already normalised
- * (`new URL(...).href`); re-check it here so the bridge only ever starts an
- * http(s) VIEW intent, never an arbitrary scheme typed into an alternative.
+ * App alternatives are typed, not picked ("Kindle"), so resolve one only on an
+ * exact, case-insensitive launcher-name match - and only when exactly one app
+ * matches: opening the wrong app would be worse than opening none.
  */
-internal fun parseOpenableAlternativeUrl(url: String): String? =
-    try {
-        val uri = java.net.URI(url.trim())
-        val scheme = uri.scheme?.lowercase()
-        if ((scheme == "http" || scheme == "https") && !uri.host.isNullOrBlank()) {
-            uri.toString()
-        } else {
-            null
-        }
-    } catch (_: Exception) {
-        null
-    }
+internal fun findPackageByLabel(label: String, apps: List<Pair<String, String>>): String? {
+    val wanted = label.trim().lowercase()
+    if (wanted.isEmpty()) return null
+    return apps
+        .filter { (name, _) -> name.trim().lowercase() == wanted }
+        .map { it.second }
+        .distinct()
+        .singleOrNull()
+}
 
 // How long the overlay stays up after the alternative's launch is sent, so the
 // alternative has surfaced underneath before the window fades (same reasoning
@@ -233,23 +229,23 @@ class InteractionWindowJavaScriptInterface(
     }
 
     /**
-     * The redirect: open the website the user named as their alternative.
-     * Returns false when nothing could be opened, so the web side falls back
-     * to its plain leave instead of leaving the user on a dead button.
+     * The redirect: open the app the user named as their alternative. Never
+     * minded itself or the app being intervened on (that would just bounce
+     * back into an intervention). Returns false when no single app matches,
+     * so the web side falls back to its plain leave.
      */
     @JavascriptInterface
-    fun openUrl(url: String): Boolean {
-        Log.v(logTag, "openUrl()")
-        val href = parseOpenableAlternativeUrl(url) ?: return false
-        return openAlternative(Intent(Intent.ACTION_VIEW, Uri.parse(href)))
-    }
-
-    /** The redirect for an app alternative, resolved to an installed package. */
-    @JavascriptInterface
-    fun openApp(packageName: String): Boolean {
-        Log.v(logTag, "openApp() $packageName")
-        val intent = ctrlSvc.packageManager.getLaunchIntentForPackage(packageName)
-            ?: return false
+    fun openAppNamed(label: String): Boolean {
+        Log.v(logTag, "openAppNamed()")
+        val pm = ctrlSvc.packageManager
+        val excluded = setOf(ctrlSvc.packageName, sharedOverlayViewModel.sharedData.value.currentApp)
+        val launchers = pm.queryIntentActivities(
+            Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER), 0
+        )
+            .filter { it.activityInfo.packageName !in excluded }
+            .map { it.loadLabel(pm).toString() to it.activityInfo.packageName }
+        val packageName = findPackageByLabel(label, launchers) ?: return false
+        val intent = pm.getLaunchIntentForPackage(packageName) ?: return false
         return openAlternative(intent)
     }
 

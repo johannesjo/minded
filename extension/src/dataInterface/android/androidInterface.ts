@@ -92,13 +92,13 @@ interface InteractionWindowJavaScriptInterface {
   /** Whether that first bell is still waiting for an unlock. */
   isMindfulnessBellFirstRingArmed?: () => boolean;
   /**
-   * The redirect: open an accepted alternative (an http(s) website, or an
-   * installed app by package name) over the blocked app, then fade the
-   * overlay. Returns false when nothing could be opened. Optional: older
-   * native builds won't have them - guard with `?.()`.
+   * The redirect: open the installed app whose launcher name matches an
+   * accepted app alternative's typed label, over the blocked app, then fade
+   * the overlay. Resolved natively at tap time so showing the offer never
+   * scans the installed apps. Returns false when no single app matches.
+   * Optional: older native builds won't have it - guard with `?.()`.
    */
-  openUrl?: (url: string) => boolean;
-  openApp?: (packageName: string) => boolean;
+  openAppNamed?: (label: string) => boolean;
   test: () => void;
 }
 

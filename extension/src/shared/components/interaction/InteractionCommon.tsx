@@ -1770,6 +1770,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
             forcedAdvice={getForcedAdvice()}
             isEveningAdvice={getIsEveningAdvice()}
             isBedtimeGoodnight={getIsBedtimeGoodnight()}
+            isSuperseded={getIsExitingInteraction() || getIsCompletionStarted()}
             onCancelCountdown={cancelCountdown}
             onSuccess={onInteractionSuccess}
             onSkip={handleSkip}

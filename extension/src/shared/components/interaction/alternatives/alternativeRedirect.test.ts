@@ -1,10 +1,11 @@
 import type { Alternative } from "@src/dataInterface/syncData";
 import {
   type AlternativeOpenCapabilities,
-  findInstalledApp,
   getAlternativeAcceptLabel,
   getAlternativeOpenTarget,
 } from "@src/shared/components/interaction/alternatives/alternativeRedirect";
+import { getAlternativesForTarget } from "@src/shared/components/interaction/alternatives/getAlternatives";
+import { DEFAULT_SYNC_DATA } from "@src/dataInterface/syncData.const";
 
 const alt = (overrides: Partial<Alternative>): Alternative => ({
   id: "a",
@@ -17,37 +18,12 @@ const alt = (overrides: Partial<Alternative>): Alternative => ({
   ...overrides,
 });
 
-const APPS = [
-  { packageName: "com.amazon.kindle", name: "Kindle" },
-  { packageName: "org.wikipedia", name: "Wikipedia" },
-];
-
 const caps = (
   overrides: Partial<AlternativeOpenCapabilities> = {},
 ): AlternativeOpenCapabilities => ({
   canOpenUrl: true,
   canOpenApp: true,
-  getInstalledApps: () => APPS,
   ...overrides,
-});
-
-describe("findInstalledApp", () => {
-  it("matches the typed label case- and space-insensitively", () => {
-    expect(findInstalledApp("  kindle ", APPS)?.packageName).toBe(
-      "com.amazon.kindle",
-    );
-  });
-
-  it("never guesses: no partial match, no ambiguous match", () => {
-    expect(findInstalledApp("Kind", APPS)).toBeUndefined();
-    expect(findInstalledApp("", APPS)).toBeUndefined();
-    expect(
-      findInstalledApp("Notes", [
-        { packageName: "a.notes", name: "Notes" },
-        { packageName: "b.notes", name: "notes" },
-      ]),
-    ).toBeUndefined();
-  });
 });
 
 describe("getAlternativeOpenTarget", () => {
@@ -60,10 +36,12 @@ describe("getAlternativeOpenTarget", () => {
     ).toEqual({ kind: "url", href: "https://wikipedia.org/" });
   });
 
-  it("does not offer a website it can't open on this platform", () => {
-    const website = alt({ kind: "website", url: "wikipedia.org" });
+  it("does not offer a website it can't open", () => {
     expect(
-      getAlternativeOpenTarget(website, caps({ canOpenUrl: false })),
+      getAlternativeOpenTarget(
+        alt({ kind: "website", url: "wikipedia.org" }),
+        caps({ canOpenUrl: false }),
+      ),
     ).toBeUndefined();
     expect(
       getAlternativeOpenTarget(
@@ -73,35 +51,16 @@ describe("getAlternativeOpenTarget", () => {
     ).toBeUndefined();
   });
 
-  it("resolves an app alternative to an installed package", () => {
+  it("hands an app alternative's typed name to the native resolver", () => {
     expect(
-      getAlternativeOpenTarget(alt({ kind: "app", label: "Kindle" }), caps()),
-    ).toEqual({ kind: "app", packageName: "com.amazon.kindle" });
-  });
-
-  it("prefers a stored package and skips the installed-app read", () => {
-    const getInstalledApps = jest.fn(() => APPS);
-    expect(
-      getAlternativeOpenTarget(
-        alt({ kind: "app", label: "Reader", packageName: "com.reader" }),
-        caps({ getInstalledApps }),
-      ),
-    ).toEqual({ kind: "app", packageName: "com.reader" });
-    expect(getInstalledApps).not.toHaveBeenCalled();
-  });
-
-  it("has no target for apps it can't find or can't launch", () => {
-    expect(
-      getAlternativeOpenTarget(alt({ kind: "app", label: "Chess" }), caps()),
-    ).toBeUndefined();
-    const getInstalledApps = jest.fn(() => APPS);
+      getAlternativeOpenTarget(alt({ kind: "app", label: " Kindle " }), caps()),
+    ).toEqual({ kind: "app", label: "Kindle" });
     expect(
       getAlternativeOpenTarget(
         alt({ kind: "app", label: "Kindle" }),
-        caps({ canOpenApp: false, getInstalledApps }),
+        caps({ canOpenApp: false }),
       ),
     ).toBeUndefined();
-    expect(getInstalledApps).not.toHaveBeenCalled();
   });
 
   it("has no target for activities and custom lines", () => {
@@ -115,15 +74,42 @@ describe("getAlternativeOpenTarget", () => {
   });
 });
 
+describe("platform scoping the openers rely on", () => {
+  const syncData = {
+    ...DEFAULT_SYNC_DATA,
+    alternativeWebsites: [],
+    alternativeApps: [],
+    alternatives: [
+      alt({ id: "w", kind: "website", url: "wikipedia.org" }),
+      alt({ id: "p", kind: "app", label: "Kindle" }),
+    ],
+  };
+  const kinds = (platform: "web" | "android") =>
+    getAlternativesForTarget(syncData, undefined, platform).map((a) => a.kind);
+
+  it("offers websites only on the extension and apps only on Android", () => {
+    expect(kinds("web")).toEqual(["website"]);
+    expect(kinds("android")).toEqual(["app"]);
+  });
+});
+
 describe("getAlternativeAcceptLabel", () => {
-  it("says Open X only when it will really open X", () => {
-    const kindle = alt({ kind: "app", label: "Kindle" });
+  it("says Open X for something it will open, Yes otherwise", () => {
     expect(
-      getAlternativeAcceptLabel(kindle, {
+      getAlternativeAcceptLabel(alt({ kind: "app", label: "Kindle" }), {
         kind: "app",
-        packageName: "com.amazon.kindle",
+        label: "Kindle",
       }),
     ).toBe("Open Kindle");
-    expect(getAlternativeAcceptLabel(kindle, undefined)).toBe("Yes");
+    expect(
+      getAlternativeAcceptLabel(
+        alt({ kind: "website", label: "wikipedia.org" }),
+        {
+          kind: "url",
+          href: "https://wikipedia.org/",
+        },
+      ),
+    ).toBe("Open wikipedia.org");
+    expect(getAlternativeAcceptLabel(alt({}), undefined)).toBe("Yes");
   });
 });

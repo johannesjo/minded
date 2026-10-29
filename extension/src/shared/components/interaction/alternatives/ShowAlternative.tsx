@@ -12,6 +12,7 @@ import {
   IS_APP,
   IS_WEB_EXT,
   IS_IOS,
+  markAlternativeOpened,
   markAlternativeOpenedAndCountSunTap,
   markAlternativeShown,
 } from "@src/dataInterface/commonSyncDataInterface";
@@ -30,30 +31,18 @@ import {
   type AlternativeOpenTarget,
   getAlternativeAcceptLabel,
   getAlternativeOpenTarget,
-  type InstalledApp,
 } from "@src/shared/components/interaction/alternatives/alternativeRedirect";
 import { VoiceReveal } from "@src/shared/components/interaction/voiceReveal/VoiceReveal";
 import Btn from "@src/shared/components/ui/Btn";
-import { fadeOutThen } from "@src/util/animation";
 import { createScreenFade } from "@src/util/screenFade";
 import { prefersReducedMotion } from "@src/util/prefersReducedMotion";
-import { safeJsonParse } from "@src/util/safeJsonParse";
-
-const INTERACTION_WRAPPER_SELECTOR = "#minded-6622-coloured-wrapper-dynamic";
-
-const getInstalledAndroidApps = (): InstalledApp[] => {
-  try {
-    return safeJsonParse<InstalledApp[]>(androidInterface.getAllApps(), []);
-  } catch (error) {
-    console.error("Failed to read installed apps", error);
-    return [];
-  }
-};
 
 export const ShowAlternativeInteraction: (props: {
   onAddBetterAlternative?: (alternative: Alternative) => void;
   onCancelCountdown: () => void;
   onLeaveNow: () => void;
+  /** The sun took over during the beat (tap, fling, drag): stand down. */
+  isSuperseded: () => boolean;
   syncData: SyncData;
 }) => JSX.Element = (props) => {
   const [getAlternative, setAlternative] = createSignal<
@@ -62,7 +51,6 @@ export const ShowAlternativeInteraction: (props: {
   const [getIsAccepted, setIsAccepted] = createSignal(false);
   const [getIsBeatShown, setIsBeatShown] = createSignal(false);
   const screenFade = createScreenFade(ALTERNATIVE_SCREEN_FADE_MS);
-  let rootEl: HTMLDivElement | undefined;
   let beatTimeout: number | undefined;
   let isDisposed = false;
   let shownAlternativeId: string | undefined;
@@ -101,14 +89,12 @@ export const ShowAlternativeInteraction: (props: {
     markCandidateShown(candidate);
   });
 
-  // Resolved once per shown alternative (the installed-app read is not free).
   const getOpenTarget = createMemo(() => {
     const alternative = getAlternative();
     return alternative
       ? getAlternativeOpenTarget(alternative, {
-          canOpenUrl: IS_WEB_EXT || (IS_ANDROID && !!androidInterface.openUrl),
-          canOpenApp: IS_ANDROID && !!androidInterface.openApp,
-          getInstalledApps: getInstalledAndroidApps,
+          canOpenUrl: IS_WEB_EXT,
+          canOpenApp: IS_ANDROID && !!androidInterface.openAppNamed,
         })
       : undefined;
   });
@@ -116,22 +102,17 @@ export const ShowAlternativeInteraction: (props: {
   // Hand over to the alternative. False when nothing opened, so the caller
   // falls back to the plain leave rather than stranding the user.
   const openTarget = (target: AlternativeOpenTarget): boolean => {
-    if (IS_WEB_EXT) {
-      if (target.kind !== "url") return false;
-      // The redirect takes over this tab: fade the sky out first, then go.
-      const wrapper =
-        rootEl?.closest<HTMLElement>(INTERACTION_WRAPPER_SELECTOR) ?? null;
-      fadeOutThen(wrapper, () => {
-        window.location.href = target.href;
-      });
+    if (target.kind === "url") {
+      // The redirect takes over this tab. The sky stays up until the page
+      // unloads - fading it first would bare the very feed being left (and a
+      // back-navigation would restore an invisible, click-eating overlay).
+      window.location.href = target.href;
       return true;
     }
 
     try {
-      // Native launches the alternative, then fades its window out.
-      return target.kind === "url"
-        ? androidInterface.openUrl?.(target.href) === true
-        : androidInterface.openApp?.(target.packageName) === true;
+      // Native resolves and launches the app, then fades its window out.
+      return androidInterface.openAppNamed?.(target.label) === true;
     } catch (error) {
       console.error("Failed to open alternative", error);
       return false;
@@ -151,10 +132,15 @@ export const ShowAlternativeInteraction: (props: {
     setIsAccepted(true);
     const target = getOpenTarget();
     const onLeaveNow = props.onLeaveNow;
+    const isSuperseded = props.isSuperseded;
     const marked = (async () => {
       try {
         await shownAlternativePromise;
-        await markAlternativeOpenedAndCountSunTap(alternative);
+        // Opening is taking the pause up (a sun tap, as the old link counted);
+        // "Yes" to an activity is a leave, and no leave counts a tap.
+        await (target
+          ? markAlternativeOpenedAndCountSunTap(alternative)
+          : markAlternativeOpened(alternative));
       } catch (error) {
         console.error("Failed to mark alternative opened", error);
       }
@@ -165,7 +151,8 @@ export const ShowAlternativeInteraction: (props: {
       beatTimeout = window.setTimeout(() => {
         beatTimeout = undefined;
         void marked.then(() => {
-          if (isDisposed) return;
+          // A sun tap/fling during the beat already chose the next step.
+          if (isDisposed || isSuperseded()) return;
           if (!target || !openTarget(target)) onLeaveNow();
         });
       }, ALTERNATIVE_ACCEPT_BEAT_MS);
@@ -188,7 +175,6 @@ export const ShowAlternativeInteraction: (props: {
       <Show when={getAlternative()}>
         {(alternative) => (
           <div
-            ref={rootEl}
             style={{
               opacity: screenFade.opacity(),
               "pointer-events":
