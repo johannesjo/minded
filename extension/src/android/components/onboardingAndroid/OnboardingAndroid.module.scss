@@ -98,8 +98,15 @@ $sky-strip: 88px;
 
 .actions {
   margin-top: 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
 }
 
-.laterBtn {
-  margin-left: 16px;
+// Same measure as the desktop welcome's copy (OnboardingWeb .infoText), so the
+// two first-run screens speak at one size.
+.infoText {
+  max-width: 58ch;
+  margin-inline: auto;
 }

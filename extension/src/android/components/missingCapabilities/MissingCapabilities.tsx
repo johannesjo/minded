@@ -202,16 +202,14 @@ export const MissingCapabilityView = (props: {
           fallback={
             <div class="txtSlightlyBigger">
               {props.optionalOnly ? (
-                <>
-                  You're all set. These extras are optional - they just help the{" "}
-                  {companionWord()} appear more reliably. Add them now or skip;
-                  you can always do it later.
-                </>
+                <Show when={hasOptionalVisible()}>
+                  Optional: these help the {companionWord()} appear more
+                  reliably.
+                </Show>
               ) : (
                 <>
-                  Two permissions let the {companionWord()} meet you in the
-                  apps you chose: one to notice the moment, one to appear in
-                  it.
+                  Two permissions let the {companionWord()} meet you in the apps
+                  you chose: one to notice the moment, one to appear in it.
                 </>
               )}
             </div>
@@ -251,8 +249,8 @@ export const MissingCapabilityView = (props: {
 
           <PermissionCard capability="SystemAlertWindow">
             <p class={styles.permissionText}>
-              The overlay permission lets the {companionWord()} appear over
-              that app - the pause itself.
+              The overlay permission lets the {companionWord()} appear over that
+              app - the pause itself.
             </p>
             <Btn onClick={() => onMissingCapabilityClick("SystemAlertWindow")}>
               Enable Overlay Permission
@@ -273,7 +271,10 @@ export const MissingCapabilityView = (props: {
               </p>
             )}
             <PermissionCard capability="UsageStats">
-              <span class={styles.optionalBadge}>Optional</span>
+              {/* The optional-only step already says so above. */}
+              {!props.optionalOnly && (
+                <span class={styles.optionalBadge}>Optional</span>
+              )}
               <p class={styles.permissionText}>
                 <em>minded</em> uses usage access as a backup way to detect the
                 app in the foreground. Without it, detection is less reliable
@@ -284,12 +285,15 @@ export const MissingCapabilityView = (props: {
               </Btn>
             </PermissionCard>
             <PermissionCard capability="BatteryOptimization">
-              <span class={styles.optionalBadge}>Optional</span>
+              {/* The optional-only step already says so above. */}
+              {!props.optionalOnly && (
+                <span class={styles.optionalBadge}>Optional</span>
+              )}
               <p class={styles.permissionText}>
                 Battery optimization can silently stop <em>minded</em> in the
                 background, so interventions no longer appear. Excluding{" "}
-                <em>minded</em> from battery optimization keeps the protection
-                running.
+                <em>minded</em> from battery optimization keeps the{" "}
+                {companionWord()} able to appear.
               </p>
               <Btn
                 onClick={() => onMissingCapabilityClick("BatteryOptimization")}
@@ -312,7 +316,8 @@ export const MissingCapabilityView = (props: {
 
         {/* The optional step never blocks - its always-available Continue is the
             skip - so it omits the declining opt-out shown on the required step. */}
-        {!props.optionalOnly && (
+        {/* Once everything is granted there is nothing left to decline. */}
+        {!props.optionalOnly && !showConfirmation() && (
           <Btn
             outline
             class={styles.footerBtn}

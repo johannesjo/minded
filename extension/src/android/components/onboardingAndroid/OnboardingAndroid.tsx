@@ -274,7 +274,7 @@ export const OnboardingAndroid = (props: {
                 <div class="h2 h2Mindful">
                   Meet <em>minded</em>
                 </div>
-                <div class="txtSlightlyBigger">
+                <div class={styles.infoText}>
                   <Show
                     when={getHasExperiencedPause()}
                     fallback={<p>Tap the {companionWord()}.</p>}
@@ -293,8 +293,8 @@ export const OnboardingAndroid = (props: {
                 </ButtonWrapper>
 
                 <div class={styles.skipWrapper}>
-                  <Btn outline onClick={handleSkipForNow}>
-                    I'll set this up later
+                  <Btn plain onClick={handleSkipForNow}>
+                    set up later
                   </Btn>
                 </div>
               </div>
@@ -344,12 +344,11 @@ export const OnboardingAndroid = (props: {
                 <div
                   class={`${styles.step} ${styles.stepUnderSky} pageTransitionIn`}
                 >
-                  <div class="card">
+                  <div>
                     <div class="h2 h2Mindful">Almost there</div>
                     <p>
-                      Some permissions are still missing, so the{" "}
-                      {companionWord()} can't meet you everywhere yet. You can
-                      finish anytime. It'll be here.
+                      A few permissions are still missing. You can finish
+                      anytime.
                     </p>
                     {/* The costless alternative, offered exactly where the
                         permission path dead-ends: the home-screen widget needs
@@ -374,6 +373,7 @@ export const OnboardingAndroid = (props: {
                         </Btn>
                       </Show>
                       <Btn
+                        big
                         onClick={() => {
                           changeStep(2);
                           setPermissionNotGiven(false);
@@ -381,7 +381,7 @@ export const OnboardingAndroid = (props: {
                       >
                         finish setting up
                       </Btn>
-                      <Btn onClick={leaveToDashboard} class={styles.laterBtn}>
+                      <Btn plain onClick={leaveToDashboard}>
                         later
                       </Btn>
                     </div>
@@ -389,7 +389,7 @@ export const OnboardingAndroid = (props: {
                 </div>
               ) : (
                 <div class={`${styles.step} pageTransitionIn`}>
-                  <div class="card">
+                  <div>
                     <div
                       class={styles.sunSpacer}
                       ref={(el) => (spacerEl = el)}
@@ -400,20 +400,15 @@ export const OnboardingAndroid = (props: {
                     {getHasApps() ? (
                       <>
                         <p>
-                          From now on, when you open one of those apps, the{" "}
-                          {companionWord()} appears: a moment to pause and
-                          notice before you carry on.
-                        </p>
-                        <p>
-                          You can always fling it away. It's an invitation,
-                          never a wall.
+                          When you open one of those apps, the {companionWord()}{" "}
+                          appears: a moment to pause. You can always fling it
+                          away.
                         </p>
                       </>
                     ) : (
                       <p>
-                        It now waits on your home screen - a quiet companion at
-                        the glance where scrolling begins. Whenever you tap it
-                        there, this pause is one touch away.
+                        It now waits on your home screen. Tap it there for this
+                        same pause.
                       </p>
                     )}
                     <div class={styles.actions}>
