@@ -21,7 +21,8 @@ describe("collapsed dashboard presentation", () => {
   });
 
   it("rests the user's reflections on the sky, with the fill only on hover or press", () => {
-    // Look-back grid and single-card greeting alike: no resting card fill.
+    // Look-back grid and single-card greeting alike: no resting card fill
+    // (the single card has none on hover or press either - see below).
     expect(component).toContain("[styles.onSky]: !isSkyGreeting");
     const onSkyBlock = styles.match(/&\.onSky\s*\{([\s\S]*?)\n {2}\}/)?.[1];
     expect(onSkyBlock).toMatch(
@@ -34,6 +35,23 @@ describe("collapsed dashboard presentation", () => {
     );
     expect(onSkyBlock).toMatch(
       /@media \(hover: hover\)\s*\{\s*&\.interactive:hover\s*\{\s*background:\s*var\(--dashboard-card-bg\);/,
+    );
+  });
+
+  it("keeps the single-card greeting on bare sky even under the pointer or a press", () => {
+    // The greeting is the arrival view, not a tile: no fill in any state, in
+    // day mode (where the fill reads as a white card) as much as at night.
+    // Declared after `.onSky` so it wins the equal-specificity hover/press.
+    expect(styles.indexOf("&.singleCard.interactive {")).toBeGreaterThan(
+      styles.indexOf("&.onSky {"),
+    );
+    const rules = styles.slice(styles.indexOf("&.onSky {"));
+    const singleBlock = rules.match(
+      /&\.singleCard\.interactive\s*\{([\s\S]*?)\n {2}\}/,
+    )?.[1];
+    expect(singleBlock).toMatch(/&:active\s*\{\s*background:\s*transparent;/);
+    expect(singleBlock).toMatch(
+      /@media \(hover: hover\)\s*\{\s*&:hover\s*\{\s*background:\s*transparent;/,
     );
   });
 
