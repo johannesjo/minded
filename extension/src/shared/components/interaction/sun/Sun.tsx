@@ -1,6 +1,7 @@
 import {
   Component,
   createEffect,
+  createMemo,
   createSignal,
   Index,
   on,
@@ -496,7 +497,11 @@ export const Sun: Component<SunProps> = (props) => {
   // this instead (see settleInAtRest).
   const COMPANION_FADE_IN_MS = 500;
   // The halo eases with the settle glide it travels with (sunGlideTiming).
-  const settleHalo = createSettleHalo(() => props.settle ?? null);
+  // The settle, read once per change: a host may build it fresh on every read
+  // (props are getters), and both the settle effect and the halo's "landed"
+  // check need the one object that glide is actually heading for.
+  const getSettle = createMemo(() => props.settle ?? null);
+  const settleHalo = createSettleHalo(getSettle);
   // The companion is the only settle anchored by a fixed bottom px with no fixed
   // x (see sunSettle.ts: ratio-based breathing/resting, corner-anchored
   // departing, top-px interactive). Used to give its glides the slower duration.
@@ -1003,7 +1008,7 @@ export const Sun: Component<SunProps> = (props) => {
   // interactive/null state so no spurious glide fires on mount.
   createEffect(
     on(
-      () => props.settle ?? null,
+      getSettle,
       (settle, prevSettle) => {
         if (settle === prevSettle) return;
         if (settle) enterSettle(settle, prevSettle);

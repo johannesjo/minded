@@ -43,6 +43,10 @@ export const BreathInteraction = (
   // Set at completion: the pause stays mounted through the success fade (an
   // unmount would cut it), so its cancel button needs to become a no-op.
   let hasFinished = false;
+  // Whether the sun is ours (sent to its breath anchor). Set at the tap, not
+  // when the phase flips behind the crossfade, so a teardown inside that fade
+  // still hands the disc back.
+  let hasBegunBreath = false;
   let keepAliveId: ReturnType<typeof setInterval> | undefined;
   // The invite and the breath screen cross-fade rather than swap in one frame
   // (the breath screen is far taller, so a plain swap also jumped the layout).
@@ -60,6 +64,7 @@ export const BreathInteraction = (
     // the solid/reactivity lint rule (as UrgeSurfing does).
     const onCancelCountdown = props.onCancelCountdown;
     onCancelCountdown();
+    hasBegunBreath = true;
     props.onSunBreathStart();
     // The sun answers at once (gliding to its breath anchor); the copy swaps
     // behind the fade. The cue reads the sun's published breath clock, so the
@@ -84,6 +89,7 @@ export const BreathInteraction = (
     if (hasFinished) return;
     stopKeepAlive();
     props.onCancelCountdown();
+    hasBegunBreath = false;
     props.onSunBreathEnd();
     // Back to the invitation, sun interactive again - leaving the breath is
     // not leaving the intervention (the sun remains the way out of that).
@@ -95,7 +101,7 @@ export const BreathInteraction = (
     // Only while *our* breath is running is the settled sun ours to return: a
     // blanket reset here would yank the sun out of whatever settle a later
     // stage of the flow (the post-tap intent breath, say) has put it in.
-    if (getPhase() === "breath" && !hasFinished) {
+    if (hasBegunBreath && !hasFinished) {
       props.onSunBreathEnd();
     }
   });

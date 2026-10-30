@@ -601,6 +601,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
       setShowTimeSelectionOverlay(false);
       setIsPostSunScreenFading(false);
       setIsExitingInteraction(false);
+      setIsCancellingPostSun(false);
     }
   });
 
@@ -868,7 +869,9 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   };
 
   const handleBreathPauseComplete = () => {
-    if (isDisposed) return;
+    // A cancel owns the screen: the pause's clock can still finish during
+    // its fade, and must not reopen the choices the user stepped back from.
+    if (isDisposed || getIsCancellingPostSun()) return;
     hasBreathed = true;
     skipFlow.recordEngagedOrLeft();
     clearIntentSelectionArmTimeout();
@@ -892,10 +895,11 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
 
   const handleBreathPauseCancel = () => {
     cancelCountdown();
-    setBreathStartedAt(undefined);
     setIsIntentSelectionArmed(false);
+    // The breath origin goes with the screen, so the cue fades out with it.
     cancelPostSunScreen(() => {
       setPendingIntent(undefined);
+      setBreathStartedAt(undefined);
       setShowBreathPause(false);
     });
   };
@@ -1685,7 +1689,10 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
           // sun stays visible over the breath copy and the choices. The wrapper
           // is click-through here (pointer-events: none), so the buttons beneath
           // still receive taps.
-          "z-index": getSunPhase() !== "interactive" ? 1101 : undefined,
+          "z-index":
+            getSunPhase() !== "interactive" || getIsCancellingPostSun()
+              ? 1101
+              : undefined,
         }}
       >
         {getSunAlternativeAction() && (
