@@ -65,7 +65,8 @@ IOS_CARD_HEIGHT = 340
 # The iOS app's launch sky (LaunchScreen.storyboard, and the launch overlay
 # MainViewController holds until the WebView's first paint): the same two
 # full-screen faces as Android's loading_sky_light / loading_sky_dark, at the
-# same size - the very skies index.html paints while the bundle loads.
+# same size - the two loading skies index.html picks between (it blends in
+# OKLab where WebKit can, these in sRGB, as Android's do).
 IOS_APP_ASSETS_DIR = os.path.join(
     os.path.dirname(__file__),
     "..", "..", "extension", "ios", "App", "App", "Assets.xcassets",

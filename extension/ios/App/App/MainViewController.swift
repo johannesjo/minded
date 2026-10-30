@@ -19,6 +19,9 @@ class MainViewController: CAPBridgeViewController, WKScriptMessageHandler {
     // it) has actually painted; used to fade the launch overlay on the real
     // first paint (MainIOS).
     private static let sunReadyMessage = "mindedSunReady"
+    // The message the loading page (index.html) posts in its first script,
+    // naming the sky the app is about to paint: "dark" or "light".
+    private static let loadingSkyMessage = "mindedLoadingSky"
     // The launch sky (Assets.xcassets/LaunchSky): the same image
     // LaunchScreen.storyboard shows, so the overlay replaces the system launch
     // screen with no visible swap.
@@ -185,14 +188,14 @@ class MainViewController: CAPBridgeViewController, WKScriptMessageHandler {
     // image (no visible swap), then fade it out once the app has actually painted
     // underneath. The launch sky carries no disc of its own: the only sun is the
     // app's, easing in where it lives - never a logo or a second sun in its place.
+    // (A fade, not a morph: a static launch screen can't know where that is.)
     private func installLaunchFade() {
         guard launchOverlay == nil, isViewLoaded else { return }
-        let overlay = UIImageView(image: UIImage(named: Self.launchSkyImage))
-        // Stretched, not aspect-filled: the sky's stops must span the screen's
-        // height the way the web's gradient does, not crop to its middle.
-        overlay.contentMode = .scaleToFill
+        let overlay = launchSkyView()
         overlay.frame = view.bounds
-        overlay.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        // Held, the sky takes the touches: a tap must not reach the app it still
+        // hides (a dashboard sun no one can see yet). Released as it fades.
+        overlay.isUserInteractionEnabled = true
         view.addSubview(overlay)
         launchOverlay = overlay
 
@@ -201,23 +204,66 @@ class MainViewController: CAPBridgeViewController, WKScriptMessageHandler {
         // page-load progress only says resources finished, not that the sun rendered,
         // so it could reveal a blank frame. A hard cap always clears the overlay so a
         // stalled or silent load can never strand the launch screen on top.
-        webView?.configuration.userContentController.add(self, name: Self.sunReadyMessage)
+        let messages = webView?.configuration.userContentController
+        messages?.add(self, name: Self.sunReadyMessage)
+        messages?.add(self, name: Self.loadingSkyMessage)
         DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) { [weak self] in
             self?.fadeOutLaunch(delay: 0)
         }
     }
 
-    // The web signalled the sun has painted - ease the launch screen out.
+    /// The launch sky as LaunchScreen.storyboard draws it. Stretched, not
+    /// aspect-filled: the sky's stops must span the screen's height the way the
+    /// web's gradient does, not crop to its middle. `style` pins one face;
+    /// unspecified follows the system appearance, as the launch screen does.
+    private func launchSkyView(style: UIUserInterfaceStyle = .unspecified) -> UIImageView {
+        let sky = UIImageView(image: UIImage(named: Self.launchSkyImage))
+        sky.contentMode = .scaleToFill
+        sky.overrideUserInterfaceStyle = style
+        sky.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        return sky
+    }
+
+    // The launch screen can only follow the system appearance, but the app's
+    // sky follows the clock (the real sun): Light mode at 23:00 launches onto
+    // the morning sky. The loading page settles which sky it really is in its
+    // first script (index.html) and says so here, long before the app paints -
+    // so the held sky turns to the right face early, softly, instead of holding
+    // the wrong one until the final fade.
+    private func turnLaunchSky(toDark isDark: Bool) {
+        guard let overlay = launchOverlay,
+              (overlay.traitCollection.userInterfaceStyle == .dark) != isDark
+        else { return }
+        let face = launchSkyView(style: isDark ? .dark : .light)
+        face.frame = overlay.bounds
+        face.alpha = 0
+        overlay.addSubview(face)
+        UIView.animate(withDuration: 0.4, delay: 0, options: [.curveEaseInOut]) {
+            face.alpha = 1
+        }
+    }
+
+    // The loading page named its sky, or the web signalled the sun has painted
+    // - turn the held sky, or ease it out.
     func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
-        guard message.name == Self.sunReadyMessage else { return }
-        fadeOutLaunch(delay: 0)
+        switch message.name {
+        case Self.loadingSkyMessage:
+            turnLaunchSky(toDark: (message.body as? String) == "dark")
+        case Self.sunReadyMessage:
+            fadeOutLaunch(delay: 0)
+        default:
+            break
+        }
     }
 
     private func fadeOutLaunch(delay: TimeInterval) {
         // Stop listening either way - also breaks the retain cycle from `add(self)`.
-        webView?.configuration.userContentController.removeScriptMessageHandler(forName: Self.sunReadyMessage)
+        let messages = webView?.configuration.userContentController
+        messages?.removeScriptMessageHandler(forName: Self.sunReadyMessage)
+        messages?.removeScriptMessageHandler(forName: Self.loadingSkyMessage)
         guard let overlay = launchOverlay else { return }
         launchOverlay = nil           // one-shot: the ready message and the cap can both arrive
+        overlay.isUserInteractionEnabled = false
         UIView.animate(
             withDuration: 0.5,
             delay: delay,

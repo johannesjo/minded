@@ -205,9 +205,15 @@ posts a `mindedSunReady` message once its first surface - dashboard, onboarding,
 the pause - has painted (see `MainIOS`), which is accurate where page-load progress
 is not (it only signals resources finished, not render). A hard timeout always
 clears the overlay, so a stalled or silent load can never strand the launch sky on
-top. From the widget that reads as: the system's launch zoom carries the widget's
-sun out, and the app's sun eases in where the pause holds it - one sun, never a
-logo disc in between. The fade timing wants one pass on a device.
+top. A launch screen can only follow the system appearance while the app's sky
+follows the clock, so `index.html`'s first script posts the sky it is really
+painting (`mindedLoadingSky`) and the held sky turns to that face early
+(`turnLaunchSky`) - Light mode at 23:00 doesn't hold a morning sky until the end.
+The held sky also takes the touches, so a tap can't reach the app it still hides.
+From the widget that reads as: the system's launch zoom carries the widget's sun
+out, and the app's sun fades in where the pause holds it - a fade rather than a
+morph (a static launch screen can't know where the sun will be), but one sun,
+never a logo disc in between. The fade timing wants one pass on a device.
 
 > Note: these native files were written without a Mac. CI compiles and signs them on
 > every push to `main`, but they have not yet been run on a device - treat the first

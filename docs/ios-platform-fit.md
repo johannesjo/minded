@@ -103,8 +103,9 @@ Honest caveats:
 - Whether always-pass-through, budget-free triggering is fully expressible in
   `DeviceActivity` needs verification before any commitment.
 - The iOS code of the time (Capacitor WebView + a Shortcuts automation intent)
-  was none of this - Shortcuts doesn't block, it only nags. It was a dead end,
-  not a foundation, and has since been removed (#155).
+  was none of this - Shortcuts doesn't block, it only nags. The intent was a
+  dead end, not a foundation, and has since been removed (#155); the WebView
+  shell stays as the companion's home.
 
 ## Current decision
 

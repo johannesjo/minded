@@ -14,8 +14,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     /// True when the app was *cold-launched* by tapping the companion sun widget
     /// (`minded://sun` arrived in the launch options). MainViewController reads this
-    /// to seed the WebView's very first paint straight into the sun pause - and to
-    /// bridge the launch with a morphing sun instead of a hard splash cut - rather
+    /// to seed the WebView's very first paint straight into the sun pause, rather
     /// than relying on the post-load hash retry (which paints a dashboard frame
     /// first). A warm re-tap, where the app is already running, goes through
     /// `application(open:)` → `.openSun` below instead.

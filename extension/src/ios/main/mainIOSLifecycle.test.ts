@@ -52,13 +52,15 @@ describe("iOS main lifecycle", () => {
 
   it("posts only to the message handlers the native shell registers", () => {
     // WKWebView drops a post to an unregistered handler without a sound, so a
-    // name drifting on either side would leave the sun mute to touch (haptics)
-    // or the launch sky held until its cap (first paint).
+    // name drifting on either side would leave the sun mute to touch (haptics),
+    // the launch sky on the wrong face (loading sky) or held until its cap
+    // (first paint).
     const native = source("ios/App/App/MainViewController.swift");
     const haptics = source(
       "src/shared/components/interaction/sun/sunAnimationUtils.ts",
     );
     const main = source("src/ios/main/MainIOS.tsx");
+    const loadingPage = source("src/ios/main/index.html");
 
     expect(native).toContain('messageName = "mindedHaptic"');
     expect(native).toMatch(
@@ -74,6 +76,13 @@ describe("iOS main lifecycle", () => {
 
     expect(native).toContain('sunReadyMessage = "mindedSunReady"');
     expect(main).toContain("messageHandlers?.mindedSunReady?.postMessage");
+
+    expect(native).toContain('loadingSkyMessage = "mindedLoadingSky"');
+    expect(native).toContain("add(self, name: Self.loadingSkyMessage)");
+    expect(loadingPage).toContain(
+      'messageHandlers.mindedLoadingSky.postMessage(night ? "dark" : "light")',
+    );
+    expect(native).toContain('(message.body as? String) == "dark"');
   });
 
   it("holds the launch screen's own sky over the loading app", () => {
@@ -88,7 +97,7 @@ describe("iOS main lifecycle", () => {
     expect(storyboard).toContain('image="LaunchSky"');
     expect(storyboard).toContain('contentMode="scaleToFill"');
     expect(native).toContain('launchSkyImage = "LaunchSky"');
-    expect(native).toContain("overlay.contentMode = .scaleToFill");
+    expect(native).toContain("sky.contentMode = .scaleToFill");
     // A sky for each system appearance - the one switch a launch screen reads.
     expect(
       imageset.images.some((image) =>
@@ -97,5 +106,19 @@ describe("iOS main lifecycle", () => {
     ).toBe(true);
     // No disc of its own: the only sun is the app's, easing in under it.
     expect(storyboard).not.toContain("Splash");
+  });
+
+  it("eases every cold launch in, not only the widget's", () => {
+    // A plain launch from the app icon cut from the launch screen to a WebView
+    // still loading when the fade was gated on the widget; it must stay
+    // unconditional in viewDidLoad.
+    const native = source("ios/App/App/MainViewController.swift");
+    const viewDidLoad = native.slice(
+      native.indexOf("override func viewDidLoad()"),
+      native.indexOf("@objc func handleOpenSun"),
+    );
+
+    expect(viewDidLoad).toContain("installLaunchFade()");
+    expect(viewDidLoad).not.toMatch(/if [^\n]*\{\s*installLaunchFade\(\)/);
   });
 });
