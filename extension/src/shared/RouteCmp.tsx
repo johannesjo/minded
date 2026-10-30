@@ -45,7 +45,6 @@ import { QuestionCategoryView } from "@src/shared/components/questionCategoryVie
 
 import {
   IS_ANDROID,
-  IS_IOS,
   IS_WEB_EXT,
 } from "@src/dataInterface/commonSyncDataInterface";
 
@@ -58,7 +57,6 @@ import { SettingsWebRoute } from "@src/pages/newtab/components/settingsWebRoute/
 // @ts-ignore
 import styles from "./RouteCmp.module.scss";
 import DailyQuestions from "@src/shared/components/dailyQuestions/DailyQuestions";
-import InteractionIOS from "@src/ios/interaction/InteractionIOS";
 import Styleguide from "@src/shared/components/styleguide/Styleguide";
 
 // Vite replaces process.env.NODE_ENV at build time. `npm start` sets NODE_ENV=development,
@@ -333,25 +331,6 @@ const MainWrapper = (props: RouteSectionProps) => {
       window.removeEventListener("resize", reanchorCompanion);
       window.removeEventListener("androidSafeAreaChanged", reanchorCompanion);
     });
-
-    // iOS widget cold-launch only: tell the native launch overlay the sun has
-    // actually painted, so it fades out on the real first paint instead of guessing
-    // from page-load progress (which only signals resources finished, not render).
-    // No-op elsewhere - the handler is only registered during an iOS widget launch,
-    // and the optional chain makes the call harmless on Android/web/web-ext.
-    if (IS_IOS && openedFromWidgetAtLaunch) {
-      requestAnimationFrame(() => {
-        (
-          window as unknown as {
-            webkit?: {
-              messageHandlers?: {
-                mindedSunReady?: { postMessage: (m: string) => void };
-              };
-            };
-          }
-        ).webkit?.messageHandlers?.mindedSunReady?.postMessage("ready");
-      });
-    }
   });
 
   return (
@@ -545,7 +524,6 @@ const RoutesCmp = (props: { children?: JSX.Element }) => {
         {IS_ANDROID && (
           <Route path="/settings" component={SettingsAndroidRoute} />
         )}
-        {IS_IOS && <Route path="/interaction" component={InteractionIOS} />}
         {IS_WEB_EXT && <Route path="/settings" component={SettingsWebRoute} />}
         <Route path="/feedback" component={Feedback} />
         <Route path="/dailyQuestions" component={DailyQuestions} />

@@ -65,7 +65,6 @@ const MainIOS = () => {
 
   onMount(() => {
     addWrapperClasses();
-    MindedIOSPlugin.continueToApp();
   });
 
   const refreshWidgetInstalled = () => {
@@ -78,10 +77,10 @@ const MainIOS = () => {
       });
   };
 
-  const refresh = () => {
+  const refresh = (): Promise<void> => {
     setIsDarkModeIfApplies();
 
-    getSyncData().then((syncData: SyncData) => {
+    const onboardingRead = getSyncData().then((syncData: SyncData) => {
       // Only ever *enter* onboarding from here - leaving is driven solely by
       // onGoDashboard (the flow marks itself complete on its way out), so a
       // resume mid-flow can't tear it down (same rule as MainAndroid).
@@ -90,10 +89,24 @@ const MainIOS = () => {
       }
     });
     refreshWidgetInstalled();
+    return onboardingRead;
+  };
+
+  // The native launch overlay (MainViewController's installLaunchFade) holds
+  // the launch sky over the loading WebView until the first real surface - the
+  // dashboard, onboarding, or the pause a widget tap opened - has painted, then
+  // eases it out. So signal once the first read has settled which surface that
+  // is, two frames on: painted, not just scheduled. One-shot on the native side.
+  const signalFirstPaint = () => {
+    requestAnimationFrame(() =>
+      requestAnimationFrame(() =>
+        window.webkit?.messageHandlers?.mindedSunReady?.postMessage("ready"),
+      ),
+    );
   };
 
   onMount(() => {
-    refresh();
+    refresh().finally(signalFirstPaint);
 
     window.addEventListener(IOS_DID_BECOME_ACTIVE, () => {
       setIsHide(false);

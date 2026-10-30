@@ -16,7 +16,8 @@ web look, then dithered with triangular-PDF
 noise (TPDF, +/-1 LSB) before quantizing to 8-bit -- the textbook way to remove
 banding. Re-run after changing the stops; output goes to res/drawable-nodpi/
 and (for the iOS widget card, which needs the same dithered skies at its own
-target size) to extension/ios/App/MindedWidget/Assets.xcassets/. One generator,
+target size) to extension/ios/App/MindedWidget/Assets.xcassets/, plus the iOS
+app's launch sky to extension/ios/App/App/Assets.xcassets/. One generator,
 one dither, one copy of the colours -- the platforms only differ in size.
 """
 import json
@@ -60,6 +61,16 @@ IOS_OUT_DIR = os.path.join(
 )
 IOS_CARD_WIDTH = 728
 IOS_CARD_HEIGHT = 340
+
+# The iOS app's launch sky (LaunchScreen.storyboard, and the launch overlay
+# MainViewController holds until the WebView's first paint): the same two
+# full-screen faces as Android's loading_sky_light / loading_sky_dark, at the
+# same size - the very skies index.html paints while the bundle loads.
+IOS_APP_ASSETS_DIR = os.path.join(
+    os.path.dirname(__file__),
+    "..", "..", "extension", "ios", "App", "App", "Assets.xcassets",
+)
+IOS_LAUNCH_SKY = "LaunchSky"
 
 # The widget card's sky steps through the app's ambient time-of-day timeline:
 # one render per keyframe, colours verbatim from AMBIENT_SKY_KEYFRAMES in
@@ -256,6 +267,44 @@ def write_imageset(name, arr):
     return imageset_dir
 
 
+def write_launch_imageset():
+    """
+    The iOS launch sky: the morning face for a light system appearance and the
+    night face for a dark one. A launch screen is static and can't run the
+    app's clock, so the system appearance is the only switch it can read; the
+    launch overlay eases into whichever sky the app then paints.
+    """
+    imageset_dir = os.path.join(IOS_APP_ASSETS_DIR, IOS_LAUNCH_SKY + ".imageset")
+    os.makedirs(imageset_dir, exist_ok=True)
+    light = IOS_LAUNCH_SKY + ".png"
+    dark = IOS_LAUNCH_SKY + "-dark.png"
+    write_png(
+        os.path.join(imageset_dir, light),
+        render(ambient_stops(AMBIENT_KEYFRAME_COLORS["morning"])),
+    )
+    write_png(os.path.join(imageset_dir, dark), render(DARK_STOPS))
+    with open(os.path.join(imageset_dir, "Contents.json"), "w") as f:
+        json.dump(
+            {
+                "images": [
+                    {"filename": light, "idiom": "universal"},
+                    {
+                        "appearances": [
+                            {"appearance": "luminosity", "value": "dark"}
+                        ],
+                        "filename": dark,
+                        "idiom": "universal",
+                    },
+                ],
+                "info": {"author": "gen_loading_sky.py", "version": 1},
+            },
+            f,
+            indent=2,
+        )
+        f.write("\n")
+    return imageset_dir
+
+
 def main():
     os.makedirs(OUT_DIR, exist_ok=True)
     outputs = [("loading_sky_dark", DARK_STOPS, WIDTH, HEIGHT)] + [
@@ -279,6 +328,8 @@ def main():
         )
         size = os.path.getsize(os.path.join(imageset_dir, name + ".png"))
         print(f"wrote {imageset_dir} ({size // 1024} KB)")
+
+    print(f"wrote {write_launch_imageset()}")
 
 
 if __name__ == "__main__":

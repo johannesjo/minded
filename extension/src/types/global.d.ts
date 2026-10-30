@@ -116,6 +116,16 @@ declare module "*.json" {
 // from other modules are referenced with `import()` types for that reason.
 interface Window {
   androidMinded?: import("@src/dataInterface/dataInterface.types").AndroidMindedBridge;
-  iosMinded?: import("@src/dataInterface/dataInterface.types").IOSMindedBridge;
+  // The iOS shell's message channel: WKWebView script-message handlers that
+  // MainViewController registers. They exist only inside the iOS app, so every
+  // call optional-chains them, the way androidMinded is.
+  webkit?: {
+    messageHandlers?: {
+      // Light / medium / heavy, or "tick" (MainViewController's SunHaptics).
+      mindedHaptic?: { postMessage: (type: string) => void };
+      // The first surface has painted: ease the launch sky out.
+      mindedSunReady?: { postMessage: (message: string) => void };
+    };
+  };
   IS_MAIN_MINDED_6622?: boolean;
 }

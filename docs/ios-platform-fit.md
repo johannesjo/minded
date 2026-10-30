@@ -102,9 +102,9 @@ Honest caveats:
   path needs Apple's entitlement and still carries the wall posture, softened.
 - Whether always-pass-through, budget-free triggering is fully expressible in
   `DeviceActivity` needs verification before any commitment.
-- The current iOS code (Capacitor WebView + a Shortcuts automation intent) is
-  none of this - Shortcuts doesn't block, it only nags. It is a dead end, not a
-  foundation.
+- The iOS code of the time (Capacitor WebView + a Shortcuts automation intent)
+  was none of this - Shortcuts doesn't block, it only nags. It was a dead end,
+  not a foundation, and has since been removed (#155).
 
 ## Current decision
 

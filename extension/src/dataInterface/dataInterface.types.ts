@@ -68,10 +68,3 @@ export interface AndroidMindedBridge {
   getMediaVolume?: () => number;
   test: () => void;
 }
-
-/**
- * iOS native bridge interface (placeholder for future implementation)
- */
-export interface IOSMindedBridge {
-  // Add iOS-specific methods when they exist
-}
