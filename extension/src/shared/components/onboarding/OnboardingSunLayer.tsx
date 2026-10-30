@@ -12,7 +12,8 @@ import { createOnboardingSunDemo } from "./createOnboardingSunDemo";
 import styles from "./onboardingSunLayer.module.scss";
 
 /**
- * The ONE onboarding sun and its tap-to-pause demo overlay - shared by every
+ * The ONE onboarding sun and its welcome demo (tap-to-pause, or the let-go
+ * gesture where the intervention is the only sun - see welcomeGesture) - shared by every
  * platform's onboarding. It owns the shared takeover state machine
  * (createOnboardingSunDemo), so the whole thing lives in one place; each flow
  * supplies only its step/leaving signals, its base settle rests, and how to
@@ -78,7 +79,9 @@ export const OnboardingSunLayer = (props: {
             aria-description={
               d.isPauseDrivingSun() && d.isSunInputEnabled()
                 ? getSunHandlers()?.getAccessibleDescription?.()
-                : undefined
+                : d.isSunGrabbable() && isLetGoWelcome()
+                  ? `Drag the ${d.sunVariant} down or press Enter to let go.`
+                  : undefined
             }
             aria-keyshortcuts={
               d.isPauseDrivingSun() && d.isSunInputEnabled()
