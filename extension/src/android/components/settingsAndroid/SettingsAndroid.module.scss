@@ -77,6 +77,19 @@
   pointer-events: none;
 }
 
+// The save sits under a list that runs to 100+ apps on a real phone. Pinned to
+// the bottom of the scrolling step, it's always in reach instead of at the far
+// end of the list.
+.footer {
+  position: sticky;
+  bottom: 0;
+  padding: 24px 16px 0;
+  // Rows scrolling beneath soften into a frosted fade instead of showing
+  // through the button; the mask lets the blur ease in from nothing.
+  backdrop-filter: blur(8px);
+  mask-image: linear-gradient(to bottom, transparent, #000 24px);
+}
+
 .backBtn {
   margin-right: 16px;
 }

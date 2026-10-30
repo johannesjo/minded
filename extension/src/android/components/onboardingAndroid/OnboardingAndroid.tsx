@@ -240,7 +240,13 @@ export const OnboardingAndroid = (props: {
   // exist: the flow is welcome → places → ready (3), not 5 with a jump.
   const isShortFlow = () => getStep() >= 4 && !getHasApps();
   const displayNrOfSteps = () => (isShortFlow() ? 3 : 5);
-  const displayActiveStep = () => (isShortFlow() ? 2 : getStep());
+  // "Almost there" sits on the last dot, but the permissions weren't given:
+  // keep the stepper on the permission step instead of ticking it off. Only
+  // there - stepping back to an earlier dot must still show that dot.
+  const displayActiveStep = () =>
+    isShortFlow() || (getPermissionNotGiven() && getStep() >= 4)
+      ? 2
+      : getStep();
 
   // The denied path's costless alternative: pin the widget right there.
   const handleOfferPin = () => {

@@ -233,15 +233,17 @@ export const MissingCapabilityView = (props: {
 
             {getIsShowManualInstructions() && (
               <>
+                {/* The step people most often get lost in: the system list
+                    is long and phones file downloaded apps under different
+                    names, so say exactly where to look. */}
                 <p class={styles.smallText}>
-                  If the button above doesn't work, you can enable the
-                  accessibility service and the permission manually in your
-                  device settings.
+                  Can't find it? In Accessibility, look under{" "}
+                  <em>Downloaded apps</em> or <em>Installed apps</em>, open{" "}
+                  <em>minded</em> and switch it on.
                 </p>
                 <p class={styles.smallText}>
-                  In case there are problems with the accessibility service,
-                  enabling, disabling and then enabling the service again will
-                  likely help.
+                  If it's on but nothing happens, switching it off and on again
+                  usually helps.
                 </p>
               </>
             )}
@@ -290,10 +292,9 @@ export const MissingCapabilityView = (props: {
                 <span class={styles.optionalBadge}>Optional</span>
               )}
               <p class={styles.permissionText}>
-                Battery optimization can silently stop <em>minded</em> in the
-                background, so interventions no longer appear. Excluding{" "}
-                <em>minded</em> from battery optimization keeps the{" "}
-                {companionWord()} able to appear.
+                Battery optimization can quietly stop <em>minded</em> in the
+                background, and then the {companionWord()} no longer appears.
+                Excluding <em>minded</em> lets it keep meeting you.
               </p>
               <Btn
                 onClick={() => onMissingCapabilityClick("BatteryOptimization")}

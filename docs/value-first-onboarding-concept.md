@@ -244,8 +244,8 @@ and stays out.
 - **Not persuasion sequencing.** The demo-before-ask exists for informed
   consent - the user should know what the permission buys before deciding -
   not to warm them up. The test: every skip stays first-class and unpunished
-  ("I'll set this up later" on the welcome, "maybe later" on permissions, the
-  choice step's skip, iOS's "I'll add it later"), and denied permissions keep
+  ("set up later" on both welcomes, "maybe later" on permissions, the
+  choice step's skip, iOS's "add it later"), and denied permissions keep
   routing to the existing gentle "Almost there," never a guilt screen.
 - **No new persistent state beyond what's listed.** No "intervention mode"
   enum, no widget-nudge counters, no onboarding-variant flags. The only
@@ -313,6 +313,23 @@ and stays out.
 - The `MindedWidget` target is wired into `App.xcodeproj` by CI at build time
   (`add_widget_target.rb`, before `pod install` - see `RELEASING.md`), so
   step 1 points at a widget that is in every TestFlight build.
+
+**Polish pass (after first landing)**
+
+- The demo opens on one fixed NOTICE cue (`onboardingDemoLine.ts`, routed
+  through the `widgetLine` path) instead of whatever the router picked - a
+  brand-new user always drew a reflection question to type into, the heaviest
+  first pause there is. A one-tap noticing works anywhere with a phone in hand.
+- The app picker lists common feed apps first (`sortAppsForPicker.ts`), and
+  its save is sticky, so it never sits at the end of a 100+ row list. The
+  chore steps fade content out under the sky sun and above the stepper
+  instead of cutting it.
+- A declined permission no longer shows that step as ticked on
+  "Almost there".
+- iOS's welcome got the same "set up later" as Android's.
+- The optional-permissions banner rests for the first dashboard visit after
+  onboarding (the user just skipped those on purpose) and comes back on the
+  next resume.
 
 ## Open questions
 

@@ -241,6 +241,15 @@ export const OnboardingIOS = (props: {
                     continue
                   </Btn>
                 </ButtonWrapper>
+
+                {/* Same first-class deferral as Android's welcome: meeting the
+                    sun is never gated behind the demo. The dashboard's widget
+                    invitation re-offers step 1 later. */}
+                <div class={styles.skipWrapper}>
+                  <Btn outline onClick={leaveToDashboard}>
+                    set up later
+                  </Btn>
+                </div>
               </div>
             </Match>
 
@@ -268,7 +277,7 @@ export const OnboardingIOS = (props: {
 
                 <div class={styles.skipWrapper}>
                   <Btn outline onClick={leaveToDashboard}>
-                    I'll add it later
+                    add it later
                   </Btn>
                 </div>
               </div>

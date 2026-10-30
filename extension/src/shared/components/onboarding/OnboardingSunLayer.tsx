@@ -9,6 +9,7 @@ import {
 } from "@src/shared/components/interaction/sun/sunStore";
 import InteractionOverlay from "@src/shared/components/dashboard/interactionOverlay/InteractionOverlay";
 import { createOnboardingSunDemo } from "./createOnboardingSunDemo";
+import { ONBOARDING_DEMO_LINE } from "./onboardingDemoLine";
 import styles from "./onboardingSunLayer.module.scss";
 
 /**
@@ -155,6 +156,7 @@ export const OnboardingSunLayer = (props: {
       */}
       {d.getIsShowPause() && (
         <InteractionOverlay
+          widgetLine={ONBOARDING_DEMO_LINE}
           onClosingStarted={d.onPauseClosing}
           onHideInteraction={() => {
             d.onPauseClosed();

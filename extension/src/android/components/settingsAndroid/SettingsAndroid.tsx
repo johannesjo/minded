@@ -17,6 +17,7 @@ import {
   isWidgetPinAvailable,
   readIsWidgetPlaced,
 } from "@src/android/util/widgetPlacement";
+import { sortAppsForPicker } from "./sortAppsForPicker";
 
 export const SettingsAndroid = (props: {
   isRouting?: boolean;
@@ -74,7 +75,7 @@ export const SettingsAndroid = (props: {
         androidInterface.getAllApps(),
         [],
       );
-      setAvailableApps(apps);
+      setAvailableApps(sortAppsForPicker(apps));
     });
 
     if (props.initialBlockedApps === undefined) {
@@ -178,7 +179,7 @@ export const SettingsAndroid = (props: {
       </div>
 
       {!props.autoSave && (
-        <div>
+        <div class={styles.footer}>
           {props.isRouting && (
             <Btn class={styles.backBtn} onClick={() => navigate("/")}>
               <Ico name="arrowBack" /> Back
