@@ -231,9 +231,12 @@ describe("interactive sun accessibility", () => {
       "onKeyboardActivate={handleGoodnightMoonAction}",
     );
     expect(windDown).toContain("a11yAlternateAction");
-    for (const host of [webOnboarding, androidOnboarding, iosOnboarding]) {
+    for (const host of [androidOnboarding, iosOnboarding]) {
       expect(host).toContain("getIsPauseOpen()");
       expect(host).toContain("onPauseVisibilityChange={setIsPauseOpen}");
     }
+    // Desktop teaches the let-go gesture instead, so no pause ever opens over
+    // its chrome and there is nothing to make inert.
+    expect(webOnboarding).toContain('welcomeGesture="letGo"');
   });
 });
