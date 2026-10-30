@@ -59,17 +59,21 @@
   transform-origin: center;
   will-change: transform, box-shadow;
 
-  // Keyboard focus takes the sun's own warm accent (_warmDetails.scss), not the
-  // link teal: a near-black ring around the disc read as a hard border, and
-  // a programmatic focus handoff (requestSunFocus after a pause) can surface
-  // it mid-flow. The accent still holds >= 3:1 against both skies.
-  &:focus-visible {
-    outline: 1.5px solid var(--c-accent, #b85a17);
-    outline-offset: 8px;
-  }
-
+  // The sun never wears a border - not even a focus ring. Any ring around the
+  // disc reads as a hard edge, and a programmatic focus handoff
+  // (requestSunFocus after a pause) can surface it mid-flow. Keyboard focus is
+  // carried by light instead: a soft white bloom (filter, so it stacks on the
+  // JS-driven box-shadow halo without redeclaring it; white per THE HALO RULE).
+  outline: none;
   /* Ensure box-shadow transitions smoothly even when JS updates the variables */
-  transition: box-shadow 0.1s linear;
+  transition:
+    box-shadow 0.1s linear,
+    filter 0.3s ease;
+
+  &:focus-visible {
+    outline: none;
+    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.9));
+  }
 
   // The two disc faces. Both are always-mounted children (Sun.tsx and the
   // display-only BreathSun span render them) crossfading on the variant class,
