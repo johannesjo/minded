@@ -31,10 +31,19 @@ export const OnboardingSunLayer = (props: {
   getBaseSettle: () => SunSettle | null;
   advanceFromWelcome: () => void;
   onPauseExperienced?: () => void;
-  onPauseVisibilityChange: (isOpen: boolean) => void;
+  onPauseVisibilityChange?: (isOpen: boolean) => void;
+  /**
+   * What the welcome disc teaches. "tap" (default) opens the real pause - the
+   * companion sun's own gesture. "letGo" teaches the intervention's gesture
+   * instead (drag down or fling away), for platforms whose only sun is the
+   * intervention: there, a tap-to-pause demo rehearses something the user
+   * never meets again.
+   */
+  welcomeGesture?: "tap" | "letGo";
 }): JSX.Element => {
   const d = createOnboardingSunDemo(props);
-  createEffect(() => props.onPauseVisibilityChange(d.getIsShowPause()));
+  const isLetGoWelcome = () => props.welcomeGesture === "letGo";
+  createEffect(() => props.onPauseVisibilityChange?.(d.getIsShowPause()));
 
   const openPauseWithFocus = () => {
     d.openPause();
@@ -59,7 +68,9 @@ export const OnboardingSunLayer = (props: {
             settle={d.getActiveSunSettle()}
             aria-label={
               d.isSunGrabbable()
-                ? "Open a mindful pause"
+                ? isLetGoWelcome()
+                  ? `Let go with the ${d.sunVariant}`
+                  : "Open a mindful pause"
                 : d.isSunInputEnabled()
                   ? getSunHandlers()?.getAccessibleLabel?.()
                   : undefined
@@ -78,7 +89,9 @@ export const OnboardingSunLayer = (props: {
               d.isPauseDrivingSun()
                 ? (activation) =>
                     getSunHandlers()?.onKeyboardActivate?.(activation)
-                : openPauseWithFocus
+                : isLetGoWelcome()
+                  ? d.advanceFromHero
+                  : openPauseWithFocus
             }
             onAccessibleActionEnabledChange={(enabled) =>
               getSunHandlers()?.onAccessibleActionEnabledChange?.(enabled)
@@ -89,7 +102,7 @@ export const OnboardingSunLayer = (props: {
               d.isPauseDrivingSun()
                 ? d.isSunInputEnabled() &&
                   (getSunHandlers()?.isTapEnabled ?? true)
-                : d.isSunGrabbable()
+                : d.isSunGrabbable() && !isLetGoWelcome()
             }
             isDragEnabled={d.isSunInputEnabled()}
             // Welcome: a single tap is the invitation into the pause. Mid-pause

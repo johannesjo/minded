@@ -73,7 +73,7 @@ describe("web onboarding sun continuity", () => {
     expect(sun).toMatch(/tabIndex=/);
   });
 
-  it("lets the pause be felt before explaining it on every platform", () => {
+  it("lets the pause be felt before explaining it where the companion exists", () => {
     const layer = source(
       "src/shared/components/onboarding/OnboardingSunLayer.tsx",
     );
@@ -81,7 +81,6 @@ describe("web onboarding sun continuity", () => {
       "src/shared/components/onboarding/createOnboardingSunDemo.ts",
     );
     const onboardings = [
-      source("src/pages/newtab/components/onboardingWeb/OnboardingWeb.tsx"),
       source("src/android/components/onboardingAndroid/OnboardingAndroid.tsx"),
       source("src/ios/components/onboardingIOS/OnboardingIOS.tsx"),
     ];
@@ -94,6 +93,24 @@ describe("web onboarding sun continuity", () => {
       expect(onboarding).toContain("Tap the {companionWord()}.");
       expect(onboarding).toContain("isVisible={getHasExperiencedPause()}");
     }
+  });
+
+  // Desktop has no tap-to-pause companion - its only sun is the intervention -
+  // so the welcome rehearses the intervention's let-go gesture instead.
+  it("teaches the intervention's let-go gesture on desktop", () => {
+    const onboarding = source(
+      "src/pages/newtab/components/onboardingWeb/OnboardingWeb.tsx",
+    );
+    const layer = source(
+      "src/shared/components/onboarding/OnboardingSunLayer.tsx",
+    );
+
+    expect(onboarding).toContain('welcomeGesture="letGo"');
+    expect(onboarding).toContain(
+      "Drag the {companionWord()} down or fling it away to let go.",
+    );
+    expect(onboarding).not.toContain("Tap the {companionWord()}.");
+    expect(layer).toMatch(/d\.isSunGrabbable\(\) && !isLetGoWelcome\(\)/);
   });
 
   it("rests on the hero, setup sky, final hero, then dashboard companion", () => {

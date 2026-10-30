@@ -7,7 +7,6 @@ import {
   on,
   onCleanup,
   onMount,
-  Show,
   Switch,
 } from "solid-js";
 import { WebsiteList } from "@pages/newtab/components/onboardingWeb/WebsiteList";
@@ -44,8 +43,6 @@ export const OnboardingWeb: (props: {
   // follows after its predecessor has faded away.
   const [getStep, setStep] = createSignal(0);
   const [getShownStep, setShownStep] = createSignal(0);
-  const [getHasExperiencedPause, setHasExperiencedPause] = createSignal(false);
-  const [getIsPauseOpen, setIsPauseOpen] = createSignal(false);
   const [getIsLeaving, setIsLeaving] = createSignal(false);
   const [getIsSavingCompletion, setIsSavingCompletion] = createSignal(false);
   const [getCompletionError, setCompletionError] = createSignal("");
@@ -201,8 +198,8 @@ export const OnboardingWeb: (props: {
         class={styles.chrome}
         classList={{ [styles.isLeaving]: getIsLeaving() }}
         ref={chromeEl}
-        aria-hidden={getIsLeaving() || getIsPauseOpen() ? "true" : undefined}
-        inert={getIsLeaving() || getIsPauseOpen() ? true : undefined}
+        aria-hidden={getIsLeaving() ? "true" : undefined}
+        inert={getIsLeaving() ? true : undefined}
       >
         <div
           class={styles.contentWrapper}
@@ -217,21 +214,13 @@ export const OnboardingWeb: (props: {
                   Meet <em>minded</em>
                 </div>
                 <div class={styles.infoText}>
-                  <Show
-                    when={getHasExperiencedPause()}
-                    fallback={<p>Tap the {companionWord()}.</p>}
-                  >
-                    <p class="pageTransitionIn">
-                      On the sites you choose, it can offer this same quiet
-                      pause: an invitation, never a wall.
-                    </p>
-                  </Show>
+                  {/* The intervention's own gesture and words: on desktop the
+                      sun only ever meets you there, so that is what to rehearse
+                      (the tap-to-pause companion doesn't exist here). */}
+                  <p>
+                    Drag the {companionWord()} down or fling it away to let go.
+                  </p>
                 </div>
-                <ButtonWrapper isVisible={getHasExperiencedPause()}>
-                  <Btn big onClick={() => changeStep(1)}>
-                    continue
-                  </Btn>
-                </ButtonWrapper>
               </div>
             </Match>
 
@@ -294,8 +283,7 @@ export const OnboardingWeb: (props: {
         getIsLeaving={getIsLeaving}
         getBaseSettle={getSunSettle}
         advanceFromWelcome={() => changeStep(1)}
-        onPauseExperienced={() => setHasExperiencedPause(true)}
-        onPauseVisibilityChange={setIsPauseOpen}
+        welcomeGesture="letGo"
       />
 
       <div class={styles.skyProbe} ref={skyProbeEl} aria-hidden="true" />
