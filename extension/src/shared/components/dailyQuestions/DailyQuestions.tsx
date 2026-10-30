@@ -30,6 +30,7 @@ import {
   getDailyQuestionsMode,
 } from "@src/shared/components/dailyQuestions/getDailyQuestionsMode";
 import { useNavigate } from "@solidjs/router";
+import { fadeOutThen } from "@src/util/animation";
 
 const AFTER_ANI_WAIT_DURATION = 1100;
 
@@ -52,6 +53,19 @@ const DailyQuestions = () => {
   const navigate = useNavigate();
   const [getAnswers, setAnswers] = createSignal<Answer[]>([]);
   const [getStep, setStep] = createSignal(0);
+  // Each answered step eases out before the next eases in (its own entrance
+  // below) - a plain setStep cut the leaving question out in one frame. The
+  // wrapper's inline fade is cleared as the next step mounts at its first,
+  // invisible keyframe, so nothing flashes back.
+  let interactionWrapperEl: HTMLDivElement | undefined;
+  const toStep = (step: number) =>
+    fadeOutThen(interactionWrapperEl ?? null, () => {
+      setStep(step);
+      if (interactionWrapperEl) {
+        interactionWrapperEl.style.opacity = "";
+        interactionWrapperEl.style.transition = "";
+      }
+    });
 
   const today = new Date();
   const isMonday = today.getDay() === 1;
@@ -157,12 +171,12 @@ const DailyQuestions = () => {
         pageWrapper: true,
       }}
     >
-      <div class={styles.interactionWrapper}>
+      <div ref={interactionWrapperEl} class={styles.interactionWrapper}>
         {mode === "Morning" && (
           <Switch>
             <Match when={getStep() === 0}>
               <EnergyLvlInteraction
-                onSuccess={() => setStep(1)}
+                onSuccess={() => toStep(1)}
                 onSkip={() => undefined}
                 onCancelCountdown={() => undefined}
               />
@@ -175,7 +189,7 @@ const DailyQuestions = () => {
                   QuestionCategoryId.GoalForTheWeek,
                 )}
                 answers={getAnswers()}
-                onSuccess={() => setStep(2)}
+                onSuccess={() => toStep(2)}
                 onSkip={() => undefined}
                 onUpdateQuestion={() => undefined}
                 onCancelCountdown={() => undefined}
@@ -189,7 +203,7 @@ const DailyQuestions = () => {
                 answers={getAnswers()}
                 onSuccess={() => {
                   onSuccess();
-                  setStep(lastStep);
+                  toStep(lastStep);
                 }}
                 onSkip={() => undefined}
                 onUpdateQuestion={() => undefined}
@@ -214,7 +228,7 @@ const DailyQuestions = () => {
                   QuestionCategoryId.GoodToday,
                 )}
                 answers={getAnswers()}
-                onSuccess={() => setStep(1)}
+                onSuccess={() => toStep(1)}
                 onSkip={() => undefined}
                 onUpdateQuestion={() => undefined}
                 onCancelCountdown={() => undefined}
@@ -228,7 +242,7 @@ const DailyQuestions = () => {
                 answers={getAnswers()}
                 onSuccess={() => {
                   onSuccess();
-                  setStep(2);
+                  toStep(2);
                 }}
                 onSkip={() => undefined}
                 onUpdateQuestion={() => undefined}

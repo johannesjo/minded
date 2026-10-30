@@ -7,7 +7,7 @@ import {
   useLocation,
   useSearchParams,
 } from "@solidjs/router";
-import { fadeOutCurrentPage } from "@src/util/animation";
+import { fadeOut, fadeOutCurrentPage, PAGE_FADE_MS } from "@src/util/animation";
 import { prefersReducedMotion } from "@src/util/prefersReducedMotion";
 import { Dashboard } from "@src/shared/components/dashboard/Dashboard";
 import {
@@ -166,6 +166,34 @@ const MainWrapper = (props: RouteSectionProps) => {
   // so re-pushing the faded-out destination would override their back press).
   let pendingRetry: (() => void) | null = null;
   const normalizeHashPath = (s: string): string => s.replace(/^#/, "") || "/";
+  // The bottom bar lives outside the faded page node, and it swaps its icons
+  // (feedback + settings on the dashboard, a back arrow elsewhere) when a move
+  // crosses the dashboard. Fade the outgoing set with the page so it doesn't
+  // hold at full opacity and then cut out as the new set mounts. Any icon still
+  // mounted once the move has run (it didn't swap after all) is handed back to
+  // its own CSS entrance - clearing the inline styles restarts that fade-in.
+  const isDashboardPath = (path: string) => path.split(/[?#]/)[0] === "/";
+  const fadeOutBottomBarIcons = (): HTMLElement[] => {
+    const icons = Array.from(
+      document.querySelectorAll<HTMLElement>("[data-bottom-bar] > *"),
+    );
+    icons.forEach((el) => {
+      // Its entrance animation holds opacity via fill-mode, which would
+      // override the inline fade - drop it (it has already finished at 1).
+      el.style.animation = "none";
+      fadeOut(el, PAGE_FADE_MS);
+    });
+    return icons;
+  };
+  const restoreBottomBarIcons = (icons: HTMLElement[]) =>
+    requestAnimationFrame(() =>
+      icons.forEach((el) => {
+        if (!el.isConnected) return;
+        el.style.animation = "";
+        el.style.opacity = "";
+        el.style.transition = "";
+      }),
+    );
   useBeforeLeave((e: BeforeLeaveEventArgs) => {
     const state = e.options?.state as { skipPageFade?: boolean } | undefined;
     if (
@@ -188,11 +216,16 @@ const MainWrapper = (props: RouteSectionProps) => {
     if (isPageFading) return;
 
     isPageFading = true;
+    const fadedBarIcons =
+      isDashboardPath(e.to) !== isDashboardPath(e.from.pathname)
+        ? fadeOutBottomBarIcons()
+        : [];
     fadeOutCurrentPage().then(() => {
       isPageFading = false;
       const retry = pendingRetry;
       pendingRetry = null;
       retry?.();
+      restoreBottomBarIcons(fadedBarIcons);
     });
   });
 

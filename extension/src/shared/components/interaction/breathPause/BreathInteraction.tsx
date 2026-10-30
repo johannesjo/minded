@@ -2,10 +2,14 @@ import { createSignal, JSX, onCleanup } from "solid-js";
 import Btn from "@src/shared/components/ui/Btn";
 import { StrongFrictionBreathPause } from "@src/shared/components/interaction/breathPause/StrongFrictionBreathPause";
 import { STRONG_FRICTION_BREATH_PAUSE_SECONDS } from "@src/shared/components/interaction/postSunPause";
+import { createScreenFade } from "@src/util/screenFade";
 
 /** Keep the parent's auto-dismiss countdown at bay while the breath runs
  *  without any pointer input (same job as urge surfing's wave tick). */
 const KEEP_ALIVE_MS = 1000;
+/** Invite ↔ breath crossfade - the page-level beat (--dur-soft), as the
+ *  sibling multi-screen interactions (urge surfing, emotion labeling) use. */
+const FADE_MS = 480;
 
 interface BreathInteractionProps {
   onSuccess: () => void;
@@ -39,7 +43,14 @@ export const BreathInteraction = (
   // Set at completion: the pause stays mounted through the success fade (an
   // unmount would cut it), so its cancel button needs to become a no-op.
   let hasFinished = false;
+  // Whether the sun is ours (sent to its breath anchor). Set at the tap, not
+  // when the phase flips behind the crossfade, so a teardown inside that fade
+  // still hands the disc back.
+  let hasBegunBreath = false;
   let keepAliveId: ReturnType<typeof setInterval> | undefined;
+  // The invite and the breath screen cross-fade rather than swap in one frame
+  // (the breath screen is far taller, so a plain swap also jumped the layout).
+  const screenFade = createScreenFade(FADE_MS);
 
   const stopKeepAlive = (): void => {
     if (keepAliveId !== undefined) {
@@ -53,8 +64,12 @@ export const BreathInteraction = (
     // the solid/reactivity lint rule (as UrgeSurfing does).
     const onCancelCountdown = props.onCancelCountdown;
     onCancelCountdown();
+    hasBegunBreath = true;
     props.onSunBreathStart();
-    setPhase("breath");
+    // The sun answers at once (gliding to its breath anchor); the copy swaps
+    // behind the fade. The cue reads the sun's published breath clock, so the
+    // later mount can't put it out of step.
+    screenFade.toScreen(() => setPhase("breath"));
     stopKeepAlive();
     keepAliveId = setInterval(() => onCancelCountdown(), KEEP_ALIVE_MS);
   };
@@ -74,10 +89,11 @@ export const BreathInteraction = (
     if (hasFinished) return;
     stopKeepAlive();
     props.onCancelCountdown();
+    hasBegunBreath = false;
     props.onSunBreathEnd();
     // Back to the invitation, sun interactive again - leaving the breath is
     // not leaving the intervention (the sun remains the way out of that).
-    setPhase("invite");
+    screenFade.toScreen(() => setPhase("invite"));
   };
 
   onCleanup(() => {
@@ -85,7 +101,7 @@ export const BreathInteraction = (
     // Only while *our* breath is running is the settled sun ours to return: a
     // blanket reset here would yank the sun out of whatever settle a later
     // stage of the flow (the post-tap intent breath, say) has put it in.
-    if (getPhase() === "breath" && !hasFinished) {
+    if (hasBegunBreath && !hasFinished) {
       props.onSunBreathEnd();
     }
   });
@@ -94,6 +110,10 @@ export const BreathInteraction = (
     <div
       id="minded-6622-breath"
       class="breath-interaction"
+      style={{
+        opacity: screenFade.opacity(),
+        "pointer-events": screenFade.isFading() ? "none" : undefined,
+      }}
       onMouseMove={props.onCancelCountdown}
     >
       {getPhase() === "invite" ? (

@@ -50,9 +50,13 @@
       outline-offset: 3px;
     }
 
+    // Gated on a real hover pointer as well as width: on a touch tablet a
+    // tap leaves :hover stuck, holding the tapped dot enlarged.
     @include onNonMobileScreens {
-      &:hover {
-        transform: scale(1.6);
+      @media (hover: hover) {
+        &:hover {
+          transform: scale(1.6);
+        }
       }
       &:active {
         transform: scale(1.1);

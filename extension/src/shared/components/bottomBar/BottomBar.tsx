@@ -35,6 +35,8 @@ const BottomBar = (props: { inert?: boolean }) => {
 
   return (
     <div
+      // Lets the router's page fade find the icons (RouteCmp).
+      data-bottom-bar
       inert={props.inert ? true : undefined}
       onClick={goBack}
       style={!getIsOnDashboard() ? { cursor: "pointer" } : {}}

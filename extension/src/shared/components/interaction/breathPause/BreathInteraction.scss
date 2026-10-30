@@ -1,6 +1,12 @@
 .breath-interaction {
   // Interactive surface - the invitation's tap needs to land (mirrors NOTICE).
   pointer-events: all;
+  // Invite ↔ breath crossfade; the opacity is driven from the component.
+  transition: opacity var(--dur-soft) var(--ease-out);
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
 
   .breath-invite-cue {
     max-width: 18em;

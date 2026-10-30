@@ -316,6 +316,12 @@
   transform: translateX(-50%);
   z-index: 10;
   pointer-events: all;
+  transition: opacity var(--dur-quick) var(--ease-out);
+
+  &.is-leaving {
+    opacity: 0;
+    pointer-events: none;
+  }
 }
 
 // Shared layout helpers for interaction-mode content blocks.

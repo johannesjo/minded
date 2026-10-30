@@ -41,7 +41,7 @@ describe("the BREATH intervention", () => {
     // Back to the invitation with the sun interactive again - the sun remains
     // the way out of the intervention itself. No success, nothing marked.
     expect(normalized).toMatch(
-      /const cancel = \(\): void => \{ if \(hasFinished\) return; stopKeepAlive\(\); props\.onCancelCountdown\(\); props\.onSunBreathEnd\(\); .*?setPhase\("invite"\); \};/,
+      /const cancel = \(\): void => \{ if \(hasFinished\) return; stopKeepAlive\(\); props\.onCancelCountdown\(\); hasBegunBreath = false; props\.onSunBreathEnd\(\); .*?setPhase\("invite"\)\); \};/,
     );
   });
 
@@ -57,7 +57,7 @@ describe("the BREATH intervention", () => {
     // A blanket reset would yank the sun out of whatever settle a later stage
     // of the flow (the post-tap intent breath) has put it in.
     expect(normalized).toMatch(
-      /onCleanup\(\(\) => \{ stopKeepAlive\(\); .*?if \(getPhase\(\) === "breath" && !hasFinished\) \{ props\.onSunBreathEnd\(\); \}/,
+      /onCleanup\(\(\) => \{ stopKeepAlive\(\); .*?if \(hasBegunBreath && !hasFinished\) \{ props\.onSunBreathEnd\(\); \}/,
     );
   });
 

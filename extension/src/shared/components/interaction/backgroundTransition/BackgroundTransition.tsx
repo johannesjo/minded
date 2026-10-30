@@ -46,7 +46,7 @@ export const BackgroundTransition: Component<BackgroundTransitionProps> = (
 
   // const dragThreshold = props.dragThreshold || 0.3; // Default 30% threshold
 
-  let animationFrame: number;
+  let animationFrame: number | undefined;
 
   const checkDarkMode = () => {
     const mindedWrapper =
@@ -78,6 +78,9 @@ export const BackgroundTransition: Component<BackgroundTransitionProps> = (
       }
 
       if (isDragging) {
+        // The finger owns the sky again: stop a snap-back still easing home,
+        // or its frames and the drag's would fight and the sky would flicker.
+        stopAnimation();
         // Map intensity (0-1) to progress (-1 to 1)
         const progress = direction === "up" ? -intensity : intensity;
         setProgress(progress);
@@ -133,6 +136,13 @@ export const BackgroundTransition: Component<BackgroundTransitionProps> = (
     }
   });
 
+  const stopAnimation = () => {
+    if (animationFrame === undefined) return;
+    cancelAnimationFrame(animationFrame);
+    animationFrame = undefined;
+    setIsAnimating(false);
+  };
+
   const animateToDefault = () => {
     // Take over any in-flight animation (e.g. a completion still easing toward
     // night) so the two rAF loops don't fight over progress.
@@ -164,6 +174,8 @@ export const BackgroundTransition: Component<BackgroundTransitionProps> = (
   };
 
   const animateToCompletion = (direction: "up" | "down") => {
+    // Take over a snap-back still in flight, as animateToDefault does.
+    if (animationFrame) cancelAnimationFrame(animationFrame);
     setIsAnimating(true);
     const startProgress = getProgress();
     const targetProgress = direction === "up" ? -1 : 1;

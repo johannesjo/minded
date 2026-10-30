@@ -56,6 +56,18 @@ export const LittleSunComponent: (props: {
     null,
   );
   const [getShowHint, setShowHint] = createSignal(false);
+  // The hint eases out before it unmounts (it used to cut out mid-glance).
+  const HINT_OUT_MS = 300;
+  const [getIsHintLeaving, setIsHintLeaving] = createSignal(false);
+  let hintOutTimeout: number | undefined;
+  const hideHint = () => {
+    if (!getShowHint() || getIsHintLeaving()) return;
+    setIsHintLeaving(true);
+    hintOutTimeout = window.setTimeout(() => {
+      setShowHint(false);
+      setIsHintLeaving(false);
+    }, HINT_OUT_MS);
+  };
 
   let currentSessionInterval: number;
   let hintTimeout: NodeJS.Timeout | undefined;
@@ -71,7 +83,7 @@ export const LittleSunComponent: (props: {
 
     hintTimeout = setTimeout(() => {
       setShowHint(true);
-      hintTimeout = setTimeout(() => setShowHint(false), 6500);
+      hintTimeout = setTimeout(hideHint, 6500);
     }, 900);
   };
 
@@ -210,12 +222,13 @@ export const LittleSunComponent: (props: {
   onCleanup(() => {
     isDisposed = true;
     window.clearTimeout(hintTimeout);
+    window.clearTimeout(hintOutTimeout);
     window.clearInterval(currentSessionInterval);
     bro.storage.onChanged.removeListener(handleStorageChange);
   });
 
   const dismissHint = () => {
-    setShowHint(false);
+    hideHint();
     window.clearTimeout(hintTimeout);
     bro.storage.local.set({ [LITTLE_SUN_HINT_SEEN_KEY]: true });
   };
@@ -359,7 +372,12 @@ export const LittleSunComponent: (props: {
       }}
     >
       <Show when={getShowHint()}>
-        <div id="minded-6622-little-sun-hint">{getActionLabel()}</div>
+        <div
+          id="minded-6622-little-sun-hint"
+          classList={{ isLeaving: getIsHintLeaving() }}
+        >
+          {getActionLabel()}
+        </div>
       </Show>
       <div id="minded-6622-little-sun-sun-wrapper">
         <button

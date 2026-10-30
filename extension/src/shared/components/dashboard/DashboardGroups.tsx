@@ -218,7 +218,25 @@ export const DashboardGroups: (props: {
       } else {
         window.clearTimeout(bannerExpiry);
       }
-      setIsShowDailyQuestionsBanner(showDailyQuestionsBanner);
+      if (showDailyQuestionsBanner) {
+        // Revealed (or kept) - cancel a fade-out still under way so it can't
+        // pull the card out from under this reveal.
+        if (getIsDailyQuestionsBannerBeingRemoved()) {
+          window.clearTimeout(t0);
+          setIsDailyQuestionsBannerBeingRemoved(false);
+        }
+        setIsShowDailyQuestionsBanner(true);
+      } else if (
+        getIsShowDailyQuestionsBanner() &&
+        !getIsDailyQuestionsBannerBeingRemoved()
+      ) {
+        // On screen and no longer due (a resume past its window whose expiry
+        // timer the background held back): ease it out like the expiry does,
+        // never a cut.
+        fadeOutDailyQuestionsBanner();
+      } else if (!getIsDailyQuestionsBannerBeingRemoved()) {
+        setIsShowDailyQuestionsBanner(false);
+      }
       setCustomQuestions(syncData.customQuestions ?? []);
 
       // Whether this landing decides the greeting at all - held or freshly
