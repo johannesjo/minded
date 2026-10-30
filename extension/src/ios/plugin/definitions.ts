@@ -1,7 +1,4 @@
-// import type { PluginListenerHandle } from "@capacitor/core";
-
 export interface IOSPluginDefinition {
-  continueToApp: () => void;
   /**
    * Whether any minded widget is currently on the Home Screen
    * (WidgetCenter.getCurrentConfigurations). The observed state keeps the
@@ -11,13 +8,4 @@ export interface IOSPluginDefinition {
    * never nag.
    */
   isWidgetInstalled: () => Promise<{ isInstalled: boolean }>;
-  // addListener(
-  //   eventName: "screenOrientationChange",
-  //   listenerFunc: (orientation: { type: OrientationType }) => void,
-  // ): Promise<PluginListenerHandle> & PluginListenerHandle;
-  //
-  // /**
-  //  * Removes all listeners
-  //  */
-  // removeAllListeners(): Promise<void>;
 }

@@ -76,6 +76,13 @@
       if (night) {
         document.documentElement.className += " minded-loading-dark";
       }
+      // The shell holds its launch sky over this page until the app paints, and
+      // a launch screen can only follow the phone's light/dark setting - so name
+      // the sky this really is, and it turns to match early
+      // (MainViewController's turnLaunchSky).
+      try {
+        window.webkit.messageHandlers.mindedLoadingSky.postMessage(night ? "dark" : "light");
+      } catch (e) { /* the launch sky has already eased out */ }
     </script>
 </head>
 

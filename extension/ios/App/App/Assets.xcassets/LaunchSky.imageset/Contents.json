@@ -1,0 +1,22 @@
+{
+  "images": [
+    {
+      "filename": "LaunchSky.png",
+      "idiom": "universal"
+    },
+    {
+      "appearances": [
+        {
+          "appearance": "luminosity",
+          "value": "dark"
+        }
+      ],
+      "filename": "LaunchSky-dark.png",
+      "idiom": "universal"
+    }
+  ],
+  "info": {
+    "author": "gen_loading_sky.py",
+    "version": 1
+  }
+}

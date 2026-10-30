@@ -9,6 +9,9 @@ import {
   shouldAcceptSunPointerStart,
   shouldResetTerminalStateForSettle,
   shouldSnapCompanionReanchor,
+  triggerHaptic,
+  triggerHapticPattern,
+  triggerSoftTick,
 } from "./sunAnimationUtils";
 import { sunCompanionSettle } from "./sunSettle";
 
@@ -236,6 +239,65 @@ describe("sun animation utils", () => {
 
       expect(shouldResetTerminalStateForSettle(onboardingRest)).toBe(true);
       expect(isCompanionReanchorSettle(onboardingRest)).toBe(false);
+    });
+  });
+
+  describe("haptics in the iOS app", () => {
+    // Jest runs in node: stand in a window carrying only what the iOS shell
+    // provides - the WKWebView message handler, and no Android bridge.
+    const globals = globalThis as unknown as { window?: unknown };
+    const originalNavigator = Object.getOwnPropertyDescriptor(
+      globalThis,
+      "navigator",
+    );
+    let postMessage: jest.Mock;
+    let vibrate: jest.Mock;
+
+    beforeEach(() => {
+      postMessage = jest.fn();
+      vibrate = jest.fn();
+      globals.window = {
+        webkit: { messageHandlers: { mindedHaptic: { postMessage } } },
+      };
+      Object.defineProperty(globalThis, "navigator", {
+        value: { vibrate },
+        configurable: true,
+      });
+    });
+
+    afterEach(() => {
+      delete globals.window;
+      if (originalNavigator) {
+        Object.defineProperty(globalThis, "navigator", originalNavigator);
+      } else {
+        delete (globalThis as { navigator?: unknown }).navigator;
+      }
+    });
+
+    it("hands each haptic to the native shell instead of the vibration API", () => {
+      triggerHaptic("light");
+      triggerHaptic("medium");
+      triggerHaptic("heavy");
+
+      expect(postMessage.mock.calls).toEqual([
+        ["light"],
+        ["medium"],
+        ["heavy"],
+      ]);
+      expect(vibrate).not.toHaveBeenCalled();
+    });
+
+    it("plays the completion pattern natively", async () => {
+      await triggerHapticPattern("completion");
+
+      expect(postMessage.mock.calls).toEqual([["heavy"], ["light"]]);
+    });
+
+    it("sends the soft tick as its own name", () => {
+      triggerSoftTick();
+
+      expect(postMessage).toHaveBeenCalledWith("tick");
+      expect(vibrate).not.toHaveBeenCalled();
     });
   });
 });
