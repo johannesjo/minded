@@ -726,10 +726,17 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
      * which excludes the snooze period - during snooze we show the regular
      * little-sun countdown instead of the full wind-down overlay.
      */
-    private fun isWindDownSnoozed(syncData: SyncData): Boolean {
-        val nightId = SleepWindDownWindow.resolveNightId(syncData.cfg) ?: return false
-        if (syncData.sleepWindDownDismissedNightId == nightId) return false
-        return syncData.sleepWindDownSnoozeUntilTS > System.currentTimeMillis()
+    private fun isWindDownSnoozed(syncData: SyncData): Boolean =
+        activeWindDownSnoozeEndMs(syncData) != null
+
+    private fun activeWindDownSnoozeEndMs(syncData: SyncData): Long? {
+        val now = System.currentTimeMillis()
+        return SleepWindDownWindow.activeSnoozeEndMs(
+            nightId = SleepWindDownWindow.resolveNightId(syncData.cfg, now),
+            dismissedNightId = syncData.sleepWindDownDismissedNightId,
+            snoozeUntilTS = syncData.sleepWindDownSnoozeUntilTS,
+            nowMs = now,
+        )
     }
 
     private fun isWindDownActive(syncData: SyncData): Boolean {
@@ -739,13 +746,9 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         return true
     }
 
-    internal fun getWindDownSnoozeTimerEndTime(): Instant? {
-        val syncData = sharedPreferenceService.getSyncData()
-        val nightId = SleepWindDownWindow.resolveNightId(syncData.cfg) ?: return null
-        if (syncData.sleepWindDownDismissedNightId == nightId) return null
-        val snoozeEndTS = syncData.sleepWindDownSnoozeUntilTS
-        return if (snoozeEndTS > 0) Instant.ofEpochMilli(snoozeEndTS) else null
-    }
+    internal fun getWindDownSnoozeTimerEndTime(): Instant? =
+        activeWindDownSnoozeEndMs(sharedPreferenceService.getSyncData())
+            ?.let { Instant.ofEpochMilli(it) }
 
     private fun showWindDownSnoozeTimer(currentPackageName: String, syncData: SyncData) {
         val snoozeEndTS = syncData.sleepWindDownSnoozeUntilTS
