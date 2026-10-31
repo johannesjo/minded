@@ -692,13 +692,27 @@ describe("commonSyncDataInterface", () => {
       });
     });
 
+    it("turns the grace on as a setting for 'Only after a while', so it outlasts the week", async () => {
+      jest.spyOn(Date, "now").mockReturnValue(now);
+      const syncData = createMockSyncData({
+        cfg: { sessionGrace: { enabled: false, minutes: 5 } },
+      });
+      mockedGetSyncData.mockResolvedValue(syncData);
+      await saveSkipCheckInChoice("later");
+      expect(mockedPatchSyncData).toHaveBeenCalledWith({
+        skipStreak: 0,
+        interventionPause: { kind: "later", untilTS: expect.any(Number) },
+        cfg: { ...syncData.cfg, sessionGrace: { enabled: true, minutes: 10 } },
+      });
+    });
+
     it("turns a synchronous storage throw into a rejection", async () => {
       mockedPatchSyncData.mockImplementation(() => {
         throw new Error("Extension was reloaded");
       });
       let result: Promise<void> | undefined;
       expect(() => {
-        result = saveSkipCheckInChoice("later");
+        result = saveSkipCheckInChoice("as_now");
       }).not.toThrow();
       await expect(result).rejects.toThrow("Extension was reloaded");
     });

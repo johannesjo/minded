@@ -26,10 +26,12 @@ import com.minded.minded.ui.compose.LittleSun
 import com.minded.minded.ui.compose.LittleSunLeaveZone
 import com.minded.minded.ui.compose.MINI_MORPH_MS
 import com.minded.minded.util.ForegroundAppResult
+import com.minded.minded.util.NaturalBreakGate
 import com.minded.minded.util.Haptics
 import com.minded.minded.util.getForegroundAppReliable
 import com.minded.minded.util.isLittleSunGlintDue
 import com.minded.minded.util.littleSunGlintEveryS
+import com.minded.minded.util.shouldEndWaitWithoutBreak
 import com.minded.minded.util.shouldHandBackToPause
 import com.minded.minded.util.unlockedSessionAfterTick
 import java.time.Instant
@@ -55,6 +57,12 @@ class LittleSunWindow(
     private var windowShownAt = 0L
     private var pendingExpiredApp: String? = null
     private var pendingExpiredWasWindDownSnooze = false
+
+    // True while a due hand-back waits for the next natural break, with the
+    // app it waits in, when it began and whether it was a wind-down snooze.
+    private var isAwaitingBreak = false
+    private var awaitingApp: String? = null
+    private var awaitingSinceMs = 0L
 
     /**
      * Set by the controller for every show: hand back to the full pause once
@@ -161,6 +169,8 @@ class LittleSunWindow(
             val activeTimer = sharedOverlayViewModel.sharedData.value.activeTimer
             val appEntry = if (currentApp != null) sharedOverlayViewModel.sharedData.value.appMap[currentApp] else null
             val windDownSnoozeEndTime = ctrlSvc.getWindDownSnoozeTimerEndTime()
+
+            if (endWaitIfDue()) return
             
             val endTime = windDownSnoozeEndTime
                 ?: activeTimer?.let { Instant.ofEpochMilli(it.endTS) }
@@ -179,18 +189,17 @@ class LittleSunWindow(
             if (endTime != null) {
                 if (now.isAfter(endTime)) {
                     // Time limit reached
-                    if (currentApp != null) {
-                        pendingExpiredApp = currentApp
-                        pendingExpiredWasWindDownSnooze = windDownSnoozeEndTime != null
+                    if (currentApp == null) {
+                        hideWindowImmediate()
+                        stopTimer()
+                        return
                     }
-                    // Resting bubble → intervention hand-off: drop the bubble
-                    // instantly (no 300ms fade) so the intervention's shield covers
-                    // the corner ~300ms sooner, with no page-flash before the sun
-                    // re-blooms there via the reverse morph. onWindowRemoved still
-                    // fires, so the intervention is triggered exactly as before.
-                    hideWindowImmediate()
-                    stopTimer()
-                    return
+                    // The chosen time is up: the pause returns at the next
+                    // natural break. The bubble rests at 0:00 meanwhile and keeps
+                    // ticking below (re-validation still hides it if the user
+                    // leaves).
+                    elapsedSeconds = 0
+                    if (handBackAtNaturalBreak(currentApp, windDownSnoozeEndTime != null)) return
                 } else {
                     val remaining = java.time.Duration.between(now, endTime).seconds.toInt()
                     // If more than 12 hours (e.g. Rest of Day), show count-up timer
@@ -217,15 +226,11 @@ class LittleSunWindow(
                     shouldHandBackToPause(activePauseAtSessionS, unlockedSessionS, isUnlocked) &&
                     currentApp != null
                 ) {
-                    // A "later" week: the user has now stayed a while, so the
-                    // bubble hands back to the full pause exactly like a session
-                    // timer running out - the sun glides back out of this corner.
+                    // Grace (or a "later" week): the user has now stayed a while,
+                    // so the bubble hands back to the full pause exactly like a
+                    // session timer running out - at the next natural break.
                     activePauseAtSessionS = null
-                    pendingExpiredApp = currentApp
-                    pendingExpiredWasWindDownSnooze = false
-                    hideWindowImmediate()
-                    stopTimer()
-                    return
+                    if (handBackAtNaturalBreak(currentApp, wasWindDownSnooze = false)) return
                 }
             }
 
@@ -349,6 +354,9 @@ class LittleSunWindow(
     }
 
     private fun maybeGlint(secondsUntilEnd: Int?) {
+        // The pause is already due, only waiting for a natural break: it is
+        // the reminder now.
+        if (isAwaitingBreak) return
         // Whichever hand-back comes first: a timed session ending, or a
         // "later" week's pause.
         val secondsUntilPause = listOfNotNull(
@@ -616,7 +624,85 @@ class LittleSunWindow(
         }
     }
 
+    /**
+     * Hand back to the full pause - the sun glides back out of this corner -
+     * once the user reaches a natural break (NaturalBreak.kt), never mid-message
+     * or mid-video. A wind-down snooze is bedtime's own timer and hands back at
+     * once, as before; so does everything when the accessibility service isn't
+     * running, since then no break could ever be seen.
+     *
+     * Returns true when it handed back right away (the bubble is gone and its
+     * timer stopped - the caller must not tick on).
+     */
+    private fun handBackAtNaturalBreak(currentApp: String, wasWindDownSnooze: Boolean): Boolean {
+        if (isAwaitingBreak) return false
+        if (wasWindDownSnooze || !NaturalBreakGate.canWatch()) {
+            handBackNow(currentApp, wasWindDownSnooze)
+            return true
+        }
+        isAwaitingBreak = true
+        awaitingApp = currentApp
+        awaitingSinceMs = System.currentTimeMillis()
+        NaturalBreakGate.await(
+            currentApp,
+            awaitingSinceMs,
+            isBlocked = { ctrlSvc.isBlockedPackage(it) },
+        ) { appAtBreak ->
+            // The bubble may have gone (the user left) between the break and
+            // this post; only a still-waiting bubble hands back.
+            if (isAwaitingBreak && isWindowShown()) handBackNow(appAtBreak, false)
+        }
+        return false
+    }
+
+    /**
+     * Ends a wait that should not go on (see shouldEndWaitWithoutBreak): the
+     * ceiling reached, or the accessibility service gone so no break could
+     * ever be seen. Only while the screen is on and unlocked, so it never
+     * fires behind the lock screen. Returns true when it handed back (the
+     * caller must not tick on).
+     */
+    private fun endWaitIfDue(): Boolean {
+        val waitingFor = awaitingApp ?: return false
+        if (!isAwaitingBreak) return false
+        val isUnlocked = powerManager.isInteractive && keyguardManager?.isKeyguardLocked != true
+        if (!isUnlocked) return false
+        if (!shouldEndWaitWithoutBreak(
+                awaitingSinceMs,
+                System.currentTimeMillis(),
+                NaturalBreakGate.canWatch(),
+            )
+        ) {
+            return false
+        }
+        cancelAwaitingBreak()
+        handBackNow(waitingFor, wasWindDownSnooze = false)
+        return true
+    }
+
+    private fun handBackNow(app: String, wasWindDownSnooze: Boolean) {
+        isAwaitingBreak = false
+        awaitingApp = null
+        pendingExpiredApp = app
+        pendingExpiredWasWindDownSnooze = wasWindDownSnooze
+        // Resting bubble → intervention hand-off: drop the bubble instantly
+        // (no 300ms fade) so the intervention's shield covers the corner
+        // ~300ms sooner, with no page-flash before the sun re-blooms there
+        // via the reverse morph. onWindowRemoved still fires, so the
+        // intervention is triggered exactly as before.
+        hideWindowImmediate()
+        stopTimer()
+    }
+
+    private fun cancelAwaitingBreak() {
+        if (!isAwaitingBreak) return
+        isAwaitingBreak = false
+        awaitingApp = null
+        NaturalBreakGate.cancel()
+    }
+
     override fun hideWindow() {
+        cancelAwaitingBreak()
         ctrlSvc.onBellHostLeaving(BellHost.Kind.LITTLE_SUN)
         stopTimer()
         // A hide can land mid-drag (timer expiry, re-validation) - never leave
@@ -627,6 +713,7 @@ class LittleSunWindow(
     }
 
     override fun hideWindowImmediate() {
+        cancelAwaitingBreak()
         ctrlSvc.onBellHostLeaving(BellHost.Kind.LITTLE_SUN)
         if (!isLeaveCommitted) removeZoneImmediate()
         super.hideWindowImmediate()

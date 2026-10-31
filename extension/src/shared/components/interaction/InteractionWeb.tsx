@@ -168,6 +168,7 @@ export const InteractionWeb: (props: {
     await updateHostsEntry(props.host, {
       lastUsedTS: now,
       sessionDurationInS: 0,
+      pauseDueTS: 0,
     });
 
     // Ensure we tear down any stale question state

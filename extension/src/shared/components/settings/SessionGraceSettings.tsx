@@ -11,11 +11,12 @@ import styles from "./SessionGraceSettings.module.scss";
 const GRACE_OPTIONS = [
   { label: "1 min", value: 1 },
   { label: "5 min", value: 5 },
+  { label: "10 min", value: 10 },
   { label: "15 min", value: 15 },
   { label: "30 min", value: 30 },
 ];
 
-const DEFAULT_GRACE_MINUTES = 5;
+const DEFAULT_GRACE_MINUTES = 10;
 
 export const SessionGraceSettings = (
   props: { initialGrace?: SessionGraceCfg } = {},
@@ -64,8 +65,8 @@ export const SessionGraceSettings = (
 
       <p class={styles.description}>
         {isEnabled()
-          ? "Each fresh visit to a site or app you've chosen starts with uninterrupted time. The sun arrives once the grace minutes are up."
-          : "Allow the first few minutes of each session before interventions begin."}
+          ? "Each visit starts with just the little sun. Stay longer and the pause comes, at the next natural break."
+          : "The pause meets every visit right away."}
       </p>
 
       {isEnabled() && (

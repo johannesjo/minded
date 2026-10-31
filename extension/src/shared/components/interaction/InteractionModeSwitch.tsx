@@ -1,4 +1,4 @@
-import { Component, Match, Switch } from "solid-js";
+import { Component, Match, Switch, Show } from "solid-js";
 import { EnergyLvlInteraction } from "@src/shared/components/interaction/energyLvl/EnergyLvlInteraction";
 import { Question } from "@src/shared/components/interaction/Question";
 import { AppUsageOrBrowsingBehavior } from "@src/shared/components/interaction/appUsageOrBrowsingBehavior/AppUsageOrBrowsingBehavior";
@@ -28,6 +28,7 @@ import { BreathInteraction } from "@src/shared/components/interaction/breathPaus
 import type { PatternInsight } from "@src/shared/components/interaction/patternInsight/patternInsight";
 import type { FrictionLevel } from "@src/shared/components/interaction/interactionContext";
 import { SkipCheckIn } from "@src/shared/components/interaction/skipCheckIn/SkipCheckInInteraction";
+import { isPauseAlreadyLater } from "@src/shared/components/interaction/skipCheckIn/skipCheckIn";
 import type { SkipCheckInChoice } from "@src/shared/components/interaction/skipCheckIn/skipCheckIn";
 import { VoiceReveal } from "@src/shared/components/interaction/voiceReveal/VoiceReveal";
 
@@ -98,6 +99,7 @@ export const InteractionModeSwitch: Component<InteractionModeSwitchProps> = (
             !!props.syncData &&
             props.syncData.cfg.mindfulnessBell !== true
           }
+          canOfferLater={!isPauseAlreadyLater(props.syncData?.cfg)}
           onChoose={props.onSkipCheckInChoice}
           onCancelCountdown={props.onCancelCountdown}
         />
@@ -238,12 +240,14 @@ export const InteractionModeSwitch: Component<InteractionModeSwitchProps> = (
                   : QuestionCategoryId.WhyReduceBrowsing),
             ) ?? [];
           const reason = getRndEntry(reasonAnswers);
-          return reason ? (
-            <div class="txtBig interaction-static-text">
-              <div class="interaction-caption">Remember why you're here</div>
-              <div>"{reason.val}"</div>
-            </div>
-          ) : null;
+          return (
+            <Show when={reason}>
+              <div class="txtBig interaction-static-text">
+                <div class="interaction-caption">Remember why you're here</div>
+                <div>"{reason.val}"</div>
+              </div>
+            </Show>
+          );
         })()}
       </Match>
       <Match when={props.mode === "PATTERN_INSIGHT"}>
