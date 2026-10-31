@@ -954,6 +954,21 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
 
             is OverlayDecision.ShowLittleSunUntilPause -> {
                 resetStaleSessionDurationIfNeeded()
+                // No live session got us here, so any end time still on record is
+                // a chosen time that ran out while the user was elsewhere. Left in
+                // place, the bubble would read it as "your time just ended" -
+                // resting at 0:00 and waiting to hand back - instead of counting
+                // up through the grace. Clear it, as the web does
+                // (littleSunTimerSource's shouldClearExpiredTimer).
+                if (entryForCurrentApp?.sessionEndTime?.isAfter(now) == false) {
+                    sharedOverlayViewModel.updateCurrentAppSessionEndTime(null)
+                }
+                if (activeTimer != null && activeTimerEndTime?.isAfter(now) == false) {
+                    sharedPreferenceService.updateSyncData {
+                        if (this.activeTimer?.endTS == activeTimer.endTS) copy(activeTimer = null) else this
+                    }
+                    sharedOverlayViewModel.updateActiveTimer(null)
+                }
                 showOverlay(
                     OverlayName.LITTLE_SUN_OVERLAY,
                     null,
