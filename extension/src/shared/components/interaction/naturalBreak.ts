@@ -19,8 +19,13 @@
  * Only user-driven scrolling counts (wheel, touch, scroll keys outside a text
  * field): a page that scrolls itself (a chat pulling in new messages) is not
  * the user doing anything.
+ *
+ * **Never later than `MAX_WAIT_MS`.** One page that is never scrolled - a
+ * stream, a long video, a game - would otherwise keep the pause away for good.
+ * The wait softens *when* the pause comes, it never decides *whether*.
  */
 export const SCROLL_FALLBACK_MS = 3 * 60 * 1000;
+export const MAX_WAIT_MS = 15 * 60 * 1000;
 
 const NAVIGATION_POLL_MS = 1000;
 
@@ -58,6 +63,14 @@ const getWindowEnv = (): NaturalBreakEnv => ({
 /** The page, ignoring the #fragment: jumping to a heading isn't a new page. */
 const toPageKey = (href: string): string => href.split("#")[0];
 
+/**
+ * The element the event really started on. A listener on `window` sees an
+ * event from inside a shadow root retargeted to its host, so a comment box in
+ * a web component (Reddit's, say) would read as "not a text field".
+ */
+const getOriginTarget = (ev: Event): EventTarget | null =>
+  (typeof ev.composedPath === "function" && ev.composedPath()[0]) || ev.target;
+
 const isEditableTarget = (target: EventTarget | null): boolean => {
   const el = target as {
     isContentEditable?: boolean;
@@ -75,10 +88,15 @@ const isEditableTarget = (target: EventTarget | null): boolean => {
  */
 export const waitForNaturalBreak = (
   onBreak: () => void,
-  options: { env?: NaturalBreakEnv; scrollFallbackMs?: number } = {},
+  options: {
+    env?: NaturalBreakEnv;
+    scrollFallbackMs?: number;
+    maxWaitMs?: number;
+  } = {},
 ): (() => void) => {
   const env = options.env ?? getWindowEnv();
   const scrollFallbackMs = options.scrollFallbackMs ?? SCROLL_FALLBACK_MS;
+  const maxWaitMs = options.maxWaitMs ?? MAX_WAIT_MS;
   const startPage = toPageKey(env.getHref());
   const removers: Array<() => void> = [];
   let isDone = false;
@@ -98,6 +116,7 @@ export const waitForNaturalBreak = (
     isDone = true;
     env.clearInterval(navigationPoll);
     env.clearTimeout(scrollFallback);
+    env.clearTimeout(maxWait);
     removers.forEach((remove) => remove());
   };
 
@@ -132,9 +151,13 @@ export const waitForNaturalBreak = (
     listen(env.target, "touchmove", fire);
     listen(env.target, "keydown", (ev) => {
       const key = (ev as KeyboardEvent).key;
-      if (SCROLL_KEYS.has(key) && !isEditableTarget(ev.target)) fire();
+      if (SCROLL_KEYS.has(key) && !isEditableTarget(getOriginTarget(ev))) {
+        fire();
+      }
     });
   }, scrollFallbackMs);
+
+  const maxWait = env.setTimeout(fire, maxWaitMs);
 
   return cancel;
 };

@@ -28,7 +28,7 @@ import com.minded.minded.detection.PreinstalledUserApps
 import com.minded.minded.util.registerUserPresentReceiver
 import com.minded.minded.util.ForegroundStateHolder
 import com.minded.minded.util.NaturalBreakGate
-import com.minded.minded.util.isSidewaysOnlyScroll
+import com.minded.minded.util.isUserScroll
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collect
 import java.util.Collections
@@ -994,8 +994,21 @@ class MyAccessibilityService : AccessibilityService() {
             // a natural break (NaturalBreak.kt); they feed that wait and nothing
             // else - never detection, never the health monitor.
             if (event.eventType == AccessibilityEvent.TYPE_VIEW_SCROLLED) {
-                if (!isSidewaysOnlyScroll(event.scrollDeltaX, event.scrollDeltaY)) {
-                    NaturalBreakGate.onScroll(packageName, currentTime)
+                if (NaturalBreakGate.isWaiting()) {
+                    val isEditable = try {
+                        event.source?.isEditable == true
+                    } catch (e: Exception) {
+                        false
+                    }
+                    if (isUserScroll(
+                            event.scrollDeltaX,
+                            event.scrollDeltaY,
+                            event.className?.toString(),
+                            isEditable,
+                        )
+                    ) {
+                        NaturalBreakGate.onScroll(packageName, currentTime)
+                    }
                 }
                 return
             }

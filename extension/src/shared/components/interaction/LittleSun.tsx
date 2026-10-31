@@ -16,6 +16,7 @@ import { SyncData } from "@src/dataInterface/syncData";
 import { bro } from "@src/util/browser";
 import { getLittleSunTimerSource } from "@src/shared/components/interaction/littleSunTimerSource";
 import { waitForNaturalBreak } from "@src/shared/components/interaction/naturalBreak";
+import { isTimeUpMidSession } from "@src/util/isShowFullMinder";
 import {
   getWebHostSessionTarget,
   isActiveTimerInScope,
@@ -79,6 +80,18 @@ export const LittleSunComponent: (props: {
   let hasCountedGrace = false;
   // Set while a mid-session hand-back waits for the next natural break.
   let cancelPendingArrival: (() => void) | undefined;
+  // Its own handle, so nothing that (re)starts the session counter can orphan
+  // it: cleared on arrival, on cancel and on cleanup.
+  let waitKeepAliveInterval: number | undefined;
+  // Set the moment this sun's countdown runs out, so the clean-up that follows
+  // (the timer clearing, read back through storage) can't call the wait off
+  // before the stored marker is visible.
+  let hasPauseDue = false;
+
+  const consumePauseDue = () => {
+    hasPauseDue = false;
+    void updateHostsEntry(props.host, { pauseDueTS: 0 });
+  };
 
   /**
    * Every *automatic* return of the full pause mid-session - grace used up, a
@@ -92,11 +105,12 @@ export const LittleSunComponent: (props: {
     beforeArrive?: () => void,
   ) => {
     if (cancelPendingArrival) return;
+    window.clearInterval(currentSessionInterval);
     keepSessionAliveWhileWaiting();
     cancelPendingArrival = waitForNaturalBreak(() => {
       cancelPendingArrival = undefined;
+      stopKeepAlive();
       if (isDisposed) return;
-      window.clearInterval(currentSessionInterval);
       beforeArrive?.();
       props.onShowFreshInteraction(morphFromCorner);
     });
@@ -105,9 +119,17 @@ export const LittleSunComponent: (props: {
   // While the pause waits, the user is still here: keep the session warm (so a
   // page load in the meantime still reads as the same session) and let the
   // sun keep counting up - except a run-out countdown, which rests at 0:00.
+  // Never from a hidden tab: a background tab left waiting must not keep the
+  // site's session warm for days, so every later visit would skip its grace.
+  const stopKeepAlive = () => {
+    window.clearInterval(waitKeepAliveInterval);
+    waitKeepAliveInterval = undefined;
+  };
+
   const keepSessionAliveWhileWaiting = () => {
-    window.clearInterval(currentSessionInterval);
-    currentSessionInterval = window.setInterval(() => {
+    stopKeepAlive();
+    waitKeepAliveInterval = window.setInterval(() => {
+      if (document.hidden) return;
       if (getRemainingSeconds() !== null) {
         updateHostsEntry(props.host, { lastUsedTS: Date.now() });
         return;
@@ -124,6 +146,7 @@ export const LittleSunComponent: (props: {
   const cancelArrival = () => {
     cancelPendingArrival?.();
     cancelPendingArrival = undefined;
+    stopKeepAlive();
   };
 
   const maybeShowHint = async () => {
@@ -153,6 +176,8 @@ export const LittleSunComponent: (props: {
   const applyTimerSource = (
     syncData: SyncData,
     initialSessionDurationInS: number,
+    // A chosen time ran out here and its pause still waits for the break.
+    isPauseDue = false,
   ): boolean => {
     const target = getWebHostSessionTarget(props.host);
 
@@ -171,6 +196,17 @@ export const LittleSunComponent: (props: {
       Date.now(),
       hasCountedGrace,
     );
+
+    if (source.type === "session") {
+      hasPauseDue = false;
+    } else if (isPauseDue || hasPauseDue) {
+      // Already waiting: the run-out time's own clean-up (clearing the timer)
+      // must not call the pause off.
+      setIsGraceMode(false);
+      setRemainingSeconds(0);
+      arriveAtNaturalBreak(true, consumePauseDue);
+      return true;
+    }
 
     if (source.type !== "grace-exhausted") {
       // A new timer or grace (set in another tab, a settings change) means
@@ -222,6 +258,7 @@ export const LittleSunComponent: (props: {
     applyTimerSource(
       syncData,
       d ? getEffectiveSessionDurationS(d, Date.now()) : getSessionTime(),
+      isTimeUpMidSession(d, Date.now()),
     );
   };
 
@@ -265,7 +302,11 @@ export const LittleSunComponent: (props: {
     // 0 here exactly as the content script counted it (its own reset write
     // lands after this read), or a stale count would cut the grace short.
     if (
-      !applyTimerSource(syncData, getEffectiveSessionDurationS(d, Date.now()))
+      !applyTimerSource(
+        syncData,
+        getEffectiveSessionDurationS(d, Date.now()),
+        isTimeUpMidSession(d, Date.now()),
+      )
     ) {
       return;
     }
@@ -329,24 +370,24 @@ export const LittleSunComponent: (props: {
       updateHostsEntry(props.host, { lastUsedTS: Date.now() });
 
       if (remaining <= 0) {
-        // Mark the user as still here at the moment the time ran out, so a
-        // page load before the break still meets the pause (isTimeUpMidSession).
-        updateHostsEntry(props.host, {
-          lastUsedTS: Math.max(Date.now(), sessionEndTS),
-        });
-        // The countdown ran out - at the next natural break, clear the session
-        // and morph the intervention back out of the corner (the headline
-        // reverse-morph case). The timer is cleared only then: clearing it is
-        // itself what brings the pause in every tab of this site.
-        arriveAtNaturalBreak(true, () => {
-          updateHostsEntry(props.host, { sessionDurationInS: 0 });
-          void clearScopedActiveTimer(sessionEndTS);
-        });
+        // The countdown ran out: the session ends and the timer is cleared
+        // now, as ever, and the pause is marked due (a page load before the
+        // break meets it - isTimeUpMidSession). It morphs back out of the
+        // corner (the headline reverse-morph case) at the next natural break.
+        hasPauseDue = true;
+        void updateHostsEntry(props.host, {
+          lastUsedTS: Date.now(),
+          sessionDurationInS: 0,
+          pauseDueTS: Date.now(),
+        }).then(() => clearScopedActiveTimer(sessionEndTS));
+        arriveAtNaturalBreak(true, consumePauseDue);
       }
     };
 
-    tick();
+    // Assigned before the first tick: a countdown that is already up must not
+    // have its waiting replaced by a fresh interval right after.
     currentSessionInterval = window.setInterval(tick, 1000);
+    tick();
   };
 
   const startGraceCountdown = (

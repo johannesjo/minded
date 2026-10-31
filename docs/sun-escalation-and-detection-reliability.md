@@ -241,17 +241,26 @@ ever observed behaviour:
   (`SCROLL_FALLBACK_MS`): reading an article is scrolling too, but a feed can
   be scrolled for an hour without the address changing - after the fallback
   the next user scroll (wheel, touch, scroll keys outside a text field) is the
-  break, the doom-scroll moment the pause is for. A page load while the
-  pause waits after a chosen time ran out meets the pause, never a fresh
-  grace (`isTimeUpMidSession`).
+  break, the doom-scroll moment the pause is for. Keys typed into a text
+  field never count, inside web components too (`composedPath`). A page
+  load while the pause waits after a chosen time ran out meets the pause,
+  never a fresh grace - read from an explicit `pauseDueTS` marker on the
+  host entry (`isTimeUpMidSession`), never inferred from an expired timer.
+  A hidden tab never keeps the site's session warm while it waits.
 - **Android** (`NaturalBreak.kt`): a new screen in the app (a window-state
-  change to a different window class, toasts excluded), or - after the same
-  3 minutes - a scroll that isn't plainly sideways (carousels slide by
-  themselves; many lists report no deltas, so an unknown direction counts).
-  Scroll events are subscribed to only while a wait is open. Without the
-  accessibility service nothing can be observed, so the hand-back happens at
-  once, as before. A wind-down snooze is bedtime's own timer and is not
-  delayed.
+  change to a different window class - not a toast, dialog, popup or bottom
+  sheet, which open *into* what the user is doing, and not a generic
+  framework container), switching straight to another blocked app, or -
+  after the same 3 minutes - a user scroll (not plainly sideways, since
+  carousels slide by themselves, and not a text field scrolling as it's
+  typed). Scroll events are subscribed to only while a wait is open. Without
+  the accessibility service nothing can be observed, so the hand-back happens
+  at once, as before (also if the service goes away mid-wait). A wind-down
+  snooze is bedtime's own timer and is not delayed.
+- **Never later than 15 minutes** (`MAX_WAIT_MS`, mirrored natively): a page
+  or app nobody scrolls - a stream, a long video, a game - would otherwise
+  keep the pause away for good. The wait softens *when* the pause comes,
+  never *whether*.
 
 A deliberate tap on the web Little Sun never waits. Leaving the app needs no
 rule: the bubble hides and coming back is a fresh open.
@@ -262,7 +271,8 @@ the grace on as the setting it is (`getLaterGraceCfg`) instead of lapsing
 after a week - like the bell.
 
 **Known limits.** Existing installs keep the grace setting they have stored
-(the old default was off, 5 min); it is one toggle in Settings. The Android
+(the web default was off, 5 min; Android's native fallback for a missing
+value was on, 5 min, and is now on, 10 min); it is one toggle in Settings. The Android
 break signals (window-state classes, scroll deltas) vary by app and are worth
 watching on real devices: a missed break falls back to the scroll rule, a
 false one only brings the pause a little early.

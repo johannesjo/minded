@@ -1,38 +1,25 @@
 import { SyncData } from "@src/dataInterface/syncData";
 import { getHostFromUrl } from "@src/util/getHostFromUrl";
-import {
-  getWebHostSessionTarget,
-  hasActiveWebHostTimer,
-  isActiveTimerInScope,
-} from "@src/util/activeTimerScope";
+import { hasActiveWebHostTimer } from "@src/util/activeTimerScope";
+import type { EntryForHost } from "@src/dataInterface/localData";
 import { isSessionGraceActive } from "@src/util/sessionGrace";
 import { RESET_WEBSITE_USAGE_DURATION_THRESHOLD_MS } from "@src/util/sessionDuration";
 
 /**
- * The time the user chose ran out while they were still on the site, and the
- * pause was waiting for the next natural break (naturalBreak.ts) when a page
+ * The time the user chose ran out while they were on the site, and the pause
+ * was still waiting for the next natural break (naturalBreak.ts) when a page
  * load came first. A page load *is* a natural break, so the pause belongs
- * here - not a fresh grace. Told apart from a timer that simply lapsed after
- * the user had left by the Little Sun marking the site as used at (or after)
- * the moment the time ran out.
+ * here - not a fresh grace. Read from an explicit marker the Little Sun sets
+ * when the countdown runs out (`pauseDueTS`), never inferred from timestamps,
+ * and only while the session it belongs to is still going: a marker left by a
+ * tab closed long ago means nothing now.
  */
 export const isTimeUpMidSession = (
-  syncData: SyncData,
-  host: string,
-  lastUsedTS: number | undefined,
+  dataForHost: Pick<EntryForHost, "lastUsedTS" | "pauseDueTS"> | undefined,
   now: number,
-): boolean => {
-  const timer = syncData.activeTimer;
-  if (!timer || timer.durationS < 0 || timer.endTS > now) return false;
-  if (!isActiveTimerInScope(timer, getWebHostSessionTarget(host), "web")) {
-    return false;
-  }
-  return (
-    lastUsedTS !== undefined &&
-    lastUsedTS >= timer.endTS &&
-    now - lastUsedTS <= RESET_WEBSITE_USAGE_DURATION_THRESHOLD_MS
-  );
-};
+): boolean =>
+  !!dataForHost?.pauseDueTS &&
+  now - dataForHost.lastUsedTS <= RESET_WEBSITE_USAGE_DURATION_THRESHOLD_MS;
 
 /**
  * Determines whether to show the full intervention or just the little sun.
@@ -45,12 +32,12 @@ export const isShowFullMinder = (
   currentUrl: string,
   syncData: SyncData,
   sessionDurationS = 0,
-  lastUsedTS?: number,
+  dataForHost?: Pick<EntryForHost, "lastUsedTS" | "pauseDueTS">,
 ): boolean => {
   const now = Date.now();
   const host = getHostFromUrl(currentUrl);
 
-  if (isTimeUpMidSession(syncData, host, lastUsedTS, now)) {
+  if (isTimeUpMidSession(dataForHost, now)) {
     return true;
   }
 

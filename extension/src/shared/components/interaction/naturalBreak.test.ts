@@ -1,4 +1,5 @@
 import {
+  MAX_WAIT_MS,
   SCROLL_FALLBACK_MS,
   waitForNaturalBreak,
   type NaturalBreakEnv,
@@ -105,13 +106,44 @@ describe("waitForNaturalBreak", () => {
     jest.advanceTimersByTime(SCROLL_FALLBACK_MS);
 
     const field = { tagName: "TEXTAREA" };
-    const typing = Object.assign(new Event("keydown"), { key: " " });
-    Object.defineProperty(typing, "target", { value: field });
+    const typing = Object.assign(new Event("keydown"), {
+      key: " ",
+      composedPath: () => [field],
+    });
     env.target.dispatchEvent(typing);
     dispatch("keydown", { key: "a" });
     expect(onBreak).not.toHaveBeenCalled();
 
     dispatch("keydown", { key: "PageDown" });
+    expect(onBreak).toHaveBeenCalledTimes(1);
+  });
+
+  it("reads a text field inside a web component as the text field it is", () => {
+    const { env } = createEnv();
+    const onBreak = jest.fn();
+    waitForNaturalBreak(onBreak, { env });
+    jest.advanceTimersByTime(SCROLL_FALLBACK_MS);
+
+    const shadowHost = { tagName: "SHREDDIT-COMPOSER" };
+    const field = { tagName: "TEXTAREA" };
+    const typing = Object.assign(new Event("keydown"), {
+      key: " ",
+      composedPath: () => [field, shadowHost],
+    });
+    Object.defineProperty(typing, "target", { value: shadowHost });
+    env.target.dispatchEvent(typing);
+
+    expect(onBreak).not.toHaveBeenCalled();
+  });
+
+  it("never waits longer than the ceiling, even on a page nobody scrolls", () => {
+    const { env } = createEnv();
+    const onBreak = jest.fn();
+    waitForNaturalBreak(onBreak, { env });
+
+    jest.advanceTimersByTime(MAX_WAIT_MS - 1);
+    expect(onBreak).not.toHaveBeenCalled();
+    jest.advanceTimersByTime(1);
     expect(onBreak).toHaveBeenCalledTimes(1);
   });
 

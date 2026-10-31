@@ -57,8 +57,14 @@ export const ContentScriptMain: (props: {
       !!newTimer &&
       newTimer.endTS > now &&
       isActiveTimerInScope(newTimer, target, "web");
+    // Only a timer that was still running: one that already ran out is
+    // cleared by the Little Sun of whichever tab saw it run out, and each tab
+    // brings its own pause at its own natural break (naturalBreak.ts) - a
+    // clean-up must never pop it into the middle of something elsewhere.
     const wasOldTimerForHost =
-      !!oldTimer && isActiveTimerInScope(oldTimer, target, "web");
+      !!oldTimer &&
+      oldTimer.endTS > now &&
+      isActiveTimerInScope(oldTimer, target, "web");
 
     if (isNewTimerActiveForHost) {
       // Timer was set (in this or another tab) → show LittleSun
@@ -98,7 +104,11 @@ export const ContentScriptMain: (props: {
       updateHostsEntry(host, {
         lastUsedTS: now,
         sessionDurationInS: 0,
+        pauseDueTS: 0,
       });
+    } else if (props.isShowFullMinderInitially) {
+      // Whatever pause was due (a chosen time run out) is here now.
+      updateHostsEntry(host, { lastUsedTS: now, pauseDueTS: 0 });
     } else {
       updateHostsEntry(host, { lastUsedTS: now });
     }

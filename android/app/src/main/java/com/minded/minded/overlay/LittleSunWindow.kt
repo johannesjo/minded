@@ -29,6 +29,7 @@ import com.minded.minded.util.ForegroundAppResult
 import com.minded.minded.util.NaturalBreakGate
 import com.minded.minded.util.Haptics
 import com.minded.minded.util.getForegroundAppReliable
+import com.minded.minded.util.shouldEndWaitWithoutBreak
 import com.minded.minded.util.shouldHandBackToPause
 import com.minded.minded.util.unlockedSessionAfterTick
 import java.time.Instant
@@ -55,8 +56,11 @@ class LittleSunWindow(
     private var pendingExpiredApp: String? = null
     private var pendingExpiredWasWindDownSnooze = false
 
-    // True while a due hand-back waits for the next natural break.
+    // True while a due hand-back waits for the next natural break, with the
+    // app it waits in, when it began and whether it was a wind-down snooze.
     private var isAwaitingBreak = false
+    private var awaitingApp: String? = null
+    private var awaitingSinceMs = 0L
 
     /**
      * Set by the controller for every show: hand back to the full pause once
@@ -150,6 +154,8 @@ class LittleSunWindow(
             val activeTimer = sharedOverlayViewModel.sharedData.value.activeTimer
             val appEntry = if (currentApp != null) sharedOverlayViewModel.sharedData.value.appMap[currentApp] else null
             val windDownSnoozeEndTime = ctrlSvc.getWindDownSnoozeTimerEndTime()
+
+            if (endWaitIfDue()) return
             
             val endTime = windDownSnoozeEndTime
                 ?: activeTimer?.let { Instant.ofEpochMilli(it.endTS) }
@@ -579,34 +585,68 @@ class LittleSunWindow(
      */
     private fun handBackAtNaturalBreak(currentApp: String, wasWindDownSnooze: Boolean): Boolean {
         if (isAwaitingBreak) return false
-        val handBack = {
-            isAwaitingBreak = false
-            pendingExpiredApp = currentApp
-            pendingExpiredWasWindDownSnooze = wasWindDownSnooze
-            // Resting bubble → intervention hand-off: drop the bubble instantly
-            // (no 300ms fade) so the intervention's shield covers the corner
-            // ~300ms sooner, with no page-flash before the sun re-blooms there
-            // via the reverse morph. onWindowRemoved still fires, so the
-            // intervention is triggered exactly as before.
-            hideWindowImmediate()
-            stopTimer()
-        }
         if (wasWindDownSnooze || !NaturalBreakGate.canWatch()) {
-            handBack()
+            handBackNow(currentApp, wasWindDownSnooze)
             return true
         }
         isAwaitingBreak = true
-        NaturalBreakGate.await(currentApp, System.currentTimeMillis()) {
+        awaitingApp = currentApp
+        awaitingSinceMs = System.currentTimeMillis()
+        NaturalBreakGate.await(
+            currentApp,
+            awaitingSinceMs,
+            isBlocked = { ctrlSvc.isBlockedPackage(it) },
+        ) { appAtBreak ->
             // The bubble may have gone (the user left) between the break and
             // this post; only a still-waiting bubble hands back.
-            if (isAwaitingBreak && isWindowShown()) handBack()
+            if (isAwaitingBreak && isWindowShown()) handBackNow(appAtBreak, false)
         }
         return false
+    }
+
+    /**
+     * Ends a wait that should not go on (see shouldEndWaitWithoutBreak): the
+     * ceiling reached, or the accessibility service gone so no break could
+     * ever be seen. Only while the screen is on and unlocked, so it never
+     * fires behind the lock screen. Returns true when it handed back (the
+     * caller must not tick on).
+     */
+    private fun endWaitIfDue(): Boolean {
+        val waitingFor = awaitingApp ?: return false
+        if (!isAwaitingBreak) return false
+        val isUnlocked = powerManager.isInteractive && keyguardManager?.isKeyguardLocked != true
+        if (!isUnlocked) return false
+        if (!shouldEndWaitWithoutBreak(
+                awaitingSinceMs,
+                System.currentTimeMillis(),
+                NaturalBreakGate.canWatch(),
+            )
+        ) {
+            return false
+        }
+        cancelAwaitingBreak()
+        handBackNow(waitingFor, wasWindDownSnooze = false)
+        return true
+    }
+
+    private fun handBackNow(app: String, wasWindDownSnooze: Boolean) {
+        isAwaitingBreak = false
+        awaitingApp = null
+        pendingExpiredApp = app
+        pendingExpiredWasWindDownSnooze = wasWindDownSnooze
+        // Resting bubble → intervention hand-off: drop the bubble instantly
+        // (no 300ms fade) so the intervention's shield covers the corner
+        // ~300ms sooner, with no page-flash before the sun re-blooms there
+        // via the reverse morph. onWindowRemoved still fires, so the
+        // intervention is triggered exactly as before.
+        hideWindowImmediate()
+        stopTimer()
     }
 
     private fun cancelAwaitingBreak() {
         if (!isAwaitingBreak) return
         isAwaitingBreak = false
+        awaitingApp = null
         NaturalBreakGate.cancel()
     }
 

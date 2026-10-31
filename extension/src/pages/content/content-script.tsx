@@ -203,7 +203,7 @@ const CURRENT_URL = window.location.href;
                   CURRENT_URL,
                   syncData,
                   sessionDurationS,
-                  dataForHost?.lastUsedTS,
+                  dataForHost,
                 )
               }
               shadowRoot={shadow}
