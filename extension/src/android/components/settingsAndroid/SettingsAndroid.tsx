@@ -5,11 +5,9 @@ import {
   getSyncData,
   updateBlockedApps,
 } from "@src/dataInterface/commonSyncDataInterface";
-import { androidInterface } from "@src/dataInterface/android/androidInterface";
-import { safeJsonParse } from "@src/util/safeJsonParse";
-import { useNavigate } from "@solidjs/router";
 import { Ico } from "@src/shared/components/ui/Ico";
 import { Checkbox } from "@src/shared/components/ui/Checkbox";
+import { AppRow } from "./AppRow";
 import Btn from "@src/shared/components/ui/Btn";
 import { companionWord } from "@src/shared/addWrapperClasses";
 import {
@@ -17,10 +15,14 @@ import {
   isWidgetPinAvailable,
   readIsWidgetPlaced,
 } from "@src/android/util/widgetPlacement";
-import { sortAppsForPicker } from "./sortAppsForPicker";
+import {
+  APP_FILTER_MIN_APPS,
+  filterAppsForPicker,
+  sortAppsForPicker,
+} from "./sortAppsForPicker";
+import { readInstalledApps } from "./installedApps";
 
 export const SettingsAndroid = (props: {
-  isRouting?: boolean;
   saveBtnTxt?: string;
   /** Heading above the app list. Onboarding overrides it with presence framing. */
   heading?: string;
@@ -43,7 +45,6 @@ export const SettingsAndroid = (props: {
     { packageName: string; name: string }[]
   >([]);
 
-  const navigate = props.isRouting ? useNavigate() : () => undefined;
   const [getSelectedApps, setSelectedApps] = createSignal<string[]>(
     props.initialBlockedApps ?? [],
   );
@@ -69,23 +70,38 @@ export const SettingsAndroid = (props: {
     if (!widgetPlacement.requestPin()) setIsShowManualPinHint(true);
   };
 
-  onMount(() => {
-    t0 = setTimeout(() => {
-      const apps = safeJsonParse<{ packageName: string; name: string }[]>(
-        androidInterface.getAllApps(),
-        [],
-      );
-      setAvailableApps(sortAppsForPicker(apps));
-    });
+  const [getFilter, setFilter] = createSignal("");
+  const getShownApps = () =>
+    filterAppsForPicker(getAvailableApps(), getFilter());
+  const isShowFilter = () => getAvailableApps().length >= APP_FILTER_MIN_APPS;
 
-    if (props.initialBlockedApps === undefined) {
-      getSyncData().then((syncData) => {
-        setSelectedApps(syncData.cfg.blockedApps || []);
+  let isDisposed = false;
+  onMount(() => {
+    // The choice is needed before the sort (chosen apps lead the list), so
+    // read it first when the caller didn't hand it in.
+    const chosenAtOpen: Promise<string[]> =
+      props.initialBlockedApps !== undefined
+        ? Promise.resolve(props.initialBlockedApps)
+        : getSyncData()
+            .then((syncData) => {
+              const chosen = syncData.cfg.blockedApps || [];
+              if (!isDisposed) setSelectedApps(chosen);
+              return chosen;
+            })
+            // Never leave the list stuck on "Loading": fall back to the
+            // plain feed-first order.
+            .catch(() => []);
+
+    t0 = setTimeout(() => {
+      const apps = readInstalledApps();
+      void chosenAtOpen.then((chosen) => {
+        if (!isDisposed) setAvailableApps(sortAppsForPicker(apps, chosen));
       });
-    }
+    });
   });
 
   onCleanup(() => {
+    isDisposed = true;
     window.clearTimeout(t0);
   });
 
@@ -102,11 +118,6 @@ export const SettingsAndroid = (props: {
 
   const handleSave = async () => {
     await updateBlockedApps(getSelectedApps());
-    // Only navigates when used as a standalone route (isRouting); in onboarding
-    // `navigate` is a no-op and `onSave` drives the step change. The router-level
-    // page-fade interceptor (RouteCmp) eases this home rather than hard-cutting,
-    // matching the sibling SettingsAndroidRoute.
-    navigate("/");
     props.onSave?.(getSelectedApps());
   };
 
@@ -156,23 +167,34 @@ export const SettingsAndroid = (props: {
             </p>
           </Show>
         </Show>
+        <Show when={isShowFilter()}>
+          <input
+            class={styles.filter}
+            type="search"
+            placeholder="Find an app"
+            aria-label="Find an app"
+            autocomplete="off"
+            value={getFilter()}
+            onInput={(e) => setFilter(e.currentTarget.value)}
+          />
+        </Show>
         {getAvailableApps().length === 0 ? (
           <div class={styles.inset}>Loading apps...</div>
         ) : (
-          <For each={getAvailableApps()}>
+          <For
+            each={getShownApps()}
+            fallback={
+              <p class={styles.noMatch} role="status">
+                No app by that name.
+              </p>
+            }
+          >
             {(app) => (
-              <div
-                class={styles.appEntry}
-                onClick={() => handleToggleApp(app.packageName)}
-              >
-                <div class={styles.checkboxDisplay}>
-                  <Checkbox
-                    checked={getSelectedApps().includes(app.packageName)}
-                    onChange={() => {}}
-                  />
-                </div>
-                <span class={styles.appName}>{app.name}</span>
-              </div>
+              <AppRow
+                name={app.name}
+                checked={getSelectedApps().includes(app.packageName)}
+                onToggle={() => handleToggleApp(app.packageName)}
+              />
             )}
           </For>
         )}
@@ -180,12 +202,6 @@ export const SettingsAndroid = (props: {
 
       {!props.autoSave && (
         <div class={styles.footer}>
-          {props.isRouting && (
-            <Btn class={styles.backBtn} onClick={() => navigate("/")}>
-              <Ico name="arrowBack" /> Back
-            </Btn>
-          )}
-
           <Btn disabled={!hasChosenAPlace()} onClick={handleSave}>
             <Ico name="send" /> {props.saveBtnTxt || "Save"}
           </Btn>

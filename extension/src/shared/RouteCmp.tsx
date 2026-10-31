@@ -53,6 +53,7 @@ import BottomBar from "@src/shared/components/bottomBar/BottomBar";
 import InteractionOverlay from "@src/shared/components/dashboard/interactionOverlay/InteractionOverlay";
 import { REFRESH_DASHBOARD_EV } from "@src/ev.const";
 import { SettingsAndroidRoute } from "@src/android/components/settingsAndroid/SettingsAndroidRoute";
+import { SettingsAppsAndroidRoute } from "@src/android/components/settingsAndroid/SettingsAppsAndroidRoute";
 import { SettingsWebRoute } from "@src/pages/newtab/components/settingsWebRoute/SettingsWebRoute";
 // @ts-ignore
 import styles from "./RouteCmp.module.scss";
@@ -523,6 +524,9 @@ const RoutesCmp = (props: { children?: JSX.Element }) => {
         />
         {IS_ANDROID && (
           <Route path="/settings" component={SettingsAndroidRoute} />
+        )}
+        {IS_ANDROID && (
+          <Route path="/settings/apps" component={SettingsAppsAndroidRoute} />
         )}
         {IS_WEB_EXT && <Route path="/settings" component={SettingsWebRoute} />}
         <Route path="/feedback" component={Feedback} />

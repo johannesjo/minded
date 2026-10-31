@@ -1,0 +1,31 @@
+// Mirrors the shared settings blocks (SoundSettings & co.) so this section
+// wears the same heading, description and alignment as its neighbours.
+.ChosenAppsSettings {
+  padding: var(--settings-block-padding, 0 0 var(--space-sm));
+  text-align: var(--settings-text-align, center);
+
+  :global(.h3) {
+    margin: 0;
+  }
+}
+
+.description {
+  font-size: var(--fz-s);
+  margin: var(--space-sm) auto 0;
+  max-width: 400px;
+  color: var(--h4-c);
+}
+
+// Rows read like the picker's: names left-aligned beside the checkbox, even
+// though the section's heading and description are centred.
+.list {
+  text-align: start;
+}
+
+// Same spacing and alignment hooks as the neighbouring blocks' buttons
+// (e.g. JournalBackupSettings .actions).
+.actions {
+  display: flex;
+  justify-content: var(--settings-options-justify, center);
+  margin-top: var(--space-md);
+}

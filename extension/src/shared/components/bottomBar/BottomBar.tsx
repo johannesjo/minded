@@ -6,6 +6,12 @@ import { Ico } from "@src/shared/components/ui/Ico";
 import Btn from "@src/shared/components/ui/Btn";
 import { IS_IOS } from "@src/dataInterface/commonSyncDataInterface";
 import { shouldUseWindDownHistoryBackForBottomBar } from "@src/shared/components/sleepWindDown/sleepWindDownBackNavigation";
+import { fadeOutCurrentPage } from "@src/util/animation";
+import { prefersReducedMotion } from "@src/util/prefersReducedMotion";
+
+// Sub-pages that are only ever entered from their parent page: back returns
+// there rather than all the way to the dashboard.
+const SUB_PAGES = new Set(["/settings/apps"]);
 
 const BottomBar = (props: { inert?: boolean }) => {
   const [getIsOnDashboard, setIsOnDashboard] = createSignal<boolean>(false);
@@ -27,11 +33,25 @@ const BottomBar = (props: { inert?: boolean }) => {
       return;
     }
 
+    // A sub-page steps back through history rather than pushing its parent
+    // again - a push would leave the sub-page as the parent's "back", so the
+    // hardware back / edge swipe would bounce into it instead of going home.
+    // History moves skip the router's page fade, so fade here first.
+    if (SUB_PAGES.has(location.pathname)) {
+      if (prefersReducedMotion()) window.history.back();
+      else void fadeOutCurrentPage().then(() => window.history.back());
+      return;
+    }
+
     // Return to the dashboard - never a hard cut. The router-level page-fade
     // interceptor (RouteCmp) eases the leaving page out before the dashboard
     // eases back in via its own pageTransitionIn.
     navigate("/");
   };
+
+  const isBackNotHome = () =>
+    shouldUseWindDownHistoryBackForBottomBar(location.pathname) ||
+    SUB_PAGES.has(location.pathname);
 
   return (
     <div
@@ -79,16 +99,8 @@ const BottomBar = (props: { inert?: boolean }) => {
         <Btn
           variant="icon"
           plain
-          title={
-            shouldUseWindDownHistoryBackForBottomBar(location.pathname)
-              ? "Go back"
-              : "Go to dashboard"
-          }
-          aria-label={
-            shouldUseWindDownHistoryBackForBottomBar(location.pathname)
-              ? "Go back"
-              : "Go to dashboard"
-          }
+          title={isBackNotHome() ? "Go back" : "Go to dashboard"}
+          aria-label={isBackNotHome() ? "Go back" : "Go to dashboard"}
           onClick={(event) => {
             event.stopPropagation();
             goBack();

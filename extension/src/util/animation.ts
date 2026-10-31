@@ -62,9 +62,10 @@ export function fadeOutThen(el: HTMLElement | null, done: () => void): void {
 // at full opacity. The bottom bar and companion sun live outside <main>, so they
 // stay put through the move.
 //
-// The single caller is the router-level page-fade interceptor in RouteCmp
+// The main caller is the router-level page-fade interceptor in RouteCmp
 // (`useBeforeLeave`), which then retries the navigation so the route remounts
-// and cleans up the faded node. It only calls this for real page-to-page moves
+// and cleans up the faded node. The bottom bar also calls it before a
+// sub-page's history.back(), which the interceptor doesn't fade. It only calls this for real page-to-page moves
 // (never a same-path/query-only change, which would strand the node at opacity
 // 0) and skips reduced motion itself, so there's nothing to guard here.
 // Resolves immediately if there's no page node yet.

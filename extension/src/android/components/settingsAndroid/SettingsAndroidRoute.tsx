@@ -1,6 +1,6 @@
 import { createSignal, onMount, Show } from "solid-js";
 import { getSyncData } from "@src/dataInterface/commonSyncDataInterface";
-import { SettingsAndroid } from "./SettingsAndroid";
+import { ChosenAppsSettings } from "./ChosenAppsSettings";
 import { AlternativesSettings } from "@src/shared/components/settings/AlternativesSettings";
 import { CustomQuestionsSettings } from "@src/shared/components/settings/CustomQuestionsSettings";
 import { SessionGraceSettings } from "@src/shared/components/settings/SessionGraceSettings";
@@ -42,9 +42,8 @@ export const SettingsAndroidRoute = () => {
               )}
             </Show>
 
-            <SettingsAndroid
-              autoSave={true}
-              initialBlockedApps={initial.cfg.blockedApps}
+            <ChosenAppsSettings
+              initialBlockedApps={initial.cfg.blockedApps ?? []}
             />
 
             <hr class={styles.divider} />
