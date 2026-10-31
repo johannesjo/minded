@@ -12,7 +12,7 @@
 export const LITTLE_SUN_GLINT_DEFAULT_MINUTES = 5;
 
 /** The intervals the settings offer; 0 (off) aside, anything else reads as the default. */
-export const LITTLE_SUN_GLINT_MINUTES_OPTIONS = [5, 10, 15, 30] as const;
+export const LITTLE_SUN_GLINT_MINUTES_OPTIONS = [1, 5, 10, 15, 30] as const;
 
 /**
  * Seconds between glints for the user's setting (cfg.littleSunGlintMinutes),
