@@ -195,12 +195,16 @@
     letter-spacing: 0.02em;
   }
 
-  // center logic - widget cards (mood, energy…) centre their content; lists,
-  // charts and tables keep their natural left alignment.
+  // center logic - widget cards (mood, energy…) centre their content
+  // horizontally; lists, charts and tables keep their natural left alignment.
+  // Vertically they hang from the top like the reflections beside them: grid
+  // rows stretch every card to the tallest one, and centring would drop a
+  // short card's label below its neighbours' (the energy dots sitting a line
+  // lower than "gratitude" in the same row). One shared top line per row.
   @mixin centerItem() {
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start;
     align-items: center;
   }
 
@@ -369,7 +373,10 @@
 }
 
 .energyLvl {
-  margin: auto;
+  // Centred across, never down: a vertical auto margin would float the block
+  // to the middle of a grid row stretched by taller reflections beside it,
+  // dropping "your energy level today" below its neighbours' labels.
+  margin: 0 auto;
 
   div:first-child {
     margin-bottom: var(--space-md) !important;

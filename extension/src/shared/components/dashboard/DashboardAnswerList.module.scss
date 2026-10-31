@@ -55,5 +55,8 @@
   user-select: none;
   position: relative;
   display: inline-block;
+  // An inline-block sits on its parent's line box, whose taller strut set it
+  // ~3px below the top - out of line with the energy card's label beside it.
+  vertical-align: top;
   text-transform: lowercase;
 }

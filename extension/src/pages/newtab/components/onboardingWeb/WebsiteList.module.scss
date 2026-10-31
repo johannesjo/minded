@@ -45,17 +45,14 @@
 }
 
 .settingsLayout {
+  // No hairlines between the rows: each field's own soft fill already marks
+  // where a website begins and ends, so a rule above and below every one only
+  // turned the list into a ruled table. Spacing alone keeps them apart.
   .WebsiteListItems {
-    border-top: 1px solid var(--btn-outline-color);
     display: flex;
     flex-direction: column;
-    gap: 0;
+    gap: var(--space-sm);
     margin: var(--space-md) 0 var(--space-lg);
-
-    > div {
-      border-bottom: 1px solid var(--btn-outline-color);
-      padding: var(--space-sm) 0;
-    }
   }
 
   .controls {

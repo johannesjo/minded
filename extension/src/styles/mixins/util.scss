@@ -27,17 +27,27 @@
   }
 }
 
-// The product's shared "level" mark: a small round dot whose opacity carries
-// the filled/unfilled state - the same quiet language as the sun's orbit crown
-// (Sun.scss .sun-orbit-dot) and the self-assessment answer dots. Consumers set
-// their own filled-state opacity.
+// The rating's "level" mark: a small round dot. Unfilled it is a hairline
+// ring, filled a solid dot, so the level reads by *form* and not only by two
+// neighbouring greys - on the pastel day sky a faint filled disc sat as a grey
+// smudge beside the filled ones. Consumers fill it
+// (`background-color: var(--c-fg)`) and set their own filled-state opacity.
+//
+// The ring is a border, not an inset box-shadow: --c-fg is translucent, and a
+// shadow paints *over* the fill, so a filled dot grew a darker 1px rim where
+// the two alphas stacked. Filled, the border turns transparent and the fill
+// runs under it (Rating.scss .isFull) - one solid disc, no rim and no seam.
 @mixin levelDot($size) {
   width: $size;
   height: $size;
   border-radius: 50%;
-  background: var(--c-fg);
+  border: 1px solid var(--c-fg);
+  background-color: transparent;
   opacity: var(--rating-inactive-opacity);
-  transition: opacity var(--dur-quick) var(--ease-out);
+  transition:
+    opacity var(--dur-quick) var(--ease-out),
+    background-color var(--dur-quick) var(--ease-out),
+    border-color var(--dur-quick) var(--ease-out);
 }
 
 @mixin onMousePrimary() {

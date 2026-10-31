@@ -466,5 +466,8 @@ Recorded so they don't come back:
 - ❌ **Onboarding tour overlays / coach marks** - the product's one-object
   design doesn't need a tour; the two one-time hints (§2.1, §2.3) are the
   ceiling.
+- ❌ **Giving the sun's face depth** (limb darkening, inner gradient, a warmer
+  face on the big disc) - the flat `#fff` sun is the intended look; the owner
+  likes it. Don't propose it again (also noted in CLAUDE.md).
 - ❌ **Streak-like "you completed N wind-downs"** anywhere - including the
   wind-down menu, which deliberately never tallies. Keep it that way.
