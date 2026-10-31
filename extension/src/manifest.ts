@@ -33,7 +33,7 @@ const manifest = defineManifest(async () => ({
       // ...({world: "main"} as any)
     },
   ],
-  permissions: ["storage", "activeTab"],
+  permissions: ["storage"],
   host_permissions: ["<all_urls>"],
   web_accessible_resources: [
     {
