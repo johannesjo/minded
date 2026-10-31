@@ -29,6 +29,7 @@ class LittleSunGlintTest {
     @Test
     fun `follows the chosen interval, and off never glints`() {
         assertEquals(every, littleSunGlintEveryS(null))
+        assertEquals(60, littleSunGlintEveryS(1))
         assertEquals(15 * 60, littleSunGlintEveryS(15))
         assertEquals(30 * 60, littleSunGlintEveryS(30))
         // An interval the settings don't offer reads as the default.

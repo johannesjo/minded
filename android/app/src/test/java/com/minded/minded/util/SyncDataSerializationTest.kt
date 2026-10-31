@@ -436,6 +436,7 @@ class SyncDataSerializationTest {
         // How often the Little Sun glints round trips - off (0) included, so a
         // native write can't switch it back on. An unoffered value is ignored.
         assertEquals(15, parseSyncData(syncDataToJson(parse(",\n\"littleSunGlintMinutes\": 15"))).cfg.littleSunGlintMinutes)
+        assertEquals(1, parseSyncData(syncDataToJson(parse(",\n\"littleSunGlintMinutes\": 1"))).cfg.littleSunGlintMinutes)
         assertEquals(0, parseSyncData(syncDataToJson(parse(",\n\"littleSunGlintMinutes\": 0"))).cfg.littleSunGlintMinutes)
         assertNull(parse(",\n\"littleSunGlintMinutes\": 7").cfg.littleSunGlintMinutes)
         assertNull(parse("").cfg.littleSunGlintMinutes)

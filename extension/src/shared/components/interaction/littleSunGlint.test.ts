@@ -29,6 +29,7 @@ describe("isLittleSunGlintDue", () => {
 describe("getLittleSunGlintEveryS", () => {
   it("follows the chosen interval; off never glints", () => {
     expect(getLittleSunGlintEveryS(undefined)).toBe(LITTLE_SUN_GLINT_EVERY_S);
+    expect(getLittleSunGlintEveryS(1)).toBe(60);
     expect(getLittleSunGlintEveryS(15)).toBe(15 * 60);
     expect(getLittleSunGlintEveryS(30)).toBe(30 * 60);
     // An interval the settings don't offer reads as the default.

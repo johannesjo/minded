@@ -15,7 +15,7 @@ package com.minded.minded.util
 const val LITTLE_SUN_GLINT_DEFAULT_MINUTES = 5
 
 /** The intervals the settings offer, plus 0 for off; anything else reads as the default. */
-val LITTLE_SUN_GLINT_MINUTES_ALLOWED = setOf(0, 5, 10, 15, 30)
+val LITTLE_SUN_GLINT_MINUTES_ALLOWED = setOf(0, 1, 5, 10, 15, 30)
 
 /**
  * No glint this close before the sun hands back to the full pause anyway: the
