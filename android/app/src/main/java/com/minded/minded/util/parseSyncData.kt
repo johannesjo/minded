@@ -190,7 +190,7 @@ fun parseSyncDataFromJSONObject(jsonObject: JSONObject): SyncData {
     val focusSchedule = cfg.optJSONObject("focusSchedule")?.let { jsonObjectToMap(it) }
     val soundEnabled = if (cfg.has("soundEnabled")) cfg.getBoolean("soundEnabled") else null
     val sleepWindDown = cfg.optJSONObject("sleepWindDown")?.let { jsonObjectToMap(it) }
-    // Session Grace is on by default (5 min), matching the extension's
+    // Session Grace is on by default (10 min), matching the extension's
     // DEFAULT_SYNC_DATA. Existing installs have JSON predating this setting, so
     // when "sessionGrace" is absent the native overlay must still see grace
     // enabled - otherwise interventions would fire immediately after the budget
@@ -201,7 +201,7 @@ fun parseSyncDataFromJSONObject(jsonObject: JSONObject): SyncData {
             enabled = graceObj.optBoolean("enabled", false),
             minutes = graceObj.optInt("minutes", 0)
         )
-    } ?: SessionGraceCfg(enabled = true, minutes = 5)
+    } ?: SessionGraceCfg(enabled = true, minutes = 10)
     val mindfulnessBell = if (cfg.has("mindfulnessBell")) cfg.optBoolean("mindfulnessBell", false) else null
     val mindfulnessBellPerDay = cfg.optInt("mindfulnessBellPerDay", 0)
         .takeIf { it in MindfulnessBellSchedule.SLOTS_PER_DAY_RANGE }

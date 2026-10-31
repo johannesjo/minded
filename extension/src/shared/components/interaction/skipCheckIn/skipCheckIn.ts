@@ -1,6 +1,7 @@
 import type {
   InterventionPause,
   InterventionPauseKind,
+  SessionGraceCfg,
   SyncData,
   UserCfg,
 } from "@src/dataInterface/syncData";
@@ -69,11 +70,52 @@ export const SKIP_CHECK_IN_CHOICES: ReadonlyArray<{
 ];
 
 /**
+ * Whether the grace already holds the pause back at least as long as "Only
+ * after a while" would - true by default, since grace is on (10 min) out of
+ * the box. Then that choice would change nothing, so it isn't offered.
+ */
+export const isPauseAlreadyLater = (
+  cfg: Pick<UserCfg, "sessionGrace"> | undefined,
+): boolean => {
+  const grace = cfg?.sessionGrace;
+  return !!grace && grace.enabled && grace.minutes * 60 >= LATER_PAUSE_AFTER_S;
+};
+
+/**
  * The bell is only offered where it can ring (Android) and to someone who
  * hasn't turned it on already - for them "Not this week" already leaves it.
+ * "Only after a while" likewise only where it would change something.
  */
-export const getSkipCheckInChoices = (canOfferBell: boolean) =>
-  SKIP_CHECK_IN_CHOICES.filter((c) => canOfferBell || c.choice !== "bell");
+export const getSkipCheckInChoices = (
+  canOfferBell: boolean,
+  canOfferLater = true,
+) =>
+  SKIP_CHECK_IN_CHOICES.filter(
+    (c) =>
+      (canOfferBell || c.choice !== "bell") &&
+      (canOfferLater || c.choice !== "later"),
+  );
+
+/**
+ * "Only after a while" outlasts its week like the bell does: it turns the
+ * grace on as the setting it is (visible and switchable in Settings), so the
+ * pause keeps meeting the user mid-session after the week - it used to lapse
+ * back to the doorway pause the user had just said wasn't reaching them. A
+ * longer grace they set themselves is kept.
+ */
+export const getLaterGraceCfg = (
+  cfg: Pick<UserCfg, "sessionGrace"> | undefined,
+): SessionGraceCfg => {
+  const laterMinutes = LATER_PAUSE_AFTER_S / 60;
+  const grace = cfg?.sessionGrace;
+  return {
+    enabled: true,
+    minutes:
+      grace?.enabled && grace.minutes > laterMinutes
+        ? grace.minutes
+        : laterMinutes,
+  };
+};
 
 /** The pause a choice stands for: the bell's week steps out of the way. */
 const toPauseKind = (choice: SkipCheckInChoice): InterventionPause["kind"] =>
@@ -140,9 +182,10 @@ export const getSkipUpdateAfterSkip = (
 };
 
 /**
- * Every answer starts the count over and stands for a week. The bell is the
- * exception that outlasts it: it is turned on as the setting it is, visible
- * and switchable there, rather than vanishing with the week.
+ * Every answer starts the count over and stands for a week. The bell and
+ * "Only after a while" outlast it: each is turned on as the setting it is
+ * (the bell, the grace - see getLaterGraceCfg), visible and switchable there,
+ * rather than vanishing with the week.
  */
 export const getSkipCheckInUpdate = (
   choice: SkipCheckInChoice,

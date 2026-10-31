@@ -610,6 +610,7 @@ const Styleguide = (): JSX.Element => {
           <div class={styles.interactionFrame}>
             <SkipCheckIn
               canOfferBell={true}
+              canOfferLater={true}
               onChoose={(choice) => console.log("skip check-in:", choice)}
               onCancelCountdown={() => undefined}
             />

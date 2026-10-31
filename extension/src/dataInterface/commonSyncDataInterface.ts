@@ -46,6 +46,7 @@ import {
 } from "@src/shared/components/interaction/patternInsight/patternInsight";
 import type { InteractionMode } from "@src/shared/components/interaction/getInteractionMode";
 import {
+  getLaterGraceCfg,
   getSkipCheckInUpdate,
   getSkipUpdateAfterSkip,
   type SkipCheckInChoice,
@@ -390,11 +391,19 @@ export const saveSkipCheckInChoice = async (
   choice: SkipCheckInChoice,
 ): Promise<void> => {
   const update = getSkipCheckInUpdate(choice, Date.now());
-  if (choice !== "bell") return patchSyncData(update);
-  return updateSyncDataField(getSyncData, patchSyncData, (syncData) => ({
-    ...update,
-    cfg: { ...syncData.cfg, mindfulnessBell: true },
-  }));
+  if (choice === "bell") {
+    return updateSyncDataField(getSyncData, patchSyncData, (syncData) => ({
+      ...update,
+      cfg: { ...syncData.cfg, mindfulnessBell: true },
+    }));
+  }
+  if (choice === "later") {
+    return updateSyncDataField(getSyncData, patchSyncData, (syncData) => ({
+      ...update,
+      cfg: { ...syncData.cfg, sessionGrace: getLaterGraceCfg(syncData.cfg) },
+    }));
+  }
+  return patchSyncData(update);
 };
 
 /** Ends a pause chosen from the skip check-in early (the settings "Resume"). */

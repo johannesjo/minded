@@ -13,8 +13,8 @@ val defaultSyncData = SyncData(
         focusSchedule = null,
         soundEnabled = null,
         sleepWindDown = null,
-        // On by default (5 min), matching the extension's DEFAULT_SYNC_DATA.
-        sessionGrace = SessionGraceCfg(enabled = true, minutes = 5)
+        // On by default (10 min), matching the extension's DEFAULT_SYNC_DATA.
+        sessionGrace = SessionGraceCfg(enabled = true, minutes = 10)
     ),
     answers = emptyList(),
     // NOTE: 99 is set to pass isToday check

@@ -20,6 +20,8 @@ import { voiceFollowStyle } from "@src/shared/components/interaction/voiceReveal
 export const SkipCheckIn: (props: {
   /** Offer the mindfulness bell (Android, not already on). */
   canOfferBell: boolean;
+  /** Offer "Only after a while" (the grace doesn't already do that). */
+  canOfferLater: boolean;
   onChoose: (choice: SkipCheckInChoice) => void;
   onCancelCountdown: () => void;
 }) => JSX.Element = (props) => {
@@ -53,7 +55,9 @@ export const SkipCheckIn: (props: {
       </div>
 
       <div class={`${styles.choices} voice-follow`}>
-        <For each={getSkipCheckInChoices(props.canOfferBell)}>
+        <For
+          each={getSkipCheckInChoices(props.canOfferBell, props.canOfferLater)}
+        >
           {(option) => (
             <Btn disabled={getIsChosen()} onClick={() => choose(option.choice)}>
               {option.label}

@@ -7,6 +7,8 @@ import {
   isSkipCheckInDue,
   SKIP_CHECK_IN_CHOICES,
   getSkipCheckInChoices,
+  getLaterGraceCfg,
+  isPauseAlreadyLater,
   SKIP_CHECK_IN_OBSERVATION,
   SKIP_CHECK_IN_QUESTION,
   SKIP_CHECK_IN_THRESHOLD,
@@ -202,6 +204,13 @@ describe("skipCheckIn", () => {
       ]);
     });
 
+    it("leaves out 'Only after a while' where the grace already does that", () => {
+      expect(getSkipCheckInChoices(false, false).map((c) => c.choice)).toEqual([
+        "as_now",
+        "off",
+      ]);
+    });
+
     it("offers the bell only where it can ring and isn't on yet", () => {
       expect(getSkipCheckInChoices(true).map((c) => c.choice)).toEqual([
         "as_now",
@@ -209,6 +218,39 @@ describe("skipCheckIn", () => {
         "bell",
         "off",
       ]);
+    });
+  });
+
+  describe("'Only after a while' and the grace", () => {
+    it("counts the default grace as already holding the pause back", () => {
+      expect(
+        isPauseAlreadyLater({ sessionGrace: { enabled: true, minutes: 10 } }),
+      ).toBe(true);
+      expect(
+        isPauseAlreadyLater({ sessionGrace: { enabled: true, minutes: 30 } }),
+      ).toBe(true);
+    });
+
+    it("doesn't count a shorter or switched-off grace", () => {
+      expect(
+        isPauseAlreadyLater({ sessionGrace: { enabled: true, minutes: 5 } }),
+      ).toBe(false);
+      expect(
+        isPauseAlreadyLater({ sessionGrace: { enabled: false, minutes: 30 } }),
+      ).toBe(false);
+      expect(isPauseAlreadyLater({})).toBe(false);
+    });
+
+    it("turns the grace on at ten minutes, keeping a longer one the user set", () => {
+      expect(
+        getLaterGraceCfg({ sessionGrace: { enabled: false, minutes: 30 } }),
+      ).toEqual({ enabled: true, minutes: 10 });
+      expect(
+        getLaterGraceCfg({ sessionGrace: { enabled: true, minutes: 5 } }),
+      ).toEqual({ enabled: true, minutes: 10 });
+      expect(
+        getLaterGraceCfg({ sessionGrace: { enabled: true, minutes: 30 } }),
+      ).toEqual({ enabled: true, minutes: 30 });
     });
   });
 });
