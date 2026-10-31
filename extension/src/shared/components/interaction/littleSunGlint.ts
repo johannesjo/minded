@@ -5,9 +5,30 @@
  * moment, never a repeating swell (that would be an unguided breath, which the
  * companion sun doesn't do).
  *
+ * How often is the user's choice (cfg.littleSunGlintMinutes).
+ *
  * Mirrors the Android Little Sun (LittleSunGlint.kt) - keep the two in step.
  */
-export const LITTLE_SUN_GLINT_EVERY_S = 10 * 60;
+export const LITTLE_SUN_GLINT_DEFAULT_MINUTES = 10;
+
+/** The intervals the settings offer; 0 (off) aside, anything else reads as the default. */
+export const LITTLE_SUN_GLINT_MINUTES_OPTIONS = [5, 10, 15, 30] as const;
+
+/**
+ * Seconds between glints for the user's setting (cfg.littleSunGlintMinutes),
+ * or null when they're off.
+ */
+export const getLittleSunGlintEveryS = (
+  minutes: number | undefined,
+): number | null => {
+  if (minutes === 0) return null;
+  const m = (LITTLE_SUN_GLINT_MINUTES_OPTIONS as readonly number[]).includes(
+    minutes ?? -1,
+  )
+    ? minutes!
+    : LITTLE_SUN_GLINT_DEFAULT_MINUTES;
+  return m * 60;
+};
 
 /**
  * No glint this close before the sun hands back to the full pause anyway: the
@@ -20,15 +41,18 @@ export const LITTLE_SUN_GLINT_MS = 3700;
 
 /**
  * Whether the sun glints on this tick. `secondsWithSun` counts the seconds the
- * sun has been in view since it appeared; `secondsUntilPause` is how long until
- * it hands back to the pause, or null when nothing is scheduled.
+ * sun has been in view since it appeared; `everyS` is the interval (null: off);
+ * `secondsUntilPause` is how long until it hands back to the pause, or null
+ * when nothing is scheduled.
  */
 export const isLittleSunGlintDue = (
   secondsWithSun: number,
+  everyS: number | null,
   secondsUntilPause: number | null,
 ): boolean =>
+  everyS !== null &&
   secondsWithSun > 0 &&
-  secondsWithSun % LITTLE_SUN_GLINT_EVERY_S === 0 &&
+  secondsWithSun % everyS === 0 &&
   (secondsUntilPause === null ||
     secondsUntilPause > LITTLE_SUN_GLINT_QUIET_BEFORE_PAUSE_S);
 

@@ -29,6 +29,7 @@ import com.minded.minded.util.ForegroundAppResult
 import com.minded.minded.util.Haptics
 import com.minded.minded.util.getForegroundAppReliable
 import com.minded.minded.util.isLittleSunGlintDue
+import com.minded.minded.util.littleSunGlintEveryS
 import com.minded.minded.util.shouldHandBackToPause
 import com.minded.minded.util.unlockedSessionAfterTick
 import java.time.Instant
@@ -94,6 +95,10 @@ class LittleSunWindow(
     // of glintCount plays one glint in the composable.
     private var secondsWithSun = 0
     private var glintCount by mutableStateOf(0)
+
+    // The user's interval (null: off), read on each appearance - a change in
+    // settings applies from the sun's next appearance.
+    private var glintEveryS: Int? = null
 
     // ---- Mini size (double tap) -------------------------------------------
     // Only the disc eases between sizes (in Compose); the window keeps its
@@ -272,6 +277,9 @@ class LittleSunWindow(
             // the last glint when the new composition first reads the count.
             secondsWithSun = 0
             glintCount = 0
+            glintEveryS = littleSunGlintEveryS(
+                ctrlSvc.getSharedPreferenceService().getSyncData().cfg.littleSunGlintMinutes,
+            )
         }
         // A fresh appearance starts at rest - no capture, no committed leave.
         isDiscInZone = false
@@ -339,7 +347,7 @@ class LittleSunWindow(
 
     private fun maybeGlint() {
         val secondsUntilPause = activePauseAtSessionS?.let { it - unlockedSessionS }
-        if (!isLittleSunGlintDue(secondsWithSun, secondsUntilPause)) return
+        if (!isLittleSunGlintDue(secondsWithSun, glintEveryS, secondsUntilPause)) return
         // Not mid-drag (the zone holds the disc then), nor while the bell is
         // already ringing light through this sun: one light at a time. A
         // skipped glint just waits for the next interval.

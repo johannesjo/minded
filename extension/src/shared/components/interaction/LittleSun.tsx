@@ -20,6 +20,7 @@ import {
   isActiveTimerInScope,
 } from "@src/util/activeTimerScope";
 import {
+  getLittleSunGlintEveryS,
   getSecondsUntilReQuestion,
   isLittleSunGlintDue,
   LITTLE_SUN_GLINT_MS,
@@ -79,11 +80,14 @@ export const LittleSunComponent: (props: {
   // littleSunGlint.ts). Counted only while the page is in view.
   const [getIsGlinting, setIsGlinting] = createSignal(false);
   let secondsWithSun = 0;
+  // The user's interval (null: off), kept current with every sync read.
+  let glintEveryS: number | null = getLittleSunGlintEveryS(undefined);
   let glintTimeout: number | undefined;
   const tickGlint = (secondsUntilPause: number | null) => {
     if (document.visibilityState !== "visible") return;
     secondsWithSun++;
-    if (!isLittleSunGlintDue(secondsWithSun, secondsUntilPause)) return;
+    if (!isLittleSunGlintDue(secondsWithSun, glintEveryS, secondsUntilPause))
+      return;
     setIsGlinting(true);
     window.clearTimeout(glintTimeout);
     glintTimeout = window.setTimeout(
@@ -129,6 +133,7 @@ export const LittleSunComponent: (props: {
     initialSessionDurationInS: number,
   ): boolean => {
     const target = getWebHostSessionTarget(props.host);
+    glintEveryS = getLittleSunGlintEveryS(syncData.cfg.littleSunGlintMinutes);
 
     if (
       isRestOfDayActive(syncData, target, "web") ||
