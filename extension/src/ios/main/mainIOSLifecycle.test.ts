@@ -50,7 +50,7 @@ describe("iOS main lifecycle", () => {
     }
   });
 
-  it("posts only to the message handlers the native shell registers", () => {
+  it("posts to the message handlers the native shell registers", () => {
     // WKWebView drops a post to an unregistered handler without a sound, so a
     // name drifting on either side would leave the sun mute to touch (haptics),
     // the launch sky on the wrong face (loading sky) or held until its cap
@@ -75,6 +75,7 @@ describe("iOS main lifecycle", () => {
     expect(native).toContain('type == "tick"');
 
     expect(native).toContain('sunReadyMessage = "mindedSunReady"');
+    expect(native).toContain("add(self, name: Self.sunReadyMessage)");
     expect(main).toContain("messageHandlers?.mindedSunReady?.postMessage");
 
     expect(native).toContain('loadingSkyMessage = "mindedLoadingSky"');
@@ -111,14 +112,21 @@ describe("iOS main lifecycle", () => {
   it("eases every cold launch in, not only the widget's", () => {
     // A plain launch from the app icon cut from the launch screen to a WebView
     // still loading when the fade was gated on the widget; it must stay
-    // unconditional in viewDidLoad.
+    // unconditional - neither viewDidLoad nor the fade itself may ask how the
+    // app was launched.
     const native = source("ios/App/App/MainViewController.swift");
     const viewDidLoad = native.slice(
       native.indexOf("override func viewDidLoad()"),
       native.indexOf("@objc func handleOpenSun"),
     );
+    const installLaunchFade = native.slice(
+      native.indexOf("private func installLaunchFade()"),
+      native.indexOf("private func launchSkyView("),
+    );
 
     expect(viewDidLoad).toContain("installLaunchFade()");
     expect(viewDidLoad).not.toMatch(/if [^\n]*\{\s*installLaunchFade\(\)/);
+    expect(installLaunchFade).toContain("view.addSubview(overlay)");
+    expect(installLaunchFade).not.toContain("launchedFromSunWidget");
   });
 });
