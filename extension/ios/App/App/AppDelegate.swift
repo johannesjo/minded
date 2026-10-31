@@ -14,8 +14,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     /// True when the app was *cold-launched* by tapping the companion sun widget
     /// (`minded://sun` arrived in the launch options). MainViewController reads this
-    /// to seed the WebView's very first paint straight into the sun pause - and to
-    /// bridge the launch with a morphing sun instead of a hard splash cut - rather
+    /// to seed the WebView's very first paint straight into the sun pause, rather
     /// than relying on the post-load hash retry (which paints a dashboard frame
     /// first). A warm re-tap, where the app is already running, goes through
     /// `application(open:)` → `.openSun` below instead.
@@ -28,7 +27,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var launchWidgetLine: String?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        print("application1")
         // Note a widget cold-launch before the WebView loads, so the controller can
         // open the sun synchronously in the first render. We only flag it here; the
         // shared `?sun=open` handling is unchanged. If this is ever missed, the
@@ -80,19 +78,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func applicationDidEnterBackground(_ application: UIApplication) {
         // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later.
         // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
-        NotificationCenter.default.post(name: Notification.Name("SWITCH_MODE"), object: nil,  userInfo: ["mode": "main"])
     }
 
     func applicationWillEnterForeground(_ application: UIApplication) {
         // Called as part of the transition from the background to the active state; here you can undo many of the changes made on entering the background.
-        print("applicationWillEnterForeground")
-        //   NotificationCenter.default.post(name: Notification.Name("SWITCH_MODE"), object: nil,  userInfo: ["mode": "main"])
- }
+    }
 
     func applicationDidBecomeActive(_ application: UIApplication) {
         // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
-        print("applicationDidBecomeActive")
-  }
+    }
 
     func applicationWillTerminate(_ application: UIApplication) {
         // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
@@ -100,7 +94,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     
 
     func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey: Any] = [:]) -> Bool {
-        print("application URL" , url)
         // The home-screen companion sun widget opens `minded://sun`. Turn it into
         // the shared `?sun=open` launch flag the web shell already consumes (the
         // exact same trigger as tapping the in-app dashboard sun). The notification
@@ -122,15 +115,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     func application(_ application: UIApplication, continue userActivity: NSUserActivity, restorationHandler: @escaping ([UIUserActivityRestoring]?) -> Void) -> Bool {
-        print("application2")
-        print("application2", userActivity.activityType)
-
-        NotificationCenter.default.post(name: Notification.Name("SWITCH_MODE"), object: nil,  userInfo: ["mode": "interaction"])
-        return true
         // Called when the app was launched with an activity, including Universal Links.
         // Feel free to add additional processing here, but if you want the App API to support
         // tracking app url opens, make sure to keep this call
-        // return ApplicationDelegateProxy.shared.application(application, continue: userActivity, restorationHandler: restorationHandler)
+        return ApplicationDelegateProxy.shared.application(application, continue: userActivity, restorationHandler: restorationHandler)
     }
 
 }

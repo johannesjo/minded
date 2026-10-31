@@ -1149,7 +1149,7 @@ export const Sun: Component<SunProps> = (props) => {
       pressLift.easeTo(1);
       // Reset haptic threshold tracking
       lastHapticPointIndex = -1;
-      // One faint tick as the sun is caught (Android only).
+      // One faint tick as the sun is caught (the native apps only).
       triggerSoftTick();
     };
 

@@ -12,11 +12,6 @@ import WidgetKit
 @objc(MindedIOSPlugin)
 public class MindedIOSPlugin: CAPPlugin {
 
-  @objc public func continueToApp(_ call: CAPPluginCall) {
-      print("MindedIOSPlugin: continueToApp")
-      call.resolve()
-  }
-
   /// Whether any minded widget is currently placed on the Home Screen.
   /// The web layer gates its "add the widget" invitation on this observed
   /// state, so the nudge is truthful and retires itself the moment a widget
@@ -36,27 +31,4 @@ public class MindedIOSPlugin: CAPPlugin {
           }
       }
   }
-
-
-    
-    /*
-    override public func load() {
-     NotificationCenter.default.addObserver(
-        self,
-        selector: #selector(self.orientationDidChange),
-        name: UIDevice.orientationDidChangeNotification,
-        object: nil)
-    }
-
-    deinit {
-      NotificationCenter.default.removeObserver(self)
-    }
-
-    @objc private func orientationDidChange() {
-      // Ignore changes in orientation if unknown, face up, or face down
-      if(UIDevice.current.orientation.isValidInterfaceOrientation) {
-        let orientation = implementation.getCurrentOrientationType()
-        notifyListeners("screenOrientationChange", data: ["type": orientation])
-      }
-    }*/
 }

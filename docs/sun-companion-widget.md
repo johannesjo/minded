@@ -210,12 +210,20 @@ verify.
   `capacitorDidLoad` injects an `.atDocumentStart` user script that sets the hash
   *before* the bundle runs (guarded by a `sessionStorage` flag so a later WebView
   reload can't re-force the pause open) - so the pause is in the first paint, no
-  dashboard frame first. The cold launch also **fades** the brand launch screen out
-  softly rather than hard-cutting it: a still of the `Splash` image is held over the
-  loading WebView and faded once the web posts `mindedSunReady` (the sun has painted).
+  dashboard frame first. Every cold launch, the widget's included, **fades** in
+  rather than hard-cutting: the launch screen is the app's own loading sky
+  (`LaunchSky`, light/dark by system appearance) with no disc on it, the same
+  image is held over the loading WebView, and it eases out once the web posts
+  `mindedSunReady` (its first surface, sun included, has painted). A launch
+  screen can only follow the system appearance, so the loading page names its
+  real sky (by the clock, like the app) in its first script and the held sky
+  turns to match early. So the widget's sun goes out with the system's launch
+  zoom and the app's sun fades in where it lives - not yet a morph (a static
+  launch screen can't know where the sun will be), but never a logo disc or a
+  second sun between them.
 - Below the deep link the interaction itself is already shared; the iOS-specific code
   is the SwiftUI widget, the URL plumbing, and a small native launch fade
-  (`installLaunchFade` - a `Splash` overlay faded out on the web's paint signal).
+  (`installLaunchFade` - the `LaunchSky` overlay faded out on the web's paint signal).
 
 ## Deliberately out of scope (v1)
 
