@@ -56,6 +56,14 @@ export const isLittleSunGlintDue = (
   (secondsUntilPause === null ||
     secondsUntilPause > LITTLE_SUN_GLINT_QUIET_BEFORE_PAUSE_S);
 
+/**
+ * On the web, a counting-up Little Sun re-shows the full pause every 15
+ * minutes (the re-question below), and each pause starts a fresh sun - and a
+ * fresh glint clock. So there, an interval of 15 or 30 minutes rarely or never
+ * glints in an open-ended stay: the re-question already is the (stronger)
+ * reminder. Timed sessions, grace, and Android have no re-question, so every
+ * interval applies there.
+ */
 export const RE_QUESTION_INTERVAL_IN_S = 15 * 60;
 export const MIN_RE_QUESTION_ELAPSED_TIME_S = 5 * 60;
 

@@ -121,25 +121,26 @@ $shadow: var(--little-sun-shadow);
 }
 
 // Only the light changes: the outer layer keeps its blur and spread and just
-// rises from and settles back to transparent, so the halo brightens in place
-// rather than growing and drawing back in. Quicker rise, slower settle.
+// rises from and settles back to transparent. The brighter light reaches a
+// little further while it lasts, but it plays once - light rising and
+// settling, never a repeating swell. Quicker rise, slower settle.
 @keyframes minded6622littleSunGlint {
   0% {
     box-shadow:
       $shadow,
-      0 0 16px 5px rgba(var(--little-sun-glint-rgb), 0);
+      0 0 12px 4px rgba(var(--little-sun-glint-rgb), 0);
     animation-timing-function: var(--ease-out);
   }
   25% {
     box-shadow:
       $shadow,
-      0 0 16px 5px rgba(var(--little-sun-glint-rgb), 0.75);
+      0 0 12px 4px rgba(var(--little-sun-glint-rgb), 0.75);
     animation-timing-function: ease-in-out;
   }
   100% {
     box-shadow:
       $shadow,
-      0 0 16px 5px rgba(var(--little-sun-glint-rgb), 0);
+      0 0 12px 4px rgba(var(--little-sun-glint-rgb), 0);
   }
 }
 

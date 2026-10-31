@@ -1,5 +1,6 @@
 package com.minded.minded.ui.compose
 
+import android.provider.Settings
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -31,6 +32,7 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -109,9 +111,10 @@ private const val GLOW_FALLOFF_K = 4.2f
 private val GLOW_FALLOFF: List<Pair<Float, Float>> = glowFalloff(0f)
 
 // At the glint's peak: a fuller rim and light held further out before it
-// feathers away - brighter, within the same bound, so the halo never grows
-// past the window or swells in size (a swell that draws back in reads as a
-// breath; this is light rising and settling, not the sun moving).
+// feathers away. The brighter light does reach a little further while it
+// lasts, but always within the same bound (never past the window), and only
+// once per glint - light rising and settling, never a repeating swell (which
+// would read as a breath) and never the disc itself moving.
 private const val GLINT_RIM_ALPHA = 1f
 private const val GLINT_FALLOFF_K = 2.2f
 
@@ -182,10 +185,28 @@ fun LittleSun(
     )
 
     val glint = remember { Animatable(0f) }
+    val context = LocalContext.current
     LaunchedEffect(glintCount) {
         if (glintCount == 0) return@LaunchedEffect
+        // With animations removed system-wide the glint would collapse into a
+        // one-frame flash - a hard cut. Skip it, like the web under
+        // prefers-reduced-motion.
+        val animatorScale = Settings.Global.getFloat(
+            context.contentResolver,
+            Settings.Global.ANIMATOR_DURATION_SCALE,
+            1f,
+        )
+        if (animatorScale == 0f) return@LaunchedEffect
         glint.animateTo(1f, tween(GLINT_RISE_MS, easing = FastOutSlowInEasing))
         glint.animateTo(0f, tween(GLINT_SETTLE_MS, easing = LinearOutSlowInEasing))
+    }
+    // The leave zone's disc carries no glint: if a drag lifts the sun mid-glint,
+    // let the light settle alongside the crossfade (this takes over the running
+    // glint) rather than stepping down at the hand-off.
+    LaunchedEffect(discHidden) {
+        if (discHidden && glint.value > 0f) {
+            glint.animateTo(0f, tween(DISC_HANDOFF_FADE_MS))
+        }
     }
 
     Box(

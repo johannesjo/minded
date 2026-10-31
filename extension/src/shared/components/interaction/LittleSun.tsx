@@ -30,6 +30,17 @@ import {
 
 const LITTLE_SUN_HINT_SEEN_KEY = "littleSunHintSeen";
 
+const getChangedGlintMinutes = (changes: {
+  [key: string]: { newValue?: unknown; oldValue?: unknown };
+}): { minutes: number | undefined } | null => {
+  if (!("cfg" in changes)) return null;
+  const oldCfg = changes.cfg.oldValue as SyncData["cfg"] | undefined;
+  const newCfg = changes.cfg.newValue as SyncData["cfg"] | undefined;
+  return oldCfg?.littleSunGlintMinutes !== newCfg?.littleSunGlintMinutes
+    ? { minutes: newCfg?.littleSunGlintMinutes }
+    : null;
+};
+
 const isSessionGraceCfgChanged = (changes: {
   [key: string]: { newValue?: unknown; oldValue?: unknown };
 }): boolean => {
@@ -80,7 +91,8 @@ export const LittleSunComponent: (props: {
   // littleSunGlint.ts). Counted only while the page is in view.
   const [getIsGlinting, setIsGlinting] = createSignal(false);
   let secondsWithSun = 0;
-  // The user's interval (null: off), kept current with every sync read.
+  // The user's interval (null: off): read with every sync read, and updated
+  // straight away when the setting changes while this sun is showing.
   let glintEveryS: number | null = getLittleSunGlintEveryS(undefined);
   let glintTimeout: number | undefined;
   const tickGlint = (secondsUntilPause: number | null) => {
@@ -204,6 +216,11 @@ export const LittleSunComponent: (props: {
   ) => {
     if (areaName !== "sync") {
       return;
+    }
+
+    const glintChange = getChangedGlintMinutes(changes);
+    if (glintChange) {
+      glintEveryS = getLittleSunGlintEveryS(glintChange.minutes);
     }
 
     if ("activeTimer" in changes) {
