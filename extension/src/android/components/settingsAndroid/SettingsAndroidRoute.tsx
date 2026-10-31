@@ -4,6 +4,7 @@ import { SettingsAndroid } from "./SettingsAndroid";
 import { AlternativesSettings } from "@src/shared/components/settings/AlternativesSettings";
 import { CustomQuestionsSettings } from "@src/shared/components/settings/CustomQuestionsSettings";
 import { SessionGraceSettings } from "@src/shared/components/settings/SessionGraceSettings";
+import { LittleSunGlintSettings } from "@src/shared/components/settings/LittleSunGlintSettings";
 import { InterventionPauseSettings } from "@src/shared/components/settings/InterventionPauseSettings";
 import { SoundSettings } from "@src/shared/components/settings/SoundSettings";
 import { FocusSchedule } from "@src/shared/components/settings/FocusSchedule";
@@ -66,6 +67,12 @@ export const SettingsAndroidRoute = () => {
             <hr class={styles.divider} />
 
             <SessionGraceSettings initialGrace={initial.cfg.sessionGrace} />
+
+            <hr class={styles.divider} />
+
+            <LittleSunGlintSettings
+              initialMinutes={initial.cfg.littleSunGlintMinutes}
+            />
 
             <hr class={styles.divider} />
 

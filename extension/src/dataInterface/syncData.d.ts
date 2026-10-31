@@ -58,6 +58,12 @@ export interface UserCfg {
    * phone for is dropped.
    */
   mindfulnessBellPerDay?: MindfulnessBellPerDay;
+  /**
+   * How often, in minutes, the Little Sun's light brightens for a moment as a
+   * soft reminder to pause (littleSunGlint.ts / LittleSunGlint.kt). 0 = off.
+   * Absent = 5.
+   */
+  littleSunGlintMinutes?: number;
 }
 
 /**

@@ -5,6 +5,7 @@ import { AlternativesSettings } from "@src/shared/components/settings/Alternativ
 import { CustomQuestionsSettings } from "@src/shared/components/settings/CustomQuestionsSettings";
 import { FocusSchedule } from "@src/shared/components/settings/FocusSchedule";
 import { SessionGraceSettings } from "@src/shared/components/settings/SessionGraceSettings";
+import { LittleSunGlintSettings } from "@src/shared/components/settings/LittleSunGlintSettings";
 import { InterventionPauseSettings } from "@src/shared/components/settings/InterventionPauseSettings";
 import { SoundSettings } from "@src/shared/components/settings/SoundSettings";
 import { JournalBackupSettings } from "@src/shared/components/settings/JournalBackupSettings";
@@ -77,6 +78,12 @@ const Options = () => {
 
             <section class={styles.section}>
               <SessionGraceSettings initialGrace={initial.cfg.sessionGrace} />
+            </section>
+
+            <section class={styles.section}>
+              <LittleSunGlintSettings
+                initialMinutes={initial.cfg.littleSunGlintMinutes}
+              />
             </section>
 
             <section class={styles.section}>

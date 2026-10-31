@@ -433,6 +433,14 @@ class SyncDataSerializationTest {
         assertNull(parse(",\n\"mindfulnessBellPerDay\": $tooMany").cfg.mindfulnessBellPerDay)
         assertNull(parse("").cfg.mindfulnessBellPerDay)
 
+        // How often the Little Sun glints round trips - off (0) included, so a
+        // native write can't switch it back on. An unoffered value is ignored.
+        assertEquals(15, parseSyncData(syncDataToJson(parse(",\n\"littleSunGlintMinutes\": 15"))).cfg.littleSunGlintMinutes)
+        assertEquals(0, parseSyncData(syncDataToJson(parse(",\n\"littleSunGlintMinutes\": 0"))).cfg.littleSunGlintMinutes)
+        assertNull(parse(",\n\"littleSunGlintMinutes\": 7").cfg.littleSunGlintMinutes)
+        assertNull(parse("").cfg.littleSunGlintMinutes)
+        assertEquals(false, JSONObject(syncDataToJson(absent)).getJSONObject("cfg").has("littleSunGlintMinutes"))
+
         // "Only ask my questions" is a WebView setting, but native writes carry
         // the whole cfg - it must survive them, and stay absent when unset.
         val onlyOwn = parse(",\n\"isOnlyOwnQuestions\": true")

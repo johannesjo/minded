@@ -43,6 +43,9 @@ data class UserCfg(
     val mindfulnessBell: Boolean? = null,
     // How many times a day it may ring (1..3). Absent = the default.
     val mindfulnessBellPerDay: Int? = null,
+    // How often the Little Sun glints, in minutes (LittleSunGlint.kt); 0 = off.
+    // Absent = the default.
+    val littleSunGlintMinutes: Int? = null,
     // Ask only the user's own questions (getQuestionSmart.ts). Native code never
     // reads it - it is only carried so a native write doesn't drop it. Absent = off.
     val isOnlyOwnQuestions: Boolean? = null
@@ -206,8 +209,14 @@ fun parseSyncDataFromJSONObject(jsonObject: JSONObject): SyncData {
     val mindfulnessBellPerDay = cfg.optInt("mindfulnessBellPerDay", 0)
         .takeIf { it in MindfulnessBellSchedule.SLOTS_PER_DAY_RANGE }
     val isOnlyOwnQuestions = if (cfg.has("isOnlyOwnQuestions")) cfg.optBoolean("isOnlyOwnQuestions", false) else null
+    val littleSunGlintMinutes = if (cfg.has("littleSunGlintMinutes")) {
+        cfg.optInt("littleSunGlintMinutes", -1).takeIf { it in LITTLE_SUN_GLINT_MINUTES_ALLOWED }
+    } else null
 
-    val userCfg = UserCfg(isOnboardingComplete, blockedHosts, blockedApps, focusSchedule, soundEnabled, sleepWindDown, sessionGrace, mindfulnessBell, mindfulnessBellPerDay, isOnlyOwnQuestions)
+    val userCfg = UserCfg(
+        isOnboardingComplete, blockedHosts, blockedApps, focusSchedule, soundEnabled, sleepWindDown,
+        sessionGrace, mindfulnessBell, mindfulnessBellPerDay, littleSunGlintMinutes, isOnlyOwnQuestions,
+    )
 
     val answers = jsonObject.getJSONArray("answers").let { array ->
         List(array.length()) { i ->
