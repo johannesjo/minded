@@ -61,7 +61,7 @@ export interface UserCfg {
   /**
    * How often, in minutes, the Little Sun's light brightens for a moment as a
    * soft reminder to pause (littleSunGlint.ts / LittleSunGlint.kt). 0 = off.
-   * Absent = 10.
+   * Absent = 5.
    */
   littleSunGlintMinutes?: number;
 }

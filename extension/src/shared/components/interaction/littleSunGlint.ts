@@ -9,7 +9,7 @@
  *
  * Mirrors the Android Little Sun (LittleSunGlint.kt) - keep the two in step.
  */
-export const LITTLE_SUN_GLINT_DEFAULT_MINUTES = 10;
+export const LITTLE_SUN_GLINT_DEFAULT_MINUTES = 5;
 
 /** The intervals the settings offer; 0 (off) aside, anything else reads as the default. */
 export const LITTLE_SUN_GLINT_MINUTES_OPTIONS = [5, 10, 15, 30] as const;

@@ -12,7 +12,7 @@ package com.minded.minded.util
  *
  * Mirrors the web Little Sun (littleSunGlint.ts) - keep the two in step.
  */
-const val LITTLE_SUN_GLINT_DEFAULT_MINUTES = 10
+const val LITTLE_SUN_GLINT_DEFAULT_MINUTES = 5
 
 /** The intervals the settings offer, plus 0 for off; anything else reads as the default. */
 val LITTLE_SUN_GLINT_MINUTES_ALLOWED = setOf(0, 5, 10, 15, 30)
