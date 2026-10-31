@@ -32,6 +32,17 @@ describe("calm motion policy", () => {
     expect(sunStyles).not.toContain("mindedSunIdleFloat");
     expect(sunStyles).not.toContain("mindedSunIdleBreath");
     expect(littleSunStyles).not.toContain("minded6622littleSunBreath");
+    // The glint (littleSunGlint.ts) is a single brighten-and-settle on a
+    // timer, never a repeating swell - and still under reduced motion.
+    expect(littleSunStyles).toMatch(
+      /&\.isGlinting\s*\{\s*animation:\s*minded6622littleSunGlint [^;]*\b1;/,
+    );
+    expect(littleSunStyles).not.toMatch(
+      /minded6622littleSunGlint[^;]*infinite/,
+    );
+    expect(littleSunStyles).toMatch(
+      /prefers-reduced-motion[\s\S]*\.isGlinting\s*\{\s*animation:\s*none/,
+    );
     expect(questionStyles).not.toContain("tapHintBreathe");
     // The resting companion keeps its warm disc fill in CSS - as a value on the
     // registered face-edge colour axis, so the rim interpolates across the

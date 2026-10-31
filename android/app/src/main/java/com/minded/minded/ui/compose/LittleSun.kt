@@ -1,6 +1,9 @@
 package com.minded.minded.ui.compose
 
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
@@ -17,6 +20,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -102,11 +106,30 @@ private const val GLOW_FALLOFF_K = 4.2f
  * It is also closer to the blurred box-shadow halo of the web sun this disc
  * cross-fades into when an intervention opens.
  */
-private val GLOW_FALLOFF: List<Pair<Float, Float>> = (0..GLOW_FALLOFF_STEPS).map { i ->
-    val t = i / GLOW_FALLOFF_STEPS.toFloat()
-    val alpha = GLOW_RIM_ALPHA * exp(-GLOW_FALLOFF_K * t * t) * (1f - t.pow(6))
-    (0.5f + 0.4f * t) to alpha
+private val GLOW_FALLOFF: List<Pair<Float, Float>> = glowFalloff(0f)
+
+// At the glint's peak: a fuller rim and light held further out before it
+// feathers away - brighter, within the same bound, so the halo never grows
+// past the window or swells in size (a swell that draws back in reads as a
+// breath; this is light rising and settling, not the sun moving).
+private const val GLINT_RIM_ALPHA = 1f
+private const val GLINT_FALLOFF_K = 2.2f
+
+private fun glowFalloff(glint: Float): List<Pair<Float, Float>> {
+    val rim = GLOW_RIM_ALPHA + (GLINT_RIM_ALPHA - GLOW_RIM_ALPHA) * glint
+    val k = GLOW_FALLOFF_K + (GLINT_FALLOFF_K - GLOW_FALLOFF_K) * glint
+    return (0..GLOW_FALLOFF_STEPS).map { i ->
+        val t = i / GLOW_FALLOFF_STEPS.toFloat()
+        val alpha = rim * exp(-k * t * t) * (1f - t.pow(6))
+        (0.5f + 0.4f * t) to alpha
+    }
 }
+
+/** The glint's light rises over this... */
+internal const val GLINT_RISE_MS = 900
+
+/** ...and settles back over this - slower, so it eases away rather than blinks. */
+internal const val GLINT_SETTLE_MS = 2800
 
 /**
  * The little sun overlay: a small, draggable companion bubble (like a chat-head)
@@ -138,6 +161,9 @@ fun LittleSun(
     // small. The window keeps its full size; the disc is just drawn at this
     // scale, centred in it, so it shrinks and grows in place.
     discScale: Float = 1f,
+    // Bumped by the window when the sun should glint (see LittleSunGlint.kt):
+    // each new value plays one brighten-and-settle of the halo. 0 = never yet.
+    glintCount: Int = 0,
     onDoubleTap: () -> Unit = {},
     onDragStart: () -> Unit = {},
     onDrag: (dxPx: Float, dyPx: Float) -> Unit = { _, _ -> },
@@ -154,6 +180,13 @@ fun LittleSun(
         animationSpec = tween(durationMillis = DISC_HANDOFF_FADE_MS),
         label = "littleSunDiscAlpha",
     )
+
+    val glint = remember { Animatable(0f) }
+    LaunchedEffect(glintCount) {
+        if (glintCount == 0) return@LaunchedEffect
+        glint.animateTo(1f, tween(GLINT_RISE_MS, easing = FastOutSlowInEasing))
+        glint.animateTo(0f, tween(GLINT_SETTLE_MS, easing = LinearOutSlowInEasing))
+    }
 
     Box(
         modifier = Modifier
@@ -187,6 +220,7 @@ fun LittleSun(
             clockString = clockString,
             scale = discScale,
             clockAlpha = miniClockAlpha(discScale),
+            glint = glint.value,
             modifier = Modifier.requiredSize(60.dp),
         )
     }
@@ -227,6 +261,10 @@ internal fun SunDisc(
     // colour arrives exactly as the disc lands.
     glowMorphMs: Int = DISC_HANDOFF_FADE_MS,
     clockAlpha: Float = 1f,
+    // 0..1: how far the halo is brightened toward its glint peak. The colour
+    // never changes (amber stays amber, the moon's halo stays cool) - only how
+    // much light the sun casts.
+    glint: Float = 0f,
     modifier: Modifier = Modifier,
 ) {
     // At night the companion becomes the moon - cool silver body, cool halo -
@@ -257,9 +295,10 @@ internal fun SunDisc(
         // shows - mirrors the web extension's box-shadow glow. The disc radius
         // is 0.5 of the glow radius, so the colour is saturated right where the
         // body edge sits and then feathers away along GLOW_FALLOFF.
-        val glowBrush = remember(glowColor) {
+        val glowBrush = remember(glowColor, glint) {
+            val falloff = if (glint > 0f) glowFalloff(glint) else GLOW_FALLOFF
             Brush.radialGradient(
-                colorStops = GLOW_FALLOFF
+                colorStops = falloff
                     .map { (offset, alpha) -> offset to glowColor.copy(alpha = alpha) }
                     .toTypedArray(),
             )

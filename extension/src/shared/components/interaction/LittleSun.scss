@@ -111,6 +111,36 @@ $shadow: var(--little-sun-shadow);
     outline: 2px solid var(--c-fg-full-emphasis);
     outline-offset: 4px;
   }
+
+  // A soft reminder that a pause is there: the light rises for a moment and
+  // settles back (LITTLE_SUN_GLINT_MS in littleSunGlint.ts). Runs once per
+  // glint - never a repeating swell, which would be an unguided breath.
+  &.isGlinting {
+    animation: minded6622littleSunGlint 3.7s linear 1;
+  }
+}
+
+// Only the light changes: the outer layer keeps its blur and spread and just
+// rises from and settles back to transparent, so the halo brightens in place
+// rather than growing and drawing back in. Quicker rise, slower settle.
+@keyframes minded6622littleSunGlint {
+  0% {
+    box-shadow:
+      $shadow,
+      0 0 16px 5px rgba(var(--little-sun-glint-rgb), 0);
+    animation-timing-function: var(--ease-out);
+  }
+  25% {
+    box-shadow:
+      $shadow,
+      0 0 16px 5px rgba(var(--little-sun-glint-rgb), 0.75);
+    animation-timing-function: ease-in-out;
+  }
+  100% {
+    box-shadow:
+      $shadow,
+      0 0 16px 5px rgba(var(--little-sun-glint-rgb), 0);
+  }
 }
 
 #minded-6622-little-sun-time {
@@ -145,6 +175,10 @@ $shadow: var(--little-sun-shadow);
   }
 
   #minded-6622-little-sun-time {
+    animation: none;
+  }
+
+  #minded-6622-little-sun-sun.isGlinting {
     animation: none;
   }
 }

@@ -28,6 +28,7 @@ import com.minded.minded.ui.compose.MINI_MORPH_MS
 import com.minded.minded.util.ForegroundAppResult
 import com.minded.minded.util.Haptics
 import com.minded.minded.util.getForegroundAppReliable
+import com.minded.minded.util.isLittleSunGlintDue
 import com.minded.minded.util.shouldHandBackToPause
 import com.minded.minded.util.unlockedSessionAfterTick
 import java.time.Instant
@@ -86,6 +87,14 @@ class LittleSunWindow(
     private var rawX = 0f
     private var rawY = 0f
 
+    // ---- Glint ------------------------------------------------------------
+    // Seconds the sun has been in view (screen on, unlocked) since it appeared;
+    // every so often in an open-ended stay its light brightens for a moment as
+    // a soft reminder that a pause is there (see LittleSunGlint.kt). Each bump
+    // of glintCount plays one glint in the composable.
+    private var secondsWithSun = 0
+    private var glintCount by mutableStateOf(0)
+
     // ---- Mini size (double tap) -------------------------------------------
     // Only the disc eases between sizes (in Compose); the window keeps its
     // full size, so the sun shrinks and grows in place without the window
@@ -131,6 +140,7 @@ class LittleSunWindow(
             elapsedSeconds = elapsedSeconds,
             discHidden = isDiscInZone,
             discScale = discScale,
+            glintCount = glintCount,
             onDoubleTap = { toggleMini() },
             onDragStart = { onDragStart() },
             onDrag = { dx, dy -> onDrag(dx, dy) },
@@ -209,6 +219,13 @@ class LittleSunWindow(
                     stopTimer()
                     return
                 }
+
+                // Only an open-ended stay glints: a timed session ends on its
+                // own, at the moment the user chose.
+                if (isUnlocked) {
+                    secondsWithSun++
+                    maybeGlint()
+                }
             }
 
             // Always continue the timer - OverlayControllerService handles screen state changes
@@ -251,6 +268,10 @@ class LittleSunWindow(
             // Restore the bubble's parked position.
             initPosition()
             activePauseAtSessionS = pauseAtSessionS
+            // A fresh appearance starts its own while - and must not replay
+            // the last glint when the new composition first reads the count.
+            secondsWithSun = 0
+            glintCount = 0
         }
         // A fresh appearance starts at rest - no capture, no committed leave.
         isDiscInZone = false
@@ -314,6 +335,17 @@ class LittleSunWindow(
 
     private fun savePosition() {
         ctrlSvc.getSharedPreferenceService().saveLittleSunPosition(posX, posY)
+    }
+
+    private fun maybeGlint() {
+        val secondsUntilPause = activePauseAtSessionS?.let { it - unlockedSessionS }
+        if (!isLittleSunGlintDue(secondsWithSun, secondsUntilPause)) return
+        // Not mid-drag (the zone holds the disc then), nor while the bell is
+        // already ringing light through this sun: one light at a time. A
+        // skipped glint just waits for the next interval.
+        if (zoneView != null || isLeaveCommitted) return
+        if (ctrlSvc.isBellRingingThrough(BellHost.Kind.LITTLE_SUN)) return
+        glintCount++
     }
 
     /**

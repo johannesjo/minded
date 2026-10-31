@@ -19,9 +19,14 @@ import {
   getWebHostSessionTarget,
   isActiveTimerInScope,
 } from "@src/util/activeTimerScope";
+import {
+  getSecondsUntilReQuestion,
+  isLittleSunGlintDue,
+  LITTLE_SUN_GLINT_MS,
+  MIN_RE_QUESTION_ELAPSED_TIME_S,
+  RE_QUESTION_INTERVAL_IN_S,
+} from "@src/shared/components/interaction/littleSunGlint";
 
-const RE_QUESTION_INTERVAL_IN_S = 15 * 60;
-const MIN_RE_QUESTION_ELAPSED_TIME_S = 5 * 60;
 const LITTLE_SUN_HINT_SEEN_KEY = "littleSunHintSeen";
 
 const isSessionGraceCfgChanged = (changes: {
@@ -67,6 +72,24 @@ export const LittleSunComponent: (props: {
       setShowHint(false);
       setIsHintLeaving(false);
     }, HINT_OUT_MS);
+  };
+
+  // Every so often in an open-ended stay the sun's light brightens for a
+  // moment and eases away - a soft reminder that a pause is there (see
+  // littleSunGlint.ts). Counted only while the page is in view.
+  const [getIsGlinting, setIsGlinting] = createSignal(false);
+  let secondsWithSun = 0;
+  let glintTimeout: number | undefined;
+  const tickGlint = (secondsUntilPause: number | null) => {
+    if (document.visibilityState !== "visible") return;
+    secondsWithSun++;
+    if (!isLittleSunGlintDue(secondsWithSun, secondsUntilPause)) return;
+    setIsGlinting(true);
+    window.clearTimeout(glintTimeout);
+    glintTimeout = window.setTimeout(
+      () => setIsGlinting(false),
+      LITTLE_SUN_GLINT_MS,
+    );
   };
 
   let currentSessionInterval: number;
@@ -223,6 +246,7 @@ export const LittleSunComponent: (props: {
     isDisposed = true;
     window.clearTimeout(hintTimeout);
     window.clearTimeout(hintOutTimeout);
+    window.clearTimeout(glintTimeout);
     window.clearInterval(currentSessionInterval);
     bro.storage.onChanged.removeListener(handleStorageChange);
   });
@@ -253,7 +277,9 @@ export const LittleSunComponent: (props: {
         // Periodic re-question mid-session: the session is still running, so this
         // isn't a "timer ran out" return - don't morph from the corner.
         props.onShowFreshInteraction(false);
+        return;
       }
+      tickGlint(getSecondsUntilReQuestion(v, initialValue));
     }, 1000);
   };
 
@@ -312,7 +338,9 @@ export const LittleSunComponent: (props: {
         window.clearInterval(currentSessionInterval);
         // Grace exhausted - fall through to full intervention.
         void refreshTimerSource();
+        return;
       }
+      tickGlint(nextRemaining);
     };
 
     currentSessionInterval = window.setInterval(tick, 1000);
@@ -382,6 +410,7 @@ export const LittleSunComponent: (props: {
       <div id="minded-6622-little-sun-sun-wrapper">
         <button
           id="minded-6622-little-sun-sun"
+          classList={{ isGlinting: getIsGlinting() }}
           type="button"
           aria-label={getAccessibleLabel()}
           onClick={handleClick}

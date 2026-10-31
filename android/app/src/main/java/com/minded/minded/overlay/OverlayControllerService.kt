@@ -639,6 +639,10 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         else mindfulnessBell.fadeOutAndRelease()
     }
 
+    /** Whether the mindfulness bell is ringing through this kind of sun right now. */
+    internal fun isBellRingingThrough(kind: BellHost.Kind): Boolean =
+        ::bellSunOverlayWindow.isInitialized && bellSunOverlayWindow.host?.kind == kind
+
     /**
      * The sun a bell rings through is moving or going: the bell goes with it
      * (fading) rather than leave its light where the sun was.
