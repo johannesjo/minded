@@ -73,6 +73,14 @@ class LittleSunWindow(
     var pauseAtSessionS: Int? = null
     private var activePauseAtSessionS: Int? = null
 
+    // Whether this appearance is a grace bubble (one that hands back after a
+    // while). The controller only shows one when no chosen time is live, so
+    // any end time still on record - one that ran out while the user was
+    // elsewhere - must not be read as "your time just ran out": that pinned
+    // the bubble at 0:00 instead of counting up. Snapshotted like
+    // activePauseAtSessionS, but kept after the hand-back is armed.
+    private var isGraceBubble = false
+
     // Session seconds toward that hand-back, counted only while the screen is
     // on and unlocked: a locked phone never "stays a while", so nobody unlocks
     // straight into a pause. Seeded from, and written back to, the app's entry
@@ -172,9 +180,16 @@ class LittleSunWindow(
 
             if (endWaitIfDue()) return
             
+            // Per-app end time first, as OverlayDecisionEngine reads it, so the
+            // bubble never counts down a different timer than the one that
+            // decided to show it.
             val endTime = windDownSnoozeEndTime
-                ?: activeTimer?.let { Instant.ofEpochMilli(it.endTS) }
-                ?: appEntry?.sessionEndTime
+                ?: if (isGraceBubble) {
+                    null
+                } else {
+                    appEntry?.sessionEndTime
+                        ?: activeTimer?.let { Instant.ofEpochMilli(it.endTS) }
+                }
             val now = Instant.now()
             val isUnlocked = powerManager.isInteractive &&
                 keyguardManager?.isKeyguardLocked != true
@@ -281,6 +296,7 @@ class LittleSunWindow(
             // Restore the bubble's parked position.
             initPosition()
             activePauseAtSessionS = pauseAtSessionS
+            isGraceBubble = pauseAtSessionS != null
             // A fresh appearance starts its own while - and must not replay
             // the last glint when the new composition first reads the count.
             secondsWithSun = 0
