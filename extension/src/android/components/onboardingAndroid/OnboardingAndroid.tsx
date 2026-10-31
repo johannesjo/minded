@@ -311,7 +311,6 @@ export const OnboardingAndroid = (props: {
                 class={`${styles.step} ${styles.stepUnderSky} pageTransitionIn`}
               >
                 <SettingsAndroid
-                  isRouting={false}
                   heading={`Where should the ${companionWord()} meet you?`}
                   saveBtnTxt="save & continue"
                   onSave={handlePlacesSaved}

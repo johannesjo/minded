@@ -5,9 +5,9 @@ import {
   getSyncData,
   updateBlockedApps,
 } from "@src/dataInterface/commonSyncDataInterface";
-import { useNavigate } from "@solidjs/router";
 import { Ico } from "@src/shared/components/ui/Ico";
 import { Checkbox } from "@src/shared/components/ui/Checkbox";
+import { AppRow } from "./AppRow";
 import Btn from "@src/shared/components/ui/Btn";
 import { companionWord } from "@src/shared/addWrapperClasses";
 import {
@@ -23,7 +23,6 @@ import {
 import { readInstalledApps } from "./installedApps";
 
 export const SettingsAndroid = (props: {
-  isRouting?: boolean;
   saveBtnTxt?: string;
   /** Heading above the app list. Onboarding overrides it with presence framing. */
   heading?: string;
@@ -46,7 +45,6 @@ export const SettingsAndroid = (props: {
     { packageName: string; name: string }[]
   >([]);
 
-  const navigate = props.isRouting ? useNavigate() : () => undefined;
   const [getSelectedApps, setSelectedApps] = createSignal<string[]>(
     props.initialBlockedApps ?? [],
   );
@@ -84,11 +82,15 @@ export const SettingsAndroid = (props: {
     const chosenAtOpen: Promise<string[]> =
       props.initialBlockedApps !== undefined
         ? Promise.resolve(props.initialBlockedApps)
-        : getSyncData().then((syncData) => {
-            const chosen = syncData.cfg.blockedApps || [];
-            if (!isDisposed) setSelectedApps(chosen);
-            return chosen;
-          });
+        : getSyncData()
+            .then((syncData) => {
+              const chosen = syncData.cfg.blockedApps || [];
+              if (!isDisposed) setSelectedApps(chosen);
+              return chosen;
+            })
+            // Never leave the list stuck on "Loading": fall back to the
+            // plain feed-first order.
+            .catch(() => []);
 
     t0 = setTimeout(() => {
       const apps = readInstalledApps();
@@ -116,11 +118,6 @@ export const SettingsAndroid = (props: {
 
   const handleSave = async () => {
     await updateBlockedApps(getSelectedApps());
-    // Only navigates when used as a standalone route (isRouting); in onboarding
-    // `navigate` is a no-op and `onSave` drives the step change. The router-level
-    // page-fade interceptor (RouteCmp) eases this home rather than hard-cutting,
-    // matching the sibling SettingsAndroidRoute.
-    navigate("/");
     props.onSave?.(getSelectedApps());
   };
 
@@ -186,21 +183,18 @@ export const SettingsAndroid = (props: {
         ) : (
           <For
             each={getShownApps()}
-            fallback={<p class={styles.noMatch}>No app by that name.</p>}
+            fallback={
+              <p class={styles.noMatch} role="status">
+                No app by that name.
+              </p>
+            }
           >
             {(app) => (
-              <div
-                class={styles.appEntry}
-                onClick={() => handleToggleApp(app.packageName)}
-              >
-                <div class={styles.checkboxDisplay}>
-                  <Checkbox
-                    checked={getSelectedApps().includes(app.packageName)}
-                    onChange={() => {}}
-                  />
-                </div>
-                <span class={styles.appName}>{app.name}</span>
-              </div>
+              <AppRow
+                name={app.name}
+                checked={getSelectedApps().includes(app.packageName)}
+                onToggle={() => handleToggleApp(app.packageName)}
+              />
             )}
           </For>
         )}
@@ -208,12 +202,6 @@ export const SettingsAndroid = (props: {
 
       {!props.autoSave && (
         <div class={styles.footer}>
-          {props.isRouting && (
-            <Btn class={styles.backBtn} onClick={() => navigate("/")}>
-              <Ico name="arrowBack" /> Back
-            </Btn>
-          )}
-
           <Btn disabled={!hasChosenAPlace()} onClick={handleSave}>
             <Ico name="send" /> {props.saveBtnTxt || "Save"}
           </Btn>

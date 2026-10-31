@@ -15,3 +15,17 @@
   max-width: 400px;
   color: var(--h4-c);
 }
+
+// Rows read like the picker's: names left-aligned beside the checkbox, even
+// though the section's heading and description are centred.
+.list {
+  text-align: start;
+}
+
+// Same spacing and alignment hooks as the neighbouring blocks' buttons
+// (e.g. JournalBackupSettings .actions).
+.actions {
+  display: flex;
+  justify-content: var(--settings-options-justify, center);
+  margin-top: var(--space-md);
+}

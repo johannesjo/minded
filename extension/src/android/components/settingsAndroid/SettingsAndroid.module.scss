@@ -94,12 +94,11 @@
   mask-image: linear-gradient(to bottom, transparent, #000 24px);
 }
 
-.backBtn {
-  margin-right: 16px;
-}
-
 // Only on phones with a long list (APP_FILTER_MIN_APPS): typing three letters
 // beats scrolling past a hundred rows.
 .filter {
   @include formInput();
+  // It appears with the apps, after the list's own entrance has run - so it
+  // eases in with them rather than popping in above.
+  animation: appListFadeIn 0.3s var(--ease-out);
 }
