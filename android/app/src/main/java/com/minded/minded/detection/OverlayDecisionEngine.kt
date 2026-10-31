@@ -155,35 +155,35 @@ class OverlayDecisionEngine {
         val sessionEndTime = state.appSessionEndTime ?: state.activeTimerEndTime
         val isWithinSessionLimit = sessionEndTime?.let { it > state.currentTime } ?: false
 
-        val laterPauseAtS = laterPauseAtSessionS(
-            state.sessionGraceEnabled,
-            state.sessionGraceMinutes,
-        )
+        val pauseAtS = sessionPauseAtS(state)
 
         return if (isWithinSessionLimit) {
             // Active session exists - show little sun
             OverlayDecision.ShowLittleSun
-        } else if (
-            state.interventionPauseKind == INTERVENTION_PAUSE_KIND_LATER &&
-            state.currentUnlockedSessionS < laterPauseAtS
-        ) {
-            // A "later" week from the skip check-in: the sun still meets every
-            // open, but the full pause waits until the user has stayed a while.
-            // Checked before grace because, unlike grace here, it hands back.
-            OverlayDecision.ShowLittleSunUntilPause(laterPauseAtS)
-        } else if (isWithinSessionGrace(state)) {
-            // Per-session grace period still has time - show little sun
-            OverlayDecision.ShowLittleSun
+        } else if (pauseAtS != null && state.currentUnlockedSessionS < pauseAtS) {
+            // Grace (on by default) or a "later" week from the skip check-in:
+            // the sun meets every open as the Little Sun, and the full pause
+            // waits until the user has stayed a while - then the bubble hands
+            // back, at the next natural break (NaturalBreak.kt). Only unlocked
+            // time counts, so nobody unlocks straight into a pause.
+            OverlayDecision.ShowLittleSunUntilPause(pauseAtS)
         } else {
             // No active session and no grace remaining - show intervention
             OverlayDecision.ShowIntervention
         }
     }
 
-    private fun isWithinSessionGrace(state: OverlayState): Boolean {
-        if (!state.sessionGraceEnabled) return false
-        if (state.sessionGraceMinutes <= 0) return false
-        return state.currentSessionDurationS < state.sessionGraceMinutes * 60
+    /**
+     * Session seconds after which the Little Sun hands back to the full pause,
+     * or null when every open should meet the pause at the door. A "later"
+     * week widens the grace exactly as on the web (sessionGrace.ts).
+     */
+    private fun sessionPauseAtS(state: OverlayState): Int? = when {
+        state.interventionPauseKind == INTERVENTION_PAUSE_KIND_LATER ->
+            laterPauseAtSessionS(state.sessionGraceEnabled, state.sessionGraceMinutes)
+        state.sessionGraceEnabled && state.sessionGraceMinutes > 0 ->
+            state.sessionGraceMinutes * 60
+        else -> null
     }
 
     /**
@@ -303,7 +303,8 @@ sealed class OverlayDecision {
 
     /**
      * Show the little sun, and hand back to the full pause once the session
-     * reaches [pauseAtSessionS] seconds (a "later" week from the skip check-in).
+     * reaches [pauseAtSessionS] unlocked seconds (the grace, or a "later" week
+     * from the skip check-in).
      */
     data class ShowLittleSunUntilPause(val pauseAtSessionS: Int) : OverlayDecision()
 

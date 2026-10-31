@@ -15,6 +15,7 @@ import { formatSessionTime } from "@src/util/formatTime";
 import { SyncData } from "@src/dataInterface/syncData";
 import { bro } from "@src/util/browser";
 import { getLittleSunTimerSource } from "@src/shared/components/interaction/littleSunTimerSource";
+import { waitForNaturalBreak } from "@src/shared/components/interaction/naturalBreak";
 import {
   getWebHostSessionTarget,
   isActiveTimerInScope,
@@ -76,6 +77,54 @@ export const LittleSunComponent: (props: {
   // Set once this sun counts a grace down; only then may an exhausted grace
   // hand back to the intervention (see getLittleSunTimerSource).
   let hasCountedGrace = false;
+  // Set while a mid-session hand-back waits for the next natural break.
+  let cancelPendingArrival: (() => void) | undefined;
+
+  /**
+   * Every *automatic* return of the full pause mid-session - grace used up, a
+   * chosen time run out, the periodic re-question - waits for the next natural
+   * break (see naturalBreak.ts) instead of cutting in mid-sentence or
+   * mid-video. A deliberate tap never waits. `beforeArrive` runs at the break,
+   * so whatever the arrival changes (clearing the timer) changes only then.
+   */
+  const arriveAtNaturalBreak = (
+    morphFromCorner: boolean,
+    beforeArrive?: () => void,
+  ) => {
+    if (cancelPendingArrival) return;
+    keepSessionAliveWhileWaiting();
+    cancelPendingArrival = waitForNaturalBreak(() => {
+      cancelPendingArrival = undefined;
+      if (isDisposed) return;
+      window.clearInterval(currentSessionInterval);
+      beforeArrive?.();
+      props.onShowFreshInteraction(morphFromCorner);
+    });
+  };
+
+  // While the pause waits, the user is still here: keep the session warm (so a
+  // page load in the meantime still reads as the same session) and let the
+  // sun keep counting up - except a run-out countdown, which rests at 0:00.
+  const keepSessionAliveWhileWaiting = () => {
+    window.clearInterval(currentSessionInterval);
+    currentSessionInterval = window.setInterval(() => {
+      if (getRemainingSeconds() !== null) {
+        updateHostsEntry(props.host, { lastUsedTS: Date.now() });
+        return;
+      }
+      const v = getSessionTime() + 1;
+      setSessionTime(v);
+      updateHostsEntry(props.host, {
+        lastUsedTS: Date.now(),
+        sessionDurationInS: v,
+      });
+    }, 1000);
+  };
+
+  const cancelArrival = () => {
+    cancelPendingArrival?.();
+    cancelPendingArrival = undefined;
+  };
 
   const maybeShowHint = async () => {
     const data = await bro.storage.local.get(LITTLE_SUN_HINT_SEEN_KEY);
@@ -123,6 +172,12 @@ export const LittleSunComponent: (props: {
       hasCountedGrace,
     );
 
+    if (source.type !== "grace-exhausted") {
+      // A new timer or grace (set in another tab, a settings change) means
+      // nothing is due any more.
+      cancelArrival();
+    }
+
     if (source.type === "session") {
       setIsGraceMode(false);
       setGraceRemaining(null);
@@ -139,9 +194,9 @@ export const LittleSunComponent: (props: {
     }
 
     if (source.type === "grace-exhausted") {
-      window.clearInterval(currentSessionInterval);
-      // Grace ran out after a real session - a genuine "timer ran out", so morph.
-      props.onShowFreshInteraction(true);
+      // Grace ran out after a real session - a genuine "timer ran out", so morph
+      // - at the next natural break.
+      arriveAtNaturalBreak(true);
       return true;
     }
 
@@ -224,6 +279,7 @@ export const LittleSunComponent: (props: {
     window.clearTimeout(hintTimeout);
     window.clearTimeout(hintOutTimeout);
     window.clearInterval(currentSessionInterval);
+    cancelArrival();
     bro.storage.onChanged.removeListener(handleStorageChange);
   });
 
@@ -252,7 +308,7 @@ export const LittleSunComponent: (props: {
       ) {
         // Periodic re-question mid-session: the session is still running, so this
         // isn't a "timer ran out" return - don't morph from the corner.
-        props.onShowFreshInteraction(false);
+        arriveAtNaturalBreak(false);
       }
     }, 1000);
   };
@@ -273,12 +329,19 @@ export const LittleSunComponent: (props: {
       updateHostsEntry(props.host, { lastUsedTS: Date.now() });
 
       if (remaining <= 0) {
-        window.clearInterval(currentSessionInterval);
-        // The countdown ran out - clear the session and morph the intervention
-        // back out of the corner (the headline reverse-morph case).
-        updateHostsEntry(props.host, { sessionDurationInS: 0 });
-        void clearScopedActiveTimer(sessionEndTS);
-        props.onShowFreshInteraction(true);
+        // Mark the user as still here at the moment the time ran out, so a
+        // page load before the break still meets the pause (isTimeUpMidSession).
+        updateHostsEntry(props.host, {
+          lastUsedTS: Math.max(Date.now(), sessionEndTS),
+        });
+        // The countdown ran out - at the next natural break, clear the session
+        // and morph the intervention back out of the corner (the headline
+        // reverse-morph case). The timer is cleared only then: clearing it is
+        // itself what brings the pause in every tab of this site.
+        arriveAtNaturalBreak(true, () => {
+          updateHostsEntry(props.host, { sessionDurationInS: 0 });
+          void clearScopedActiveTimer(sessionEndTS);
+        });
       }
     };
 
@@ -320,6 +383,7 @@ export const LittleSunComponent: (props: {
 
   const handleClick = () => {
     dismissHint();
+    cancelArrival();
     // End current session
     window.clearInterval(currentSessionInterval);
     updateHostsEntry(props.host, { sessionDurationInS: 0 });

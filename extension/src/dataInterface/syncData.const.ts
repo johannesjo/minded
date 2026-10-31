@@ -63,10 +63,12 @@ export const DEFAULT_SYNC_DATA: SyncData = {
           // "localhost",
           // "localhost:3000",
         ],
-    // Gentle per-session buffer, off by default: when enabled from settings,
-    // each fresh visit gets a few uninterrupted minutes (resets every session,
-    // never a depleting daily quota).
-    sessionGrace: { enabled: false, minutes: 5 },
+    // On by default: every fresh visit is met only by the Little Sun, and the
+    // full pause arrives once the visit has run this long - mid-session, at the
+    // next natural break (see naturalBreak.ts), where drifting actually
+    // happens, rather than at the door, where the thumb has learned to tap it
+    // away. Resets every session; never a depleting daily quota.
+    sessionGrace: { enabled: true, minutes: 10 },
   },
   // NOTE: 99 is set to pass isToday check
   lastBlockedTS: DEFAULT_TS_VAL,

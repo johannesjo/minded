@@ -27,6 +27,8 @@ import com.minded.minded.detection.DetectionConfidence
 import com.minded.minded.detection.PreinstalledUserApps
 import com.minded.minded.util.registerUserPresentReceiver
 import com.minded.minded.util.ForegroundStateHolder
+import com.minded.minded.util.NaturalBreakGate
+import com.minded.minded.util.isSidewaysOnlyScroll
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collect
 import java.util.Collections
@@ -412,10 +414,29 @@ class MyAccessibilityService : AccessibilityService() {
         Log.d(TAG, "onInterrupt()")
     }
 
+    /**
+     * Adds scroll events to the subscription only while a natural-break wait is
+     * open (NaturalBreak.kt): every scroll in every app is a lot of traffic to
+     * take for nothing.
+     */
+    private fun setScrollEventsEnabled(enabled: Boolean) {
+        try {
+            val info = serviceInfo ?: return
+            val base = AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED
+            val next = if (enabled) base or AccessibilityEvent.TYPE_VIEW_SCROLLED else base
+            if (info.eventTypes == next) return
+            info.eventTypes = next
+            serviceInfo = info
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to switch scroll events (enabled=$enabled)", e)
+        }
+    }
+
     override fun onUnbind(intent: Intent?): Boolean {
         Log.d(TAG, "onUnbind()")
         isConnected = false
         connected = null
+        NaturalBreakGate.onListeningChanged = null
         return super.onUnbind(intent)
     }
     
@@ -423,6 +444,7 @@ class MyAccessibilityService : AccessibilityService() {
         super.onDestroy()
         isConnected = false
         connected = null
+        NaturalBreakGate.onListeningChanged = null
 
         // Stop detection collection job first
         detectionCollectionJob?.cancel()
@@ -485,6 +507,8 @@ class MyAccessibilityService : AccessibilityService() {
                     AccessibilityServiceInfo.FLAG_RETRIEVE_INTERACTIVE_WINDOWS
         }
         serviceInfo = config
+        NaturalBreakGate.onListeningChanged = { listening -> setScrollEventsEnabled(listening) }
+        if (NaturalBreakGate.isWaiting()) setScrollEventsEnabled(true)
 
         // Start hybrid detection system
         hybridDetector?.start()
@@ -965,6 +989,17 @@ class MyAccessibilityService : AccessibilityService() {
         try {
             val packageName = event.packageName?.toString() ?: return
             val currentTime = System.currentTimeMillis()
+
+            // Scroll events are only subscribed to while a Little Sun waits for
+            // a natural break (NaturalBreak.kt); they feed that wait and nothing
+            // else - never detection, never the health monitor.
+            if (event.eventType == AccessibilityEvent.TYPE_VIEW_SCROLLED) {
+                if (!isSidewaysOnlyScroll(event.scrollDeltaX, event.scrollDeltaY)) {
+                    NaturalBreakGate.onScroll(packageName, currentTime)
+                }
+                return
+            }
+            NaturalBreakGate.onScreen(packageName, event.className?.toString(), currentTime)
 
             // Record event with health monitor
             hybridDetector?.healthMonitor?.recordEvent()

@@ -108,9 +108,9 @@ class OverlayDecisionEngineTest {
                 baseState.copy(
                     sessionGraceEnabled = true,
                     sessionGraceMinutes = 5,
-                    currentSessionDurationS = 60
+                    currentUnlockedSessionS = 60
                 ),
-                OverlayDecision.ShowLittleSun
+                OverlayDecision.ShowLittleSunUntilPause(300)
             ),
             Triple(
                 "rest of day",
@@ -778,6 +778,58 @@ class OverlayDecisionEngineTest {
             OverlayDecision.ShowLittleSunUntilPause(600),
             engine.decide(youtubePackage, state)
         )
+    }
+
+    // ==================== Grace: the sun at the door, the pause mid-session ====================
+
+    @Test
+    fun `grace meets a fresh open with the little sun that hands back once it is up`() {
+        val state = createState(blockedApps = blockedApps).copy(
+            sessionGraceEnabled = true,
+            sessionGraceMinutes = 10,
+            currentUnlockedSessionS = 0,
+        )
+
+        assertEquals(
+            OverlayDecision.ShowLittleSunUntilPause(600),
+            engine.decide(youtubePackage, state)
+        )
+    }
+
+    @Test
+    fun `an open after grace is used up meets the full pause`() {
+        val state = createState(blockedApps = blockedApps).copy(
+            sessionGraceEnabled = true,
+            sessionGraceMinutes = 10,
+            currentUnlockedSessionS = 600,
+        )
+
+        assertEquals(OverlayDecision.ShowIntervention, engine.decide(youtubePackage, state))
+    }
+
+    @Test
+    fun `grace counts only unlocked time`() {
+        val state = createState(blockedApps = blockedApps).copy(
+            sessionGraceEnabled = true,
+            sessionGraceMinutes = 10,
+            currentSessionDurationS = 1800,
+            currentUnlockedSessionS = 120,
+        )
+
+        assertEquals(
+            OverlayDecision.ShowLittleSunUntilPause(600),
+            engine.decide(youtubePackage, state)
+        )
+    }
+
+    @Test
+    fun `grace switched off meets every open with the full pause`() {
+        val state = createState(blockedApps = blockedApps).copy(
+            sessionGraceEnabled = false,
+            sessionGraceMinutes = 10,
+        )
+
+        assertEquals(OverlayDecision.ShowIntervention, engine.decide(youtubePackage, state))
     }
 
     @Test

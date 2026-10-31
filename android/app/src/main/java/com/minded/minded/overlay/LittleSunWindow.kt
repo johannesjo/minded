@@ -26,6 +26,7 @@ import com.minded.minded.ui.compose.LittleSun
 import com.minded.minded.ui.compose.LittleSunLeaveZone
 import com.minded.minded.ui.compose.MINI_MORPH_MS
 import com.minded.minded.util.ForegroundAppResult
+import com.minded.minded.util.NaturalBreakGate
 import com.minded.minded.util.Haptics
 import com.minded.minded.util.getForegroundAppReliable
 import com.minded.minded.util.shouldHandBackToPause
@@ -53,6 +54,9 @@ class LittleSunWindow(
     private var windowShownAt = 0L
     private var pendingExpiredApp: String? = null
     private var pendingExpiredWasWindDownSnooze = false
+
+    // True while a due hand-back waits for the next natural break.
+    private var isAwaitingBreak = false
 
     /**
      * Set by the controller for every show: hand back to the full pause once
@@ -160,18 +164,17 @@ class LittleSunWindow(
             if (endTime != null) {
                 if (now.isAfter(endTime)) {
                     // Time limit reached
-                    if (currentApp != null) {
-                        pendingExpiredApp = currentApp
-                        pendingExpiredWasWindDownSnooze = windDownSnoozeEndTime != null
+                    if (currentApp == null) {
+                        hideWindowImmediate()
+                        stopTimer()
+                        return
                     }
-                    // Resting bubble → intervention hand-off: drop the bubble
-                    // instantly (no 300ms fade) so the intervention's shield covers
-                    // the corner ~300ms sooner, with no page-flash before the sun
-                    // re-blooms there via the reverse morph. onWindowRemoved still
-                    // fires, so the intervention is triggered exactly as before.
-                    hideWindowImmediate()
-                    stopTimer()
-                    return
+                    // The chosen time is up: the pause returns at the next
+                    // natural break. The bubble rests at 0:00 meanwhile and keeps
+                    // ticking below (re-validation still hides it if the user
+                    // leaves).
+                    elapsedSeconds = 0
+                    if (handBackAtNaturalBreak(currentApp, windDownSnoozeEndTime != null)) return
                 } else {
                     val remaining = java.time.Duration.between(now, endTime).seconds.toInt()
                     // If more than 12 hours (e.g. Rest of Day), show count-up timer
@@ -199,15 +202,11 @@ class LittleSunWindow(
                     shouldHandBackToPause(activePauseAtSessionS, unlockedSessionS, isUnlocked) &&
                     currentApp != null
                 ) {
-                    // A "later" week: the user has now stayed a while, so the
-                    // bubble hands back to the full pause exactly like a session
-                    // timer running out - the sun glides back out of this corner.
+                    // Grace (or a "later" week): the user has now stayed a while,
+                    // so the bubble hands back to the full pause exactly like a
+                    // session timer running out - at the next natural break.
                     activePauseAtSessionS = null
-                    pendingExpiredApp = currentApp
-                    pendingExpiredWasWindDownSnooze = false
-                    hideWindowImmediate()
-                    stopTimer()
-                    return
+                    if (handBackAtNaturalBreak(currentApp, wasWindDownSnooze = false)) return
                 }
             }
 
@@ -568,7 +567,51 @@ class LittleSunWindow(
         }
     }
 
+    /**
+     * Hand back to the full pause - the sun glides back out of this corner -
+     * once the user reaches a natural break (NaturalBreak.kt), never mid-message
+     * or mid-video. A wind-down snooze is bedtime's own timer and hands back at
+     * once, as before; so does everything when the accessibility service isn't
+     * running, since then no break could ever be seen.
+     *
+     * Returns true when it handed back right away (the bubble is gone and its
+     * timer stopped - the caller must not tick on).
+     */
+    private fun handBackAtNaturalBreak(currentApp: String, wasWindDownSnooze: Boolean): Boolean {
+        if (isAwaitingBreak) return false
+        val handBack = {
+            isAwaitingBreak = false
+            pendingExpiredApp = currentApp
+            pendingExpiredWasWindDownSnooze = wasWindDownSnooze
+            // Resting bubble → intervention hand-off: drop the bubble instantly
+            // (no 300ms fade) so the intervention's shield covers the corner
+            // ~300ms sooner, with no page-flash before the sun re-blooms there
+            // via the reverse morph. onWindowRemoved still fires, so the
+            // intervention is triggered exactly as before.
+            hideWindowImmediate()
+            stopTimer()
+        }
+        if (wasWindDownSnooze || !NaturalBreakGate.canWatch()) {
+            handBack()
+            return true
+        }
+        isAwaitingBreak = true
+        NaturalBreakGate.await(currentApp, System.currentTimeMillis()) {
+            // The bubble may have gone (the user left) between the break and
+            // this post; only a still-waiting bubble hands back.
+            if (isAwaitingBreak && isWindowShown()) handBack()
+        }
+        return false
+    }
+
+    private fun cancelAwaitingBreak() {
+        if (!isAwaitingBreak) return
+        isAwaitingBreak = false
+        NaturalBreakGate.cancel()
+    }
+
     override fun hideWindow() {
+        cancelAwaitingBreak()
         ctrlSvc.onBellHostLeaving(BellHost.Kind.LITTLE_SUN)
         stopTimer()
         // A hide can land mid-drag (timer expiry, re-validation) - never leave
@@ -579,6 +622,7 @@ class LittleSunWindow(
     }
 
     override fun hideWindowImmediate() {
+        cancelAwaitingBreak()
         ctrlSvc.onBellHostLeaving(BellHost.Kind.LITTLE_SUN)
         if (!isLeaveCommitted) removeZoneImmediate()
         super.hideWindowImmediate()

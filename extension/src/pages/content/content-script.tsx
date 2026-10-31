@@ -199,7 +199,12 @@ const CURRENT_URL = window.location.href;
             <ContentScriptMain
               isShowFullMinderInitially={
                 !hasActiveSession &&
-                isShowFullMinder(CURRENT_URL, syncData, sessionDurationS)
+                isShowFullMinder(
+                  CURRENT_URL,
+                  syncData,
+                  sessionDurationS,
+                  dataForHost?.lastUsedTS,
+                )
               }
               shadowRoot={shadow}
               onTeardownShadow={teardownShadow}

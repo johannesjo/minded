@@ -211,6 +211,62 @@ Android `util/InterventionPause.kt` (mirrored constants, guarded by
 `interventionPauseMirror.test.ts`), the `ShowLittleSunUntilPause` decision, and
 the Little Sun's mid-session hand-back.
 
+## The sun at the door, the pause mid-session - by default (2026-10)
+
+Owner feedback, again: even with the skip check-in, most doorway pauses were
+still being tapped away - and most of those opens weren't a problem at all.
+The check-in had found the better shape ("Only after a while"), but only
+after ten passes and a question, and only for a week before it lapsed back to
+the doorway. So that shape is now the default:
+
+1. **Every open meets only the Little Sun.** Nothing to tap. Grace is **on by
+   default, 10 minutes** (`DEFAULT_SYNC_DATA`, `DefaultSyncData.kt`).
+2. **After 10 minutes the sun grows into the full pause**, ending in the
+   intention/time choice - the same pause, met where drifting actually
+   happens rather than where the thumb has learned to skip it. On Android the
+   grace now hands back mid-session exactly like the "later" week did
+   (`ShowLittleSunUntilPause`, counting unlocked time only); before, Android
+   grace showed the Little Sun and never handed back.
+3. **When the chosen time runs out, the pause returns** - as before.
+
+**The natural break.** The risk of a mid-session pause is catching the user
+in the middle of something - a message, a video, an article. So every
+*automatic* mid-session arrival (grace used up, a chosen time run out, the
+web's periodic re-question) waits for the next natural break, which is only
+ever observed behaviour:
+
+- **Web** (`naturalBreak.ts`): moving to another page (in-page navigations of
+  single-page sites included, `#fragment` jumps excluded), or coming back to
+  the tab. **Scrolling counts only after 3 more minutes**
+  (`SCROLL_FALLBACK_MS`): reading an article is scrolling too, but a feed can
+  be scrolled for an hour without the address changing - after the fallback
+  the next user scroll (wheel, touch, scroll keys outside a text field) is the
+  break, the doom-scroll moment the pause is for. A page load while the
+  pause waits after a chosen time ran out meets the pause, never a fresh
+  grace (`isTimeUpMidSession`).
+- **Android** (`NaturalBreak.kt`): a new screen in the app (a window-state
+  change to a different window class, toasts excluded), or - after the same
+  3 minutes - a scroll that isn't plainly sideways (carousels slide by
+  themselves; many lists report no deltas, so an unknown direction counts).
+  Scroll events are subscribed to only while a wait is open. Without the
+  accessibility service nothing can be observed, so the hand-back happens at
+  once, as before. A wind-down snooze is bedtime's own timer and is not
+  delayed.
+
+A deliberate tap on the web Little Sun never waits. Leaving the app needs no
+rule: the bubble hides and coming back is a fresh open.
+
+**The skip check-in adapts.** "Only after a while" is now offered only where
+the grace doesn't already do it (`isPauseAlreadyLater`), and choosing it turns
+the grace on as the setting it is (`getLaterGraceCfg`) instead of lapsing
+after a week - like the bell.
+
+**Known limits.** Existing installs keep the grace setting they have stored
+(the old default was off, 5 min); it is one toggle in Settings. The Android
+break signals (window-state classes, scroll deltas) vary by app and are worth
+watching on real devices: a missed break falls back to the scroll rule, a
+false one only brings the pause a little early.
+
 ## iOS as the zero-friction arm
 
 iOS's constraints force the pure-presence extreme (home-screen companion sun, no

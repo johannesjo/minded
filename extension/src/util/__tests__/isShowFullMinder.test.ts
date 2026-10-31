@@ -74,4 +74,70 @@ describe("isShowFullMinder", () => {
       isShowFullMinder("https://www.reddit.com/r/test", syncData, 5 * 60),
     ).toBe(true);
   });
+
+  describe("a chosen time that ran out while waiting for a natural break", () => {
+    const expiredTimer = {
+      endTS: NOW - 60 * 1000,
+      durationS: 5 * 60,
+      startedTS: NOW - 6 * 60 * 1000,
+      target: { kind: "host" as const, id: "reddit.com" },
+      platform: "web" as const,
+    };
+    const withGrace = createMockSyncData({
+      activeTimer: expiredTimer,
+      cfg: { sessionGrace: { enabled: true, minutes: 10 } },
+    });
+
+    it("meets the next page load with the pause, not a fresh grace", () => {
+      mockDate(NOW);
+
+      expect(
+        isShowFullMinder(
+          "https://www.reddit.com/r/test",
+          withGrace,
+          0,
+          NOW - 1000,
+        ),
+      ).toBe(true);
+    });
+
+    it("leaves a timer that lapsed after the user had left to the grace", () => {
+      mockDate(NOW);
+
+      expect(
+        isShowFullMinder(
+          "https://www.reddit.com/r/test",
+          withGrace,
+          0,
+          expiredTimer.endTS - 30 * 1000,
+        ),
+      ).toBe(false);
+    });
+
+    it("leaves a long-gone session to the grace", () => {
+      mockDate(NOW + 2 * 60 * 60 * 1000);
+
+      expect(
+        isShowFullMinder(
+          "https://www.reddit.com/r/test",
+          withGrace,
+          0,
+          NOW - 1000,
+        ),
+      ).toBe(false);
+    });
+
+    it("is about this site only", () => {
+      mockDate(NOW);
+
+      expect(
+        isShowFullMinder(
+          "https://www.youtube.com/watch",
+          withGrace,
+          0,
+          NOW - 1000,
+        ),
+      ).toBe(false);
+    });
+  });
 });
