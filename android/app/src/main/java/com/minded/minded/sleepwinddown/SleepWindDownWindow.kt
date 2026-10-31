@@ -94,4 +94,27 @@ object SleepWindDownWindow {
 
         return null
     }
+
+    /**
+     * The wind-down snooze deadline that still stands right now, or null.
+     *
+     * Only a deadline still in the *future* counts. The stored
+     * `sleepWindDownSnoozeUntilTS` is never cleared when it lapses, so reading
+     * any positive value used to hand the Little Sun an end time long past -
+     * often from an earlier night. Inside every later bedtime window the bubble
+     * then "expired" the moment it appeared and handed back as a snooze, over
+     * and over: no Little Sun, and no intervention, for the rest of the night.
+     *
+     * @param nightId tonight's id from [resolveNightId], or null outside the window
+     */
+    fun activeSnoozeEndMs(
+        nightId: String?,
+        dismissedNightId: String,
+        snoozeUntilTS: Long,
+        nowMs: Long,
+    ): Long? {
+        if (nightId == null) return null
+        if (dismissedNightId == nightId) return null
+        return snoozeUntilTS.takeIf { it > nowMs }
+    }
 }
