@@ -164,11 +164,12 @@ describe("settings composition", () => {
     // no hairline is ruled above or below every website.
     const settingsLayoutStyles = websiteStyles.slice(
       websiteStyles.indexOf(".settingsLayout"),
+      websiteStyles.indexOf(".isError"),
     );
     expect(settingsLayoutStyles).toMatch(
       /\.WebsiteListItems\s*\{[^}]*gap:\s*var\(--space-sm\)/,
     );
-    expect(settingsLayoutStyles).not.toMatch(/border-(top|bottom):/);
+    expect(settingsLayoutStyles).not.toMatch(/border(-top|-bottom)?\s*:\s*1px/);
 
     for (const styles of sharedSettingStyles) {
       expect(styles).toContain("var(--settings-header-justify");

@@ -15,7 +15,7 @@
   }
 
   // Read-only (dashboard) rows drop the big tap targets so the dots sit close
-  // together, matching the self-assessment answer dots beside them.
+  // together.
   &.showOnly .ratingButton {
     margin: 0;
     width: var(--rating-size-small);
@@ -68,6 +68,7 @@
     @include levelDot(12px);
 
     &.isFull {
+      border-color: transparent;
       background-color: var(--c-fg);
       opacity: var(--rating-active-opacity);
     }
