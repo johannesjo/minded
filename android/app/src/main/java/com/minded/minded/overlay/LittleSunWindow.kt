@@ -90,7 +90,7 @@ class LittleSunWindow(
 
     // ---- Glint ------------------------------------------------------------
     // Seconds the sun has been in view (screen on, unlocked) since it appeared;
-    // every so often in an open-ended stay its light brightens for a moment as
+    // every so often during a stay its light brightens for a moment as
     // a soft reminder that a pause is there (see LittleSunGlint.kt). Each bump
     // of glintCount plays one glint in the composable.
     private var secondsWithSun = 0
@@ -166,6 +166,10 @@ class LittleSunWindow(
                 ?: activeTimer?.let { Instant.ofEpochMilli(it.endTS) }
                 ?: appEntry?.sessionEndTime
             val now = Instant.now()
+            val isUnlocked = powerManager.isInteractive &&
+                keyguardManager?.isKeyguardLocked != true
+            // Seconds until a timed session hands back to the pause, if one does.
+            var secondsUntilEnd: Int? = null
 
             Log.v(
                 logTag,
@@ -197,13 +201,12 @@ class LittleSunWindow(
                     } else {
                         // Countdown mode for timed sessions
                         elapsedSeconds = remaining
+                        secondsUntilEnd = remaining
                     }
                 }
             } else {
                 // Regular elapsed time mode (fallback)
                 elapsedSeconds++
-                val isUnlocked = powerManager.isInteractive &&
-                    keyguardManager?.isKeyguardLocked != true
                 unlockedSessionS = unlockedSessionAfterTick(unlockedSessionS, isUnlocked)
                 sharedOverlayViewModel.updateCurrentAppSessionDuration(
                     elapsedSeconds,
@@ -224,13 +227,13 @@ class LittleSunWindow(
                     stopTimer()
                     return
                 }
+            }
 
-                // Only an open-ended stay glints: a timed session ends on its
-                // own, at the moment the user chose.
-                if (isUnlocked) {
-                    secondsWithSun++
-                    maybeGlint()
-                }
+            // Every kind of stay glints - timed or open-ended - counting only
+            // the time the sun is actually in view.
+            if (isUnlocked) {
+                secondsWithSun++
+                maybeGlint(secondsUntilEnd)
             }
 
             // Always continue the timer - OverlayControllerService handles screen state changes
@@ -345,8 +348,13 @@ class LittleSunWindow(
         ctrlSvc.getSharedPreferenceService().saveLittleSunPosition(posX, posY)
     }
 
-    private fun maybeGlint() {
-        val secondsUntilPause = activePauseAtSessionS?.let { it - unlockedSessionS }
+    private fun maybeGlint(secondsUntilEnd: Int?) {
+        // Whichever hand-back comes first: a timed session ending, or a
+        // "later" week's pause.
+        val secondsUntilPause = listOfNotNull(
+            secondsUntilEnd,
+            activePauseAtSessionS?.let { it - unlockedSessionS },
+        ).minOrNull()
         if (!isLittleSunGlintDue(secondsWithSun, glintEveryS, secondsUntilPause)) return
         // Not mid-drag (the zone holds the disc then), nor while the bell is
         // already ringing light through this sun: one light at a time. A

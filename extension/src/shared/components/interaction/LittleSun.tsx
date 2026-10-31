@@ -75,7 +75,7 @@ export const LittleSunComponent: (props: {
     }, HINT_OUT_MS);
   };
 
-  // Every so often in an open-ended stay the sun's light brightens for a
+  // Every so often during a stay (timed or open-ended) the sun's light brightens for a
   // moment and eases away - a soft reminder that a pause is there (see
   // littleSunGlint.ts). Counted only while the page is in view.
   const [getIsGlinting, setIsGlinting] = createSignal(false);
@@ -310,7 +310,9 @@ export const LittleSunComponent: (props: {
         updateHostsEntry(props.host, { sessionDurationInS: 0 });
         void clearScopedActiveTimer(sessionEndTS);
         props.onShowFreshInteraction(true);
+        return;
       }
+      tickGlint(remaining);
     };
 
     tick();
