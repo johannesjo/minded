@@ -231,6 +231,14 @@ Path aliases change based on build mode to load platform-specific code.
   weight 400 - safe against Android subpixel hairline thinning even at small
   sizes.
 
+**The sun's face stays plain `#fff` - settled, don't propose changing it:**
+- The owner likes the flat white disc as it is. Don't suggest (or add) limb
+  darkening, an inner gradient, texture, a warmer face, or any other "depth"
+  treatment for the sun's face. A flat white sun reading as a clean cut of light
+  is the intended look, not a gap to fill. (The existing companion rim and
+  `--sun-shadow` edge ring described below stay as they are; this is about not
+  adding to the face.)
+
 **The sun's halo - the body may be warm, the light it casts is white:**
 - Amber is **not** a day/night signal and **not** a role badge. On every one of
   minded's own surfaces - companion rest, intervention, breath, urge-surfing,

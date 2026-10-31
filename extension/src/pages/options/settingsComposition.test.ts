@@ -160,9 +160,15 @@ describe("settings composition", () => {
     expect(websiteStyles).toMatch(
       /\.settingsLayout\s*\{[\s\S]*\.WebsiteListItems\s*\{[\s\S]*display:\s*flex[\s\S]*flex-direction:\s*column/,
     );
-    expect(websiteStyles).toMatch(
-      /\.settingsLayout\s*\{[\s\S]*>\s*div\s*\{[\s\S]*border-bottom:\s*1px solid/,
+    // Rows are kept apart by spacing alone - each field's own fill marks it, so
+    // no hairline is ruled above or below every website.
+    const settingsLayoutStyles = websiteStyles.slice(
+      websiteStyles.indexOf(".settingsLayout"),
     );
+    expect(settingsLayoutStyles).toMatch(
+      /\.WebsiteListItems\s*\{[^}]*gap:\s*var\(--space-sm\)/,
+    );
+    expect(settingsLayoutStyles).not.toMatch(/border-(top|bottom):/);
 
     for (const styles of sharedSettingStyles) {
       expect(styles).toContain("var(--settings-header-justify");

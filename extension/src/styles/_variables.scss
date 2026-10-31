@@ -207,7 +207,9 @@
   }
 
   --rating-active-opacity: 0.55;
-  --rating-inactive-opacity: 0.15;
+  // An unfilled level dot is a hairline ring (mixins/util.scss levelDot), which
+  // carries far less ink than a disc - so it rests a little higher to read.
+  --rating-inactive-opacity: 0.35;
   --h4-c: rgba(0, 0, 0, 0.7);
 
   // Light theme: a calm vertical "morning sky" - blue up top fading down

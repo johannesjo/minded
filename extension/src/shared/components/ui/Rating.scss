@@ -68,6 +68,7 @@
     @include levelDot(12px);
 
     &.isFull {
+      background-color: var(--c-fg);
       opacity: var(--rating-active-opacity);
     }
   }
