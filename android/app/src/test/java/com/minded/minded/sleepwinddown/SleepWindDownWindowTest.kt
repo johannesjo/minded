@@ -1,11 +1,10 @@
-package com.minded.minded.util
+package com.minded.minded.sleepwinddown
 
-import com.minded.minded.sleepwinddown.SleepWindDownWindow
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
 
-class SleepWindDownSnoozeTest {
+class SleepWindDownWindowTest {
     private val now = 1_800_000_000_000L
     private val tonight = "2027-01-15"
 
@@ -37,5 +36,10 @@ class SleepWindDownSnoozeTest {
     @Test
     fun `an unset snooze is none`() {
         assertNull(SleepWindDownWindow.activeSnoozeEndMs(tonight, "", 0L, now))
+    }
+
+    @Test
+    fun `a snooze ending exactly now no longer stands`() {
+        assertNull(SleepWindDownWindow.activeSnoozeEndMs(tonight, "", now, now))
     }
 }
