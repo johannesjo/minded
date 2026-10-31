@@ -75,6 +75,11 @@ const MainAndroid = () => {
   const [getIsShowSetup, setIsShowSetup] = createSignal(false);
   const [getIsInviteDismissed, setIsInviteDismissed] = createSignal(false);
   const [getIsInviteDismissing, setIsInviteDismissing] = createSignal(false);
+  // Onboarding has just offered the optional permissions on their own step, so
+  // the dashboard it lands on must not ask again straight away. Rests until the
+  // next return to the app, like the invitation's dismiss.
+  const [getIsOptionalInviteResting, setIsOptionalInviteResting] =
+    createSignal(false);
 
   let dismissT: NodeJS.Timeout | undefined;
   const dismissInvite = () => {
@@ -159,6 +164,7 @@ const MainAndroid = () => {
       // the render still gates it on there being no blocked apps.
       setIsInviteDismissed(false);
       setIsInviteDismissing(false);
+      setIsOptionalInviteResting(false);
       // Sync any data that changed while away, preserving the current
       // arrangement - the greeting itself was already re-rolled on stop, hidden.
       window.dispatchEvent(new Event(REFRESH_DASHBOARD_EV));
@@ -169,7 +175,7 @@ const MainAndroid = () => {
     window.addEventListener(ANDROID_EV_RESUME, resumeHandler);
 
     onCleanup(() => {
-    clearTimeout(detectionRecheckT);
+      clearTimeout(detectionRecheckT);
       window.removeEventListener(ANDROID_EV_START, startHandler);
       window.removeEventListener(ANDROID_EV_STOP, stopHandler);
       window.removeEventListener(ANDROID_EV_RESUME, resumeHandler);
@@ -212,6 +218,7 @@ const MainAndroid = () => {
               // dashboard content eases in via its own pageTransitionIn.
               setIsShowOnboarding(false);
               setIsShowSetup(false);
+              setIsOptionalInviteResting(true);
               refresh();
             }}
           />
@@ -286,7 +293,8 @@ const MainAndroid = () => {
               <em>minded</em> can't see your apps right now. Tap to switch its
               accessibility service off and on again.
             </div>
-          ) : getMissingCapabilities().length > 0 ? (
+          ) : getMissingCapabilities().length > 0 &&
+            !getIsOptionalInviteResting() ? (
             // Only the advisory extras are missing → quiet outline, not an
             // alarm: minded already works, so the banner invites rather than
             // warns.

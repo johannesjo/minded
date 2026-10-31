@@ -213,9 +213,15 @@
   -webkit-tap-highlight-color: transparent;
   appearance: none;
 
+  // No ring: the sun never wears a border. Keyboard focus shows as a soft
+  // white bloom around the disc beneath instead (matching Sun.scss), diffuse
+  // enough to read as light, never as an edge.
+  outline: none;
+  transition: box-shadow 0.3s ease;
+
   &:focus-visible {
-    outline: 2px solid var(--c-link-color);
-    outline-offset: 6px;
+    outline: none;
+    box-shadow: 0 0 18px 4px rgba(255, 255, 255, 0.7);
   }
 }
 

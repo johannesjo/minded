@@ -51,6 +51,16 @@ $sky-strip: 88px;
 // would squeeze the welcome copy into scrolling.
 .stepUnderSky {
   padding-top: $sky-strip;
+  // The step is itself the scroller, so the padding alone scrolls away with
+  // the content. The mask stays put: rows dissolve before they reach the sun,
+  // and fade through the bottom padding band instead of cutting off there.
+  mask-image: linear-gradient(
+    to bottom,
+    transparent $sky-strip * 0.6,
+    #000 $sky-strip,
+    #000 calc(100% - 16px),
+    transparent
+  );
 }
 
 // The empty slot the hero steps (welcome / "ready") reserve for the disc -
@@ -98,8 +108,15 @@ $sky-strip: 88px;
 
 .actions {
   margin-top: 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
 }
 
-.laterBtn {
-  margin-left: 16px;
+// Same measure as the desktop welcome's copy (OnboardingWeb .infoText), so the
+// two first-run screens speak at one size.
+.infoText {
+  max-width: 58ch;
+  margin-inline: auto;
 }

@@ -9,10 +9,12 @@ import {
 } from "@src/shared/components/interaction/sun/sunStore";
 import InteractionOverlay from "@src/shared/components/dashboard/interactionOverlay/InteractionOverlay";
 import { createOnboardingSunDemo } from "./createOnboardingSunDemo";
+import { ONBOARDING_DEMO_LINE } from "./onboardingDemoLine";
 import styles from "./onboardingSunLayer.module.scss";
 
 /**
- * The ONE onboarding sun and its tap-to-pause demo overlay - shared by every
+ * The ONE onboarding sun and its welcome demo (tap-to-pause, or the let-go
+ * gesture where the intervention is the only sun - see welcomeGesture) - shared by every
  * platform's onboarding. It owns the shared takeover state machine
  * (createOnboardingSunDemo), so the whole thing lives in one place; each flow
  * supplies only its step/leaving signals, its base settle rests, and how to
@@ -31,10 +33,19 @@ export const OnboardingSunLayer = (props: {
   getBaseSettle: () => SunSettle | null;
   advanceFromWelcome: () => void;
   onPauseExperienced?: () => void;
-  onPauseVisibilityChange: (isOpen: boolean) => void;
+  onPauseVisibilityChange?: (isOpen: boolean) => void;
+  /**
+   * What the welcome disc teaches. "tap" (default) opens the real pause - the
+   * companion sun's own gesture. "letGo" teaches the intervention's gesture
+   * instead (drag down or fling away), for platforms whose only sun is the
+   * intervention: there, a tap-to-pause demo rehearses something the user
+   * never meets again.
+   */
+  welcomeGesture?: "tap" | "letGo";
 }): JSX.Element => {
   const d = createOnboardingSunDemo(props);
-  createEffect(() => props.onPauseVisibilityChange(d.getIsShowPause()));
+  const isLetGoWelcome = () => props.welcomeGesture === "letGo";
+  createEffect(() => props.onPauseVisibilityChange?.(d.getIsShowPause()));
 
   const openPauseWithFocus = () => {
     d.openPause();
@@ -59,7 +70,9 @@ export const OnboardingSunLayer = (props: {
             settle={d.getActiveSunSettle()}
             aria-label={
               d.isSunGrabbable()
-                ? "Open a mindful pause"
+                ? isLetGoWelcome()
+                  ? `Let go with the ${d.sunVariant}`
+                  : "Open a mindful pause"
                 : d.isSunInputEnabled()
                   ? getSunHandlers()?.getAccessibleLabel?.()
                   : undefined
@@ -67,7 +80,9 @@ export const OnboardingSunLayer = (props: {
             aria-description={
               d.isPauseDrivingSun() && d.isSunInputEnabled()
                 ? getSunHandlers()?.getAccessibleDescription?.()
-                : undefined
+                : d.isSunGrabbable() && isLetGoWelcome()
+                  ? `Drag the ${d.sunVariant} down or press Enter to let go.`
+                  : undefined
             }
             aria-keyshortcuts={
               d.isPauseDrivingSun() && d.isSunInputEnabled()
@@ -78,7 +93,9 @@ export const OnboardingSunLayer = (props: {
               d.isPauseDrivingSun()
                 ? (activation) =>
                     getSunHandlers()?.onKeyboardActivate?.(activation)
-                : openPauseWithFocus
+                : isLetGoWelcome()
+                  ? d.advanceFromHero
+                  : openPauseWithFocus
             }
             onAccessibleActionEnabledChange={(enabled) =>
               getSunHandlers()?.onAccessibleActionEnabledChange?.(enabled)
@@ -89,7 +106,7 @@ export const OnboardingSunLayer = (props: {
               d.isPauseDrivingSun()
                 ? d.isSunInputEnabled() &&
                   (getSunHandlers()?.isTapEnabled ?? true)
-                : d.isSunGrabbable()
+                : d.isSunGrabbable() && !isLetGoWelcome()
             }
             isDragEnabled={d.isSunInputEnabled()}
             // Welcome: a single tap is the invitation into the pause. Mid-pause
@@ -139,6 +156,7 @@ export const OnboardingSunLayer = (props: {
       */}
       {d.getIsShowPause() && (
         <InteractionOverlay
+          widgetLine={ONBOARDING_DEMO_LINE}
           onClosingStarted={d.onPauseClosing}
           onHideInteraction={() => {
             d.onPauseClosed();

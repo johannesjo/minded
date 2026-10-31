@@ -202,16 +202,14 @@ export const MissingCapabilityView = (props: {
           fallback={
             <div class="txtSlightlyBigger">
               {props.optionalOnly ? (
-                <>
-                  You're all set. These extras are optional - they just help the{" "}
-                  {companionWord()} appear more reliably. Add them now or skip;
-                  you can always do it later.
-                </>
+                <Show when={hasOptionalVisible()}>
+                  Optional: these help the {companionWord()} appear more
+                  reliably.
+                </Show>
               ) : (
                 <>
-                  Two permissions let the {companionWord()} meet you in the
-                  apps you chose: one to notice the moment, one to appear in
-                  it.
+                  Two permissions let the {companionWord()} meet you in the apps
+                  you chose: one to notice the moment, one to appear in it.
                 </>
               )}
             </div>
@@ -235,15 +233,17 @@ export const MissingCapabilityView = (props: {
 
             {getIsShowManualInstructions() && (
               <>
+                {/* The step people most often get lost in: the system list
+                    is long and phones file downloaded apps under different
+                    names, so say exactly where to look. */}
                 <p class={styles.smallText}>
-                  If the button above doesn't work, you can enable the
-                  accessibility service and the permission manually in your
-                  device settings.
+                  Can't find it? In Accessibility, look under{" "}
+                  <em>Downloaded apps</em> or <em>Installed apps</em>, open{" "}
+                  <em>minded</em> and switch it on.
                 </p>
                 <p class={styles.smallText}>
-                  In case there are problems with the accessibility service,
-                  enabling, disabling and then enabling the service again will
-                  likely help.
+                  If it's on but nothing happens, switching it off and on again
+                  usually helps.
                 </p>
               </>
             )}
@@ -251,8 +251,8 @@ export const MissingCapabilityView = (props: {
 
           <PermissionCard capability="SystemAlertWindow">
             <p class={styles.permissionText}>
-              The overlay permission lets the {companionWord()} appear over
-              that app - the pause itself.
+              The overlay permission lets the {companionWord()} appear over that
+              app - the pause itself.
             </p>
             <Btn onClick={() => onMissingCapabilityClick("SystemAlertWindow")}>
               Enable Overlay Permission
@@ -273,7 +273,10 @@ export const MissingCapabilityView = (props: {
               </p>
             )}
             <PermissionCard capability="UsageStats">
-              <span class={styles.optionalBadge}>Optional</span>
+              {/* The optional-only step already says so above. */}
+              {!props.optionalOnly && (
+                <span class={styles.optionalBadge}>Optional</span>
+              )}
               <p class={styles.permissionText}>
                 <em>minded</em> uses usage access as a backup way to detect the
                 app in the foreground. Without it, detection is less reliable
@@ -284,12 +287,14 @@ export const MissingCapabilityView = (props: {
               </Btn>
             </PermissionCard>
             <PermissionCard capability="BatteryOptimization">
-              <span class={styles.optionalBadge}>Optional</span>
+              {/* The optional-only step already says so above. */}
+              {!props.optionalOnly && (
+                <span class={styles.optionalBadge}>Optional</span>
+              )}
               <p class={styles.permissionText}>
-                Battery optimization can silently stop <em>minded</em> in the
-                background, so interventions no longer appear. Excluding{" "}
-                <em>minded</em> from battery optimization keeps the protection
-                running.
+                Battery optimization can quietly stop <em>minded</em> in the
+                background, and then the {companionWord()} no longer appears.
+                Excluding <em>minded</em> lets it keep meeting you.
               </p>
               <Btn
                 onClick={() => onMissingCapabilityClick("BatteryOptimization")}
@@ -312,7 +317,8 @@ export const MissingCapabilityView = (props: {
 
         {/* The optional step never blocks - its always-available Continue is the
             skip - so it omits the declining opt-out shown on the required step. */}
-        {!props.optionalOnly && (
+        {/* Once everything is granted there is nothing left to decline. */}
+        {!props.optionalOnly && !showConfirmation() && (
           <Btn
             outline
             class={styles.footerBtn}

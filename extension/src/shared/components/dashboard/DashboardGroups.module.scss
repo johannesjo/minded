@@ -240,8 +240,9 @@
   // ease in under the pointer as the "this opens" cue - at the resting card
   // tone, since the brighter hover step would flash a white slab out of bare
   // sky. Touch has no hover, so the same fill answers the press instead (with
-  // the existing scale), or a phone would get no cue at all. The
-  // daily-questions offer keeps its card: it is a door, not a reflection.
+  // the existing scale), or a phone would get no cue at all. (The single-card
+  // greeting opts out of this fill - see below.) The daily-questions offer
+  // drops its fill too (see .cardDailyQuestions).
   &.onSky {
     background: transparent;
     box-shadow: none;
@@ -253,6 +254,23 @@
     @media (hover: hover) {
       &.interactive:hover {
         background: var(--dashboard-card-bg);
+      }
+    }
+  }
+
+  // ...except the single-card greeting, which stays bare sky even under the
+  // pointer or a press: alone on arrival, any fill turns it back into a card
+  // (a white one in day mode). The press scale and focus ring carry the "this
+  // opens" cue. Same specificity as the `.onSky` rules above, so it must stay
+  // after them; it also covers a sole energy/emotion greeting's hover step.
+  &.singleCard.interactive {
+    &:active {
+      background: transparent;
+    }
+
+    @media (hover: hover) {
+      &:hover {
+        background: transparent;
       }
     }
   }
@@ -360,6 +378,15 @@
 }
 
 .cardDailyQuestions {
+  // Always alone on the arrival screen, so like the single-card greeting it
+  // rests on bare sky: a lone frosted fill read as a slab (white in day mode).
+  // The card class stays for its padding and radius; paired with it here so
+  // this outranks the global card fill regardless of stylesheet order.
+  &:global(.cardDashboard) {
+    background: transparent;
+    box-shadow: none;
+  }
+
   // Soft fade-out when the window closes instead of an instant snap-to-tiny.
   // The entrance animation is disabled while removing so it doesn't fight the
   // transition.
