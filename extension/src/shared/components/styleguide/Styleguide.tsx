@@ -305,12 +305,12 @@ const Styleguide = (): JSX.Element => {
         <p class={styles.muted}>
           Two voices. Newsreader (serif) is the <em>mindful voice</em> - used
           only when the app speaks gently to you (intervention prompts, the
-          sun-drag hints, breath &amp; pause copy, the "be proud" success
-          message) or when you read your own words (dashboard reflections, the
-          reflection detail page). Inter (sans) is the functional default for
-          everything else: structural headings, settings, labels, metadata.
-          Serif is always opt-in via <code>.txtBig</code>,{" "}
-          <code>.h2Mindful</code>, the <code>displayVoice()</code> mixin, or
+          sun-drag hints, breath &amp; pause copy, the closing success line) or
+          when you read your own words (dashboard reflections, the reflection
+          detail page). Inter (sans) is the functional default for everything
+          else: structural headings, settings, labels, metadata. Serif is always
+          opt-in via <code>.txtBig</code>, <code>.h2Mindful</code>, the{" "}
+          <code>displayVoice()</code> mixin, or
           <code>&lt;Btn voice&gt;</code> for a genuinely mindful invitation.
           Inter is inherited by functional controls.
         </p>

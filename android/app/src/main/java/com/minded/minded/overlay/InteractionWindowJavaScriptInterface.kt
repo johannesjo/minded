@@ -212,8 +212,8 @@ class InteractionWindowJavaScriptInterface(
         // Hide overlay after a delay. Two purposes: ensure the minded app has
         // surfaced before the overlay disappears (the app intent is async with no
         // reliable callback, so this is a pragmatic tradeoff that also covers
-        // slower devices), and let the celebratory "Be proud!" message + warm sky
-        // linger a beat longer before we transition away.
+        // slower devices), and let the success sky linger a beat longer before we
+        // transition away.
         android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
             Log.d(logTag, "closeCurrentApp() - hiding window after delay")
             win.hideWindow()

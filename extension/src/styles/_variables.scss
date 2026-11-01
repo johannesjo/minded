@@ -97,7 +97,7 @@
 
   // Two voices. --font-display (Newsreader serif) is the *mindful voice*: used
   // only when the app speaks gently to you (intervention prompts, breath/pause
-  // copy, the "be proud" success) or when you read your own words (dashboard +
+  // copy, the closing success line) or when you read your own words (dashboard +
   // detail-page reflections). --font-body (Inter) is the functional default for
   // everything else. Serif is always opt-in via .txtBig / .h2Mindful /
   // displayVoice() / <Btn voice>; Inter is inherited, never declared.
