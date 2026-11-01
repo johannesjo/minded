@@ -8,6 +8,7 @@ import com.minded.minded.data.defaultSyncData
 import com.minded.minded.util.MindfulnessBellSchedule
 import com.minded.minded.util.SyncData
 import com.minded.minded.util.UserCfg
+import com.minded.minded.util.applySyncDataUpdate
 import com.minded.minded.util.getIsoDate
 import com.minded.minded.util.parseSyncData
 import com.minded.minded.sleepwinddown.SleepWindDownWindow
@@ -73,18 +74,32 @@ class SharedPreferenceService(context: Context) {
         saveDataString(syncDataToJson(syncData))
     }
 
+    /**
+     * Patches the stored blob in place: only keys the update changed are
+     * written, so fields the WebView owns but Kotlin doesn't model survive.
+     */
     @Synchronized
     fun updateSyncData(update: SyncData.() -> SyncData) {
-        val syncData = getSyncData()
-        val updatedSyncData = syncData.update()
-        saveSyncData(updatedSyncData)
+        saveDataString(applySyncDataUpdate(readableDataString(), update))
+    }
+
+    // shortcut: a missing or model-unreadable blob is patched from defaults,
+    // i.e. replaced, exactly as getSyncData() + save did before - a repair path
+    // that keeps the raw keys would need its own design.
+    private fun readableDataString(): String {
+        val raw = retrieveDataString()
+        return try {
+            parseSyncData(raw!!)
+            raw
+        } catch (e: Exception) {
+            Log.e(logTag, "Stored sync data unreadable, patching defaults", e)
+            syncDataToJson(defaultSyncData)
+        }
     }
 
     @Synchronized
     fun updateSyncDataCfg(update: UserCfg.() -> UserCfg) {
-        val syncData = getSyncData()
-        val updatedCfg = syncData.cfg.update()
-        saveSyncData(syncData.copy(cfg = updatedCfg))
+        updateSyncData { copy(cfg = cfg.update()) }
     }
 
     /**
