@@ -84,3 +84,15 @@ export const getSecondsUntilReQuestion = (
     Math.ceil(earliest / RE_QUESTION_INTERVAL_IN_S) * RE_QUESTION_INTERVAL_IN_S;
   return next - sessionS;
 };
+
+/**
+ * Where a counting-up sun's re-question minimum is measured from. Kept across
+ * re-reads (a tab return re-reads), or returning to the tab often would push
+ * the re-question back forever; a session that reset (a lower count) starts
+ * over.
+ */
+export const getReQuestionStartS = (
+  prevStartS: number | undefined,
+  initialS: number,
+): number =>
+  prevStartS === undefined || initialS < prevStartS ? initialS : prevStartS;

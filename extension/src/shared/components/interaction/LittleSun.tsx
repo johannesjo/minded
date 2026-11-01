@@ -23,6 +23,7 @@ import {
 } from "@src/util/activeTimerScope";
 import {
   getLittleSunGlintEveryS,
+  getReQuestionStartS,
   getSecondsUntilReQuestion,
   isLittleSunGlintDue,
   LITTLE_SUN_GLINT_MS,
@@ -114,6 +115,10 @@ export const LittleSunComponent: (props: {
   let hintTimeout: NodeJS.Timeout | undefined;
   let isDisposed = false;
   let refreshSeq = 0;
+  // Tab-return re-reads still in flight: the ticks hold still meanwhile. A
+  // count, not a flag - a quick hide/show/hide/show must not let the first
+  // read release the second one's hold.
+  let staleCountReads = 0;
   // Set once this sun counts a grace down; only then may an exhausted grace
   // hand back to the intervention (see getLittleSunTimerSource).
   let hasCountedGrace = false;
@@ -336,6 +341,33 @@ export const LittleSunComponent: (props: {
     void refreshTimerSource();
   };
 
+  // The ticks stand still while hidden, so this tab's count goes stale: another
+  // tab on the host may have counted on, or the session may have reset since.
+  // Re-read on return rather than write a stale count back. A pause already
+  // waiting arrives on this same return (a natural break) - leave it be. So
+  // does a chosen countdown: it reads the clock, never goes stale, and an
+  // overdue tick must still be the one that brings its pause.
+  const handleVisibilityChange = () => {
+    if (
+      document.hidden ||
+      cancelPendingArrival ||
+      getRemainingSeconds() !== null
+    ) {
+      return;
+    }
+    // Hold the old tick until the re-read resolves: one landing before it
+    // would write the stale count back. Held, not stopped - if the read fails
+    // (e.g. the extension was just updated), the old count carries on.
+    staleCountReads += 1;
+    refreshTimerSource()
+      .catch((error) => {
+        console.error("Failed to re-read the session on return", error);
+      })
+      .finally(() => {
+        staleCountReads -= 1;
+      });
+  };
+
   onMount(async () => {
     const [d, syncData] = await Promise.all([
       loadDataForHost(props.host),
@@ -358,6 +390,7 @@ export const LittleSunComponent: (props: {
 
     void maybeShowHint();
     bro.storage.onChanged.addListener(handleStorageChange);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
   });
 
   onCleanup(() => {
@@ -368,6 +401,7 @@ export const LittleSunComponent: (props: {
     window.clearInterval(currentSessionInterval);
     cancelArrival();
     bro.storage.onChanged.removeListener(handleStorageChange);
+    document.removeEventListener("visibilitychange", handleVisibilityChange);
   });
 
   const dismissHint = () => {
@@ -376,12 +410,19 @@ export const LittleSunComponent: (props: {
     bro.storage.local.set({ [LITTLE_SUN_HINT_SEEN_KEY]: true });
   };
 
+  // Where this sun started counting up, for the re-question's minimum.
+  let reQuestionStartS: number | undefined;
+
   const initCounter = (initialValue: number) => {
+    reQuestionStartS = getReQuestionStartS(reQuestionStartS, initialValue);
+    const startS = reQuestionStartS;
     setSessionTime(initialValue);
     if (currentSessionInterval) {
       window.clearInterval(currentSessionInterval);
     }
     currentSessionInterval = window.setInterval(() => {
+      // Only time the user actually spends here counts (see the grace tick).
+      if (document.hidden || staleCountReads > 0) return;
       const v = getSessionTime() + 1;
       updateHostsEntry(props.host, {
         lastUsedTS: Date.now(),
@@ -390,7 +431,7 @@ export const LittleSunComponent: (props: {
       setSessionTime(v);
 
       if (
-        v - initialValue > MIN_RE_QUESTION_ELAPSED_TIME_S &&
+        v - startS > MIN_RE_QUESTION_ELAPSED_TIME_S &&
         v % RE_QUESTION_INTERVAL_IN_S === 0
       ) {
         // Periodic re-question mid-session: the session is still running, so this
@@ -398,7 +439,7 @@ export const LittleSunComponent: (props: {
         arriveAtNaturalBreak(false);
         return;
       }
-      tickGlint(getSecondsUntilReQuestion(v, initialValue));
+      tickGlint(getSecondsUntilReQuestion(v, startS));
     }, 1000);
   };
 
@@ -452,6 +493,11 @@ export const LittleSunComponent: (props: {
     setSessionTime(initialSessionDurationS);
 
     const tick = () => {
+      // A hidden tab neither spends the grace nor keeps the session warm:
+      // otherwise a tab opened in the background burns the grace unseen, and
+      // one left open there keeps the session alive forever (lastUsedTS never
+      // goes stale), so every later visit meets the full pause at the door.
+      if (document.hidden || staleCountReads > 0) return;
       const nextSession = getSessionTime() + 1;
       setSessionTime(nextSession);
       updateHostsEntry(props.host, {

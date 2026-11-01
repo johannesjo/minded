@@ -246,7 +246,9 @@ ever observed behaviour:
   load while the pause waits after a chosen time ran out meets the pause,
   never a fresh grace - read from an explicit `pauseDueTS` marker on the
   host entry (`isTimeUpMidSession`), never inferred from an expired timer.
-  A hidden tab never keeps the site's session warm while it waits.
+  A hidden tab never keeps the site's session warm while it waits - nor
+  while the Little Sun counts: its grace and count-up ticks stand still
+  while hidden, and the count is re-read from storage on return.
 - **Android** (`NaturalBreak.kt`): a new screen in the app (a window-state
   change to a different window class - not a toast, dialog, popup or bottom
   sheet, which open *into* what the user is doing, and not a generic

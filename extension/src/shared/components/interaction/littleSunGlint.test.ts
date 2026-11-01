@@ -1,5 +1,6 @@
 import {
   getLittleSunGlintEveryS,
+  getReQuestionStartS,
   getSecondsUntilReQuestion,
   isLittleSunGlintDue,
   LITTLE_SUN_GLINT_DEFAULT_MINUTES,
@@ -60,5 +61,20 @@ describe("getSecondsUntilReQuestion", () => {
     [1100, 850],
   ])("matches the re-question tick at session %ss from %ss", (s, i) => {
     expect(getSecondsUntilReQuestion(s, i)).toBe(nextByRule(s, i));
+  });
+});
+
+describe("getReQuestionStartS", () => {
+  it("starts where the sun first counts", () => {
+    expect(getReQuestionStartS(undefined, 600)).toBe(600);
+  });
+
+  it("keeps the start when a tab return re-reads a later count", () => {
+    // else returning often would push the re-question back forever
+    expect(getReQuestionStartS(600, 900)).toBe(600);
+  });
+
+  it("starts over when the session has reset", () => {
+    expect(getReQuestionStartS(600, 0)).toBe(0);
   });
 });
