@@ -72,7 +72,8 @@ const normalizeHostInput = (
 };
 
 export const WebsiteList: (props: {
-  onAfterSave?: () => void;
+  /** Receives the normalized hosts that were just saved. */
+  onAfterSave?: (savedHosts: string[]) => void;
   showSaveButton?: boolean;
   initialItems?: string[];
 }) => JSX.Element = (props) => {
@@ -180,7 +181,7 @@ export const WebsiteList: (props: {
       if (currentSaveRequestId !== saveRequestId) return true;
       setSavedState();
       if (props.showSaveButton === false) {
-        props.onAfterSave?.();
+        props.onAfterSave?.(validation.normalizedItems);
       }
       return true;
     } catch {
@@ -233,7 +234,7 @@ export const WebsiteList: (props: {
       requireOne: true,
     });
     if (saved) {
-      props.onAfterSave?.();
+      props.onAfterSave?.(validateItems(currentItems).normalizedItems);
     }
   };
 

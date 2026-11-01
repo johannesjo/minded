@@ -51,7 +51,13 @@ export function fadeOutThen(el: HTMLElement | null, done: () => void): void {
     done();
     return;
   }
-  fadeOut(el, PAGE_FADE_MS).promise.then(done);
+  const fade = fadeOut(el, PAGE_FADE_MS);
+  fade.promise.then(() => {
+    // A frame that still hasn't run never faded anything - and firing after
+    // `done` it would hide the element `done` just restored, for good.
+    window.cancelAnimationFrame(fade.frameNr);
+    done();
+  });
 }
 
 // Fade the current page's own root node (`<main>`'s first child) fully out and

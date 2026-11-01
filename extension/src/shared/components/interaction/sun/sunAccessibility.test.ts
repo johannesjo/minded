@@ -235,8 +235,8 @@ describe("interactive sun accessibility", () => {
       expect(host).toContain("getIsPauseOpen()");
       expect(host).toContain("onPauseVisibilityChange={setIsPauseOpen}");
     }
-    // Desktop teaches the let-go gesture instead, so no pause ever opens over
-    // its chrome and there is nothing to make inert.
-    expect(webOnboarding).toContain('welcomeGesture="letGo"');
+    // Desktop teaches the intervention's gestures instead, so no pause ever
+    // opens over its chrome and there is nothing to make inert.
+    expect(webOnboarding).toContain('welcomeGesture="intervention"');
   });
 });

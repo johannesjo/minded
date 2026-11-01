@@ -804,7 +804,14 @@ export const Sun: Component<SunProps> = (props) => {
     );
   };
 
+  // Bumped by every settle change. A release whose callbacks hand the disc to
+  // a new rest must not also run its off-screen exit - and under reduced
+  // motion that hand-off snaps (never "settling into role"), so the settling
+  // flag alone can't tell that a settle took over.
+  let settleChangeCount = 0;
+
   const enterSettle = (settle: SunSettle, fromSettle?: SunSettle | null) => {
+    settleChangeCount++;
     const releaseVelocity = releaseHandoffVelocity;
     releaseHandoffVelocity = null;
     setIsDragging(false);
@@ -955,6 +962,7 @@ export const Sun: Component<SunProps> = (props) => {
   };
 
   const exitSettle = (fromSettle?: SunSettle | null) => {
+    settleChangeCount++;
     cancelSettleFrame();
     cancelRevealReach();
     // Same staleness heal as enterSettle: take off from the rested settle's
@@ -1337,6 +1345,10 @@ export const Sun: Component<SunProps> = (props) => {
       });
 
       releaseHandoffVelocity = prefersReducedMotion() ? null : discVelocity;
+      const settleChangeCountAtRelease = settleChangeCount;
+      const hasSettleTakenOver = () =>
+        getIsSettlingIntoRole() ||
+        settleChangeCount !== settleChangeCountAtRelease;
       if (releaseAction.type === "snapBack") {
         dispatchInteractionEvent("dragProgress", {
           direction: "none",
@@ -1358,7 +1370,7 @@ export const Sun: Component<SunProps> = (props) => {
         // off-screen fling here would run concurrently and override it, dragging
         // the disc off the bottom edge - no sun on the offer. When a settle has
         // taken over, skip the fling and let the glide bring the disc home.
-        if (!getIsSettlingIntoRole()) {
+        if (!hasSettleTakenOver()) {
           // The moon's "let the day go" exit must stay calm - a velocity-driven
           // fling launches it off-screen far too fast for a wind-down. Regardless
           // of release speed, let the moon sink on the eased completion glide
@@ -1387,7 +1399,7 @@ export const Sun: Component<SunProps> = (props) => {
         // See the fling branch: a dashboard down-drag recalls the disc to its
         // companion rest via a settle glide started synchronously above, so the
         // off-screen completion would fight and override it. Skip it then.
-        if (!getIsSettlingIntoRole())
+        if (!hasSettleTakenOver())
           animateToCompletion(releaseAction.direction, discVelocity.y);
       }
       releaseHandoffVelocity = null;

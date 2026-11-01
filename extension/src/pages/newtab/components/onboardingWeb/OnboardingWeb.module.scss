@@ -110,3 +110,11 @@ $sky-strip: 88px;
     min-height: 176px;
   }
 }
+
+// Finishing stays the primary action; the real-site test sits quietly beneath.
+.readyActions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}

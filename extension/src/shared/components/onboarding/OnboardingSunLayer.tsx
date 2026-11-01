@@ -8,13 +8,14 @@ import {
   setBreathStartedAt,
 } from "@src/shared/components/interaction/sun/sunStore";
 import InteractionOverlay from "@src/shared/components/dashboard/interactionOverlay/InteractionOverlay";
+import { SUN_TAP_THRESHOLD } from "@src/shared/components/interaction/sunHints";
 import { createOnboardingSunDemo } from "./createOnboardingSunDemo";
 import { ONBOARDING_DEMO_LINE } from "./onboardingDemoLine";
 import styles from "./onboardingSunLayer.module.scss";
 
 /**
- * The ONE onboarding sun and its welcome demo (tap-to-pause, or the let-go
- * gesture where the intervention is the only sun - see welcomeGesture) - shared by every
+ * The ONE onboarding sun and its welcome demo (tap-to-pause, or the
+ * intervention's two outcomes where it is the only sun - see welcomeGesture) - shared by every
  * platform's onboarding. It owns the shared takeover state machine
  * (createOnboardingSunDemo), so the whole thing lives in one place; each flow
  * supplies only its step/leaving signals, its base settle rests, and how to
@@ -36,15 +37,22 @@ export const OnboardingSunLayer = (props: {
   onPauseVisibilityChange?: (isOpen: boolean) => void;
   /**
    * What the welcome disc teaches. "tap" (default) opens the real pause - the
-   * companion sun's own gesture. "letGo" teaches the intervention's gesture
-   * instead (drag down or fling away), for platforms whose only sun is the
-   * intervention: there, a tap-to-pause demo rehearses something the user
-   * never meets again.
+   * companion sun's own gesture. "intervention" teaches the intervention's two
+   * outcomes instead, for platforms whose only sun is the intervention (there,
+   * a tap-to-pause demo rehearses something the user never meets again): drag
+   * down or fling away lets go (advanceFromWelcome), SUN_TAP_THRESHOLD taps or
+   * Enter continue (onWelcomeContinue) - Enter matches the real intervention.
    */
-  welcomeGesture?: "tap" | "letGo";
+  welcomeGesture?: "tap" | "intervention";
+  onWelcomeContinue?: () => void;
+  /** While true the welcome disc rests without input (its practice is open). */
+  getIsWelcomeHeld?: () => boolean;
 }): JSX.Element => {
   const d = createOnboardingSunDemo(props);
-  const isLetGoWelcome = () => props.welcomeGesture === "letGo";
+  const isInterventionWelcome = () => props.welcomeGesture === "intervention";
+  const continueFromWelcome = () => {
+    if (d.isSunGrabbable()) props.onWelcomeContinue?.();
+  };
   createEffect(() => props.onPauseVisibilityChange?.(d.getIsShowPause()));
 
   const openPauseWithFocus = () => {
@@ -70,8 +78,8 @@ export const OnboardingSunLayer = (props: {
             settle={d.getActiveSunSettle()}
             aria-label={
               d.isSunGrabbable()
-                ? isLetGoWelcome()
-                  ? `Let go with the ${d.sunVariant}`
+                ? isInterventionWelcome()
+                  ? `Continue with the ${d.sunVariant}`
                   : "Open a mindful pause"
                 : d.isSunInputEnabled()
                   ? getSunHandlers()?.getAccessibleLabel?.()
@@ -80,8 +88,8 @@ export const OnboardingSunLayer = (props: {
             aria-description={
               d.isPauseDrivingSun() && d.isSunInputEnabled()
                 ? getSunHandlers()?.getAccessibleDescription?.()
-                : d.isSunGrabbable() && isLetGoWelcome()
-                  ? `Drag the ${d.sunVariant} down or press Enter to let go.`
+                : d.isSunGrabbable() && isInterventionWelcome()
+                  ? `Press Enter to continue, or drag the ${d.sunVariant} down to let go.`
                   : undefined
             }
             aria-keyshortcuts={
@@ -93,8 +101,8 @@ export const OnboardingSunLayer = (props: {
               d.isPauseDrivingSun()
                 ? (activation) =>
                     getSunHandlers()?.onKeyboardActivate?.(activation)
-                : isLetGoWelcome()
-                  ? d.advanceFromHero
+                : isInterventionWelcome()
+                  ? continueFromWelcome
                   : openPauseWithFocus
             }
             onAccessibleActionEnabledChange={(enabled) =>
@@ -106,17 +114,26 @@ export const OnboardingSunLayer = (props: {
               d.isPauseDrivingSun()
                 ? d.isSunInputEnabled() &&
                   (getSunHandlers()?.isTapEnabled ?? true)
-                : d.isSunGrabbable() && !isLetGoWelcome()
+                : d.isSunGrabbable()
             }
             isDragEnabled={d.isSunInputEnabled()}
-            // Welcome: a single tap is the invitation into the pause. Mid-pause
+            // Welcome: a single tap is the invitation into the pause (the
+            // intervention welcome counts like the real intervention). Mid-pause
             // the tap threshold belongs to the interaction (though the
             // dashboard-style pause disables tap-continue anyway).
             tapThreshold={
-              d.isPauseDrivingSun() ? (getSunHandlers()?.tapThreshold ?? 3) : 1
+              d.isPauseDrivingSun()
+                ? (getSunHandlers()?.tapThreshold ?? SUN_TAP_THRESHOLD)
+                : isInterventionWelcome()
+                  ? SUN_TAP_THRESHOLD
+                  : 1
             }
             onSkip={() =>
-              d.isPauseDrivingSun() ? getSunHandlers()?.onSkip() : d.openPause()
+              d.isPauseDrivingSun()
+                ? getSunHandlers()?.onSkip()
+                : isInterventionWelcome()
+                  ? continueFromWelcome()
+                  : d.openPause()
             }
             onFlingAway={() =>
               d.isPauseDrivingSun()

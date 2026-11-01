@@ -32,6 +32,8 @@ export const createOnboardingSunDemo = (opts: {
   advanceFromWelcome: () => void;
   /** Let the flow reveal its explanation once the real pause has closed. */
   onPauseExperienced?: () => void;
+  /** While true the welcome disc rests without input (the flow holds it). */
+  getIsWelcomeHeld?: () => boolean;
 }) => {
   const [getIsShowPause, setIsShowPause] = createSignal(false);
   const [getIsPauseClosing, setIsPauseClosing] = createSignal(false);
@@ -79,7 +81,10 @@ export const createOnboardingSunDemo = (opts: {
   // Only the welcome step's disc takes input - everywhere else the sun is a
   // quiet presence (and the closing "ready" disc can never be dismissed).
   const isSunGrabbable = () =>
-    opts.getStep() === 0 && !opts.getIsLeaving() && !getIsShowPause();
+    opts.getStep() === 0 &&
+    !opts.getIsLeaving() &&
+    !getIsShowPause() &&
+    opts.getIsWelcomeHeld?.() !== true;
 
   // While the pause runs, input follows the shell-sun rules instead (the
   // store's role + hand-off gate) so the demo behaves exactly like the

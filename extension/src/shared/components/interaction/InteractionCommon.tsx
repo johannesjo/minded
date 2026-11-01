@@ -90,6 +90,12 @@ import {
 import { prefersReducedMotion } from "@src/util/prefersReducedMotion";
 import { IS_TOUCH_PRIMARY } from "@src/util/touch";
 import {
+  continueHint,
+  letGoHint,
+  SUN_HINT_STAGGER_MS,
+  SUN_TAP_THRESHOLD,
+} from "./sunHints";
+import {
   batch,
   Component,
   createEffect,
@@ -155,7 +161,6 @@ interface InteractionCommonProps {
 }
 
 const InteractionCommon: Component<InteractionCommonProps> = (props) => {
-  const SUN_TAP_THRESHOLD = 3;
   const reduceMotion = prefersReducedMotion();
   const SCREEN_TRANSITION_MS = reduceMotion
     ? 0
@@ -573,7 +578,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     }
 
     setSunHintStep(0);
-    const t1 = window.setTimeout(() => setSunHintStep(1), 1200);
+    const t1 = window.setTimeout(() => setSunHintStep(1), SUN_HINT_STAGGER_MS);
     onCleanup(() => {
       window.clearTimeout(t1);
     });
@@ -1774,15 +1779,13 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
               ) : (
                 <>
                   <p class="sun-instructions-line is-visible">
-                    Drag the {getDragObjectName()} down or fling it away to let
-                    go.
+                    {letGoHint(getDragObjectName())}
                   </p>
                   <p
                     class="sun-instructions-line"
                     classList={{ "is-visible": getSunHintStep() >= 1 }}
                   >
-                    Tap the {getDragObjectName()} {SUN_TAP_THRESHOLD} times to
-                    continue.
+                    {continueHint(getDragObjectName())}
                   </p>
                 </>
               )}

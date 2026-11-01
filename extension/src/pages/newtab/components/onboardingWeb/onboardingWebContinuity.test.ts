@@ -4,6 +4,7 @@ import {
   getWebOnboardingSunSettle,
   WEB_ONBOARDING_SKY_SUN_SCALE,
   type WebOnboardingSunAnchors,
+  type WebOnboardingSunState,
 } from "./onboardingWebSunSettle";
 import { resolveInitialOnboardingVisibility } from "../../newTabInitialState";
 
@@ -15,6 +16,23 @@ const anchors = (
   companionYFromBottom: 44,
   ...overrides,
 });
+
+const at = (
+  step: number,
+  overrides: Partial<WebOnboardingSunState> = {},
+): WebOnboardingSunState => ({
+  step,
+  isLeaving: false,
+  isPracticing: false,
+  ...overrides,
+});
+
+const HERO = { anchorYPxFromBottom: 400, scale: 1, breathe: false };
+const SKY = {
+  anchorYPxFromBottom: 700,
+  scale: WEB_ONBOARDING_SKY_SUN_SCALE,
+  breathe: false,
+};
 
 const source = (relativePath: string): string =>
   readFileSync(resolve(process.cwd(), relativePath), "utf8");
@@ -43,7 +61,7 @@ describe("web onboarding sun continuity", () => {
     );
     const newTab = source("src/pages/newtab/NewTab.tsx");
 
-    expect(onboarding).toMatch(/getShownStep\(\) === 2/);
+    expect(onboarding).toMatch(/getShownStep\(\) === READY_STEP/);
     expect(onboarding).toMatch(/is ready/i);
     expect(newTab).not.toMatch(/getIsShowInfo|infoBox|is now configured/);
   });
@@ -96,58 +114,156 @@ describe("web onboarding sun continuity", () => {
   });
 
   // Desktop has no tap-to-pause companion - its only sun is the intervention -
-  // so the welcome rehearses the intervention's let-go gesture instead.
-  it("teaches the intervention's let-go gesture on desktop", () => {
+  // so the welcome rehearses the intervention's two outcomes instead.
+  it("teaches the intervention's gestures on desktop, in its own words", () => {
     const onboarding = source(
       "src/pages/newtab/components/onboardingWeb/OnboardingWeb.tsx",
     );
-    const layer = source(
-      "src/shared/components/onboarding/OnboardingSunLayer.tsx",
+    const hints = source(
+      "src/pages/newtab/components/onboardingWeb/InterventionHints.tsx",
+    );
+    const intervention = source(
+      "src/shared/components/interaction/InteractionCommon.tsx",
     );
 
-    expect(onboarding).toContain('welcomeGesture="letGo"');
-    expect(onboarding).toContain(
-      "Drag the {companionWord()} down or fling it away to let go.",
-    );
+    expect(onboarding).toContain('welcomeGesture="intervention"');
+    expect(onboarding).toContain("<InterventionHints");
     expect(onboarding).not.toContain("Tap the {companionWord()}.");
-    expect(layer).toMatch(/d\.isSunGrabbable\(\) && !isLetGoWelcome\(\)/);
+    // One copy for both surfaces, so the rehearsal can't drift from the real
+    // thing.
+    for (const file of [hints, intervention]) {
+      expect(file).toContain("letGoHint(");
+      expect(file).toContain("continueHint(");
+      expect(file).toContain("SUN_HINT_STAGGER_MS");
+    }
   });
 
   it("rests on the hero, setup sky, final hero, then dashboard companion", () => {
-    expect(getWebOnboardingSunSettle(0, false, anchors())).toEqual({
-      anchorYPxFromBottom: 400,
-      scale: 1,
-      breathe: false,
-    });
-    expect(getWebOnboardingSunSettle(1, false, anchors())).toEqual({
-      anchorYPxFromBottom: 700,
-      scale: WEB_ONBOARDING_SKY_SUN_SCALE,
-      breathe: false,
-    });
-    expect(getWebOnboardingSunSettle(2, false, anchors())).toEqual({
-      anchorYPxFromBottom: 400,
-      scale: 1,
-      breathe: false,
-    });
-    expect(getWebOnboardingSunSettle(2, true, anchors())).toMatchObject({
-      anchorYPxFromBottom: 44,
-    });
+    expect(getWebOnboardingSunSettle(at(0), anchors())).toEqual(HERO);
+    expect(getWebOnboardingSunSettle(at(1), anchors())).toEqual(SKY);
+    expect(getWebOnboardingSunSettle(at(2), anchors())).toEqual(HERO);
+    expect(
+      getWebOnboardingSunSettle(at(2, { isLeaving: true }), anchors()),
+    ).toMatchObject({ anchorYPxFromBottom: 44 });
   });
 
-  it("does not flash at centre before the welcome rest is measured", () => {
+  it("lifts the disc into the sky while the welcome's continue practice shows", () => {
     expect(
-      getWebOnboardingSunSettle(0, false, anchors({ heroYFromBottom: null })),
+      getWebOnboardingSunSettle(at(0, { isPracticing: true }), anchors()),
+    ).toEqual(SKY);
+  });
+
+  it("does not flash at centre before the welcome hero is measured", () => {
+    expect(
+      getWebOnboardingSunSettle(at(0), anchors({ heroYFromBottom: null })),
     ).toBeNull();
   });
 
   it("keeps the setup-sky rest until the final hero slot is measured", () => {
     expect(
-      getWebOnboardingSunSettle(2, false, anchors({ heroYFromBottom: null })),
-    ).toEqual({
-      anchorYPxFromBottom: 700,
-      scale: WEB_ONBOARDING_SKY_SUN_SCALE,
-      breathe: false,
-    });
+      getWebOnboardingSunSettle(at(2), anchors({ heroYFromBottom: null })),
+    ).toEqual(SKY);
+  });
+});
+
+describe("web onboarding rehearses both intervention outcomes", () => {
+  const onboarding = () =>
+    source("src/pages/newtab/components/onboardingWeb/OnboardingWeb.tsx");
+  const layer = () =>
+    source("src/shared/components/onboarding/OnboardingSunLayer.tsx");
+
+  it("lets go with drag/fling and continues with the real tap count or Enter", () => {
+    expect(onboarding()).toMatch(
+      /advanceFromWelcome=\{\(\) => changeStep\(WEB_ONBOARDING_SITES_STEP\)\}/,
+    );
+    expect(onboarding()).toContain(
+      'onWelcomeContinue={() => changeWelcomeView("choosing")}',
+    );
+    // Same threshold and keyboard key as the real intervention sun.
+    expect(layer()).toMatch(
+      /isInterventionWelcome\(\)\s*\?\s*SUN_TAP_THRESHOLD/,
+    );
+    expect(layer()).toMatch(
+      /isInterventionWelcome\(\)\s*\?\s*continueFromWelcome/,
+    );
+    expect(layer()).toMatch(/Press Enter to continue/);
+  });
+
+  it("gives keyboard users a way past the let-go they can't perform", () => {
+    expect(onboarding()).toMatch(
+      /<Btn\s+plain\s+onClick=\{\(\) => changeStep\(WEB_ONBOARDING_SITES_STEP\)\}/,
+    );
+  });
+
+  it("holds the welcome disc still while the practice is open", () => {
+    const demo = source(
+      "src/shared/components/onboarding/createOnboardingSunDemo.ts",
+    );
+
+    expect(onboarding()).toContain("getIsWelcomeHeld={isPracticing}");
+    expect(demo).toContain("opts.getIsWelcomeHeld?.() !== true");
+  });
+
+  it("keeps Android and iOS on the tap-to-pause welcome", () => {
+    for (const file of [
+      "src/android/components/onboardingAndroid/OnboardingAndroid.tsx",
+      "src/ios/components/onboardingIOS/OnboardingIOS.tsx",
+    ]) {
+      expect(source(file)).not.toMatch(/welcomeGesture=/);
+    }
+  });
+
+  it("shows the real time choices but starts nothing from them", () => {
+    const component = onboarding();
+
+    expect(component).toContain("<TimeSelection");
+    expect(component).toContain(
+      'onSelectTime={() => changeWelcomeView("chosen")}',
+    );
+    expect(component).toContain("onCancel={cancelTimePractice}");
+    expect(component).not.toMatch(
+      /onSetSessionLimit|sessionLimit|setSyncData|closeTab|window\.close/,
+    );
+  });
+
+  it("saves completion before trying the real site, and stays on failure", () => {
+    const component = onboarding();
+    const tryOnSite = component.slice(
+      component.indexOf("const tryOnSite"),
+      component.indexOf("const leaveToDashboard"),
+    );
+
+    expect(tryOnSite).toMatch(
+      /await saveCompletion\("site"\)[\s\S]*window\.location\.assign/,
+    );
+    expect(tryOnSite).toMatch(
+      /!\(await saveCompletion\("site"\)\)[^\n]*return;/,
+    );
+    expect(component).toMatch(/try it on \$\{getTrySite\(\)\}/);
+    // The offer only exists once a site was actually saved.
+    expect(component).toContain("setTrySite(savedHosts[0] ?? null)");
+    expect(component).toMatch(/\{getTrySite\(\) && \(/);
+  });
+
+  // Under reduced motion the let-go's hand-off to the next rest snaps (it never
+  // reads as "settling"), and the off-screen completion used to run anyway,
+  // dragging the disc out of sight on the website step.
+  it("lets a settle that lands during the release cancel its off-screen exit", () => {
+    const sun = source("src/shared/components/interaction/sun/Sun.tsx");
+
+    expect(sun.match(/settleChangeCount\+\+;/g)).toHaveLength(2);
+    expect(sun.match(/if \(!hasSettleTakenOver\(\)\)/g)).toHaveLength(2);
+    expect(sun).not.toMatch(/if \(!getIsSettlingIntoRole\(\)\)/);
+  });
+
+  it("skips the exit fades under reduced motion", () => {
+    const component = onboarding();
+    const tryOnSite = component.slice(
+      component.indexOf("const tryOnSite"),
+      component.indexOf("const leaveToDashboard"),
+    );
+
+    expect(tryOnSite).toMatch(/if \(!prefersReducedMotion\(\) && chromeEl\)/);
   });
 });
 
