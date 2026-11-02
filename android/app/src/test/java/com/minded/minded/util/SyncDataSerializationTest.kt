@@ -3,6 +3,7 @@ package com.minded.minded.util
 import org.json.JSONObject
 import org.junit.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNull
 
 class SyncDataSerializationTest {
@@ -34,13 +35,14 @@ class SyncDataSerializationTest {
         assertNull(activeTimer?.startedTS)
         assertNull(activeTimer?.target)
         assertNull(activeTimer?.platform)
-        assertNull(activeTimer?.intent)
         assertEquals(emptyList(), syncData.alternatives)
         assertEquals(emptyMap(), syncData.patternInsightState.shownInsightIdsByDate)
     }
 
     @Test
     fun `round trips enriched active timer and sleep wind down drafts`() {
+        // The legacy "intent" is still accepted on read (timers saved before the
+        // intent step was removed) and dropped on write.
         val syncData = parseSyncData(
             """
             {
@@ -76,12 +78,10 @@ class SyncDataSerializationTest {
         assertEquals("app", syncData.activeTimer?.target?.kind)
         assertEquals("com.example.app", syncData.activeTimer?.target?.id)
         assertEquals("android", syncData.activeTimer?.platform)
-        assertEquals("check_one_thing", syncData.activeTimer?.intent?.id)
 
         val serialized = JSONObject(syncDataToJson(syncData))
         val timer = serialized.getJSONObject("activeTimer")
         val target = timer.getJSONObject("target")
-        val intent = timer.getJSONObject("intent")
 
         assertEquals(987654L, timer.getLong("endTS"))
         assertEquals(900, timer.getInt("durationS"))
@@ -89,7 +89,7 @@ class SyncDataSerializationTest {
         assertEquals("app", target.getString("kind"))
         assertEquals("com.example.app", target.getString("id"))
         assertEquals("android", timer.getString("platform"))
-        assertEquals("check_one_thing", intent.getString("id"))
+        assertFalse(timer.has("intent"))
         assertEquals("brain", serialized.getString("sleepWindDownBrainDumpDraft"))
         assertEquals("gratitude", serialized.getString("sleepWindDownGratitudeDraft"))
         assertEquals("tomorrow", serialized.getString("sleepWindDownTomorrowDraft"))

@@ -100,7 +100,7 @@ export const BreathInteraction = (
     stopKeepAlive();
     // Only while *our* breath is running is the settled sun ours to return: a
     // blanket reset here would yank the sun out of whatever settle a later
-    // stage of the flow (the post-tap intent breath, say) has put it in.
+    // stage of the flow (the post-tap breath, say) has put it in.
     if (hasBegunBreath && !hasFinished) {
       props.onSunBreathEnd();
     }

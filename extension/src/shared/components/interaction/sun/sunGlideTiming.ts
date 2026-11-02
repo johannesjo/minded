@@ -11,7 +11,7 @@ import type { SunSettle } from "./Sun";
 export const COMPANION_GLIDE_MS = 900;
 
 // --- Post-interaction settle: the sun stays on screen and transforms across
-// the breath pause and the intent/time choices instead of being hidden and
+// the breath pause and the time choices instead of being hidden and
 // replaced by a separate sun. ---
 export const GLIDE_DURATION_MS = 650;
 export const EXIT_GLIDE_MS = 500;
@@ -33,7 +33,7 @@ export const ARRIVE_FROM_CORNER_MS = 1100;
  *
  * Glides to/from the dashboard companion (the bottom-bar rest rising into the
  * interaction, and the return home) get a gentler, slower duration than other
- * transitions (e.g. cancelling the intent/time choices), which keep the
+ * transitions (e.g. cancelling the time choices), which keep the
  * snappier default.
  */
 export const settleGlideMs = (

@@ -6,7 +6,6 @@ import { androidInterface } from "@src/dataInterface/android/androidInterface";
 import { addWrapperClasses } from "@src/shared/addWrapperClasses";
 import InteractionCommon from "@src/shared/components/interaction/InteractionCommon";
 import { countSunTap } from "@src/dataInterface/commonSyncDataInterface";
-import { SessionIntent } from "@src/dataInterface/syncData";
 import type { SkipCheckInChoice } from "@src/shared/components/interaction/skipCheckIn/skipCheckIn";
 import { createAndroidSessionLimitPayload } from "@src/shared/components/interaction/sessionLimit";
 
@@ -92,10 +91,8 @@ const InteractionAndroid = () => {
     }
   };
 
-  const onSetSessionLimit = (seconds: number, intent?: SessionIntent) => {
-    androidInterface.setSessionLimit(
-      createAndroidSessionLimitPayload(seconds, intent),
-    );
+  const onSetSessionLimit = (seconds: number) => {
+    androidInterface.setSessionLimit(createAndroidSessionLimitPayload(seconds));
   };
 
   return (

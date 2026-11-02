@@ -144,11 +144,6 @@ fun syncDataToJson(syncData: SyncData): String {
             timerObj.put("target", targetObj)
         }
         syncData.activeTimer.platform?.let { timerObj.put("platform", it) }
-        syncData.activeTimer.intent?.let { intent ->
-            val intentObj = JSONObject()
-            intentObj.put("id", intent.id)
-            timerObj.put("intent", intentObj)
-        }
         jsonObject.put("activeTimer", timerObj)
     }
 

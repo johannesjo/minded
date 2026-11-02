@@ -212,14 +212,14 @@ describe("interactive sun accessibility", () => {
     );
     // The sites that hand keyboard focus back to the interactive sun: the
     // success beat's instructions, the shared post-sun cancel
-    // (cancelPostSunScreen - the intent/time cancels and the post-tap
+    // (cancelPostSunScreen - the time-choice cancel and the post-tap
     // breath-pause cancel all step back through it), and the BREATH mode's
     // hand-back (endSunBreath).
     expect(interaction.match(/requestInteractiveSunFocus\(\)/g)).toHaveLength(
       3,
     );
-    // ...the intent, time and breath-pause cancels.
-    expect(interaction.match(/cancelPostSunScreen\(/g)).toHaveLength(3);
+    // ...the time-choice and breath-pause cancels.
+    expect(interaction.match(/cancelPostSunScreen\(/g)).toHaveLength(2);
     expect(grounding).toContain("props.focusOnMount");
     expect(letGo).toContain("props.focusOnMount");
     expect(onboarding).toContain("getAccessibleLabel");

@@ -108,7 +108,7 @@ would duplicate the app's central interaction. **Nothing to build here.**
 ### Attunement - the routing is already largely context-driven
 
 `getInteractionMode.ts` is **not** "rolling dice." It branches on friction level,
-mood freshness, energy, evening, expired intent, and alternatives *before* any
+mood freshness, energy, evening, and alternatives *before* any
 randomness; the probabilities mostly add *variety* among already-eligible
 options. Sleep wind-down isn't even routed here - it's a separate scheduled flow.
 So "replace the dice with attunement rules" overstates how random the system is;

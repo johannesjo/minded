@@ -88,7 +88,7 @@ Guard tests: `sunLight.test.ts`.
 | Intervention, full size | white | white | 1.25 | broad |
 | Breath pause (scale .82) | white | white | 1.25 | broad |
 | Urge-surfing (looping pulse) | white | white | 1.25 | broad |
-| Intent/time choices (scale .5) | white | white | 1.25 | broad |
+| Time choices (scale .5) | white | white | 1.25 | broad |
 | Daily questions (+ orbit dots) | companion look | white | 1.25 | snug |
 | Daily-questions success bloom (.62) | white | white | 1.25 | broad |
 | **Departing → Little Sun** | white, shrinking to 40px (web) / 30px (Android) | **amber** | 1.0 | snug |

@@ -120,15 +120,6 @@ export interface EmotionLabelingData {
   bodyLocations: string[];
 }
 
-export type SessionIntentId =
-  | "reply_or_message"
-  | "check_one_thing"
-  | "take_short_break";
-
-export interface SessionIntent {
-  id: SessionIntentId;
-}
-
 export interface SessionTarget {
   kind: "host" | "app";
   id: string;
@@ -142,7 +133,8 @@ export interface ActiveTimer {
   startedTS?: number;
   target?: SessionTarget;
   platform?: SessionPlatform;
-  intent?: SessionIntent;
+  // Timers saved before the intent step was removed may still carry an
+  // `intent` object here; nothing reads it any more.
 }
 
 export type AlternativeKind = "website" | "app" | "activity" | "custom";

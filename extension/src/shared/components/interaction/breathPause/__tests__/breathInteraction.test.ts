@@ -55,7 +55,7 @@ describe("the BREATH intervention", () => {
 
   it("only returns the sun on cleanup while its own breath is running", () => {
     // A blanket reset would yank the sun out of whatever settle a later stage
-    // of the flow (the post-tap intent breath) has put it in.
+    // of the flow (the post-tap breath) has put it in.
     expect(normalized).toMatch(
       /onCleanup\(\(\) => \{ stopKeepAlive\(\); .*?if \(hasBegunBreath && !hasFinished\) \{ props\.onSunBreathEnd\(\); \}/,
     );

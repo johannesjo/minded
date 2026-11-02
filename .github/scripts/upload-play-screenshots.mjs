@@ -11,10 +11,8 @@ export const PHONE_SCREENSHOT_FILES = [
   "dashboard.png",
   "question-looking-forward.png",
   "draggable-sun.png",
-  "intent-selection.png",
   "duration-selection.png",
   "draggable-moon-dark.png",
-  "intent-selection-dark.png",
   "duration-selection-dark.png",
 ];
 

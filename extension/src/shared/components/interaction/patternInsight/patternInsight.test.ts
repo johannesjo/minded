@@ -25,8 +25,6 @@ const baseContext = (
   todaySunTaps: 1,
   recentSunTaps: 1,
   hasActiveTimer: false,
-  hasExpiredTimerForTarget: false,
-  hasIntentOnExpiredTimerForTarget: false,
   ...overrides,
 });
 

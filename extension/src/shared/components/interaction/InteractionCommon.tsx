@@ -7,7 +7,6 @@ import {
 import {
   Alternative,
   Answer,
-  SessionIntent,
   SessionPlatform,
   SessionTarget,
   SyncData,
@@ -21,7 +20,6 @@ import {
 } from "@src/shared/components/interaction/getInteractionMode";
 import { GroundingOverlay } from "@src/shared/components/interaction/grounding/GroundingOverlay";
 import { GROUNDING_FADE_MS } from "@src/shared/components/interaction/grounding/grounding.const";
-import { IntentSelection } from "@src/shared/components/interaction/intentSelection/IntentSelection";
 import { ANIMATION_TIMING } from "@src/shared/components/interaction/interactionAnimation.const";
 import type { FrictionLevel } from "@src/shared/components/interaction/interactionContext";
 import { shouldIgnoreStaleSuccess } from "@src/shared/components/interaction/interactionSuccessGuard";
@@ -43,12 +41,6 @@ import {
 } from "@src/shared/components/interaction/interactionCornerSettle";
 import type { PatternInsight } from "@src/shared/components/interaction/patternInsight/patternInsight";
 import { getPostSunPauseSeconds } from "@src/shared/components/interaction/postSunPause";
-import {
-  advanceIntentSelectionToTime,
-  cancelIntentSelection,
-  cancelTimeSelection,
-  shouldAskIntent,
-} from "@src/shared/components/interaction/sessionLimit";
 import Sun from "@src/shared/components/interaction/sun/Sun";
 import {
   playInterventionSound,
@@ -137,7 +129,7 @@ interface InteractionCommonProps {
   onFlingAway: () => void;
   onDragComplete: () => void;
   onCompletionStarted?: (started: boolean) => void;
-  onSetSessionLimit?: (seconds: number, intent?: SessionIntent) => void;
+  onSetSessionLimit?: (seconds: number) => void;
   /** A skip check-in choice, already saved (skipCheckInFlow.ts); else onSkip. */
   onSkipCheckInChoice?: (choice: SkipCheckInChoice) => void;
   interactionTarget?: SessionTarget;
@@ -245,7 +237,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   >();
   // The sun's lifecycle phase. "interactive" = draggable; "breathing" and
   // "resting" keep it on screen and transform it through the post-sun flow
-  // (breath pause → intent/time) instead of hiding and replacing it. The
+  // (breath pause → time choice) instead of hiding and replacing it. The
   // phase → settle-target mapping lives in sunSettle.ts, shared with the
   // styleguide harness so the two can't drift.
   const [getLocalSunPhase, setLocalSunPhase] =
@@ -362,20 +354,14 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     requestInteractiveSunFocus();
   };
 
-  const [getShowIntentSelection, setShowIntentSelection] = createSignal(false);
   const [getIsPostSunScreenFading, setIsPostSunScreenFading] =
     createSignal(false);
   // True while the interaction-content / sun is fading out before the
   // post-sun overlay mounts. Lets us sequence: fade out first, then fade in.
   const [getIsExitingInteraction, setIsExitingInteraction] =
     createSignal(false);
-  const [getPendingIntent, setPendingIntent] = createSignal<
-    SessionIntent | undefined
-  >();
   const [getShowTimeSelection, setShowTimeSelection] = createSignal(false);
   const [getShowTimeSelectionOverlay, setShowTimeSelectionOverlay] =
-    createSignal(false);
-  const [getIsIntentSelectionArmed, setIsIntentSelectionArmed] =
     createSignal(false);
   const [getIsTimeSelectionArmed, setIsTimeSelectionArmed] =
     createSignal(false);
@@ -384,7 +370,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     "sun",
   );
   const getShowPostSunOverlay = () =>
-    getShowBreathPause() || getShowIntentSelection() || getShowTimeSelection();
+    getShowBreathPause() || getShowTimeSelection();
   // The sun stays in the dashboard flow on every platform now: tapping the
   // companion sun hands off to the interactive sun (it moves like a regular
   // intervention) instead of just vanishing straight into the question.
@@ -418,7 +404,6 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   // viewport promptly (a gentle fling / slow drag-up). Cleared once the offer
   // opens (whether by this or the off-screen watcher) and on dispose.
   let letGoRevealTimeout: number | undefined;
-  let intentSelectionArmTimeout: number | undefined;
   let timeSelectionArmTimeout: number | undefined;
   let rootThemeObserver: MutationObserver | undefined;
   let wrapperThemeObserver: MutationObserver | undefined;
@@ -427,7 +412,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   // the real layout left for it. Shell flow only.
   let sunPlaceholderEl: HTMLDivElement | undefined;
   let sunPlaceholderObserver: ResizeObserver | undefined;
-  // The intent/time choices overlay; the resting sun is measured to sit just
+  // The time choices overlay; the resting sun is measured to sit just
   // beneath the choices block inside it (see measureRestingSunAnchor).
   let restingOverlayEl: HTMLDivElement | undefined;
   let restingSunObserver: ResizeObserver | undefined;
@@ -503,7 +488,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   };
 
   // The bedtime settle - a deliberate drag OR fling in any direction (both ease
-  // the phone into the dark; a tap instead continues into the intent/time grant):
+  // the phone into the dark; a tap instead continues into the time choice):
   // rest a wordless "Sleep well" beat on screen, then run the real close - on
   // Android that closes the app and locks the screen, so the phone eases into the
   // dark rather than snapping to the OS lock. The settle is offered on every
@@ -519,7 +504,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   let bedtimeSettleTimeout: number | undefined;
   // Set once the goodnight settle (settleForBedtime) is committed, so every other
   // terminal path (a second settle, a stray follow-up drag/fling) becomes a
-  // no-op. The tap no longer settles - it continues into the intent/time grant
+  // no-op. The tap no longer settles - it continues into the time choice
   // like any intervention - so this now guards only against a duplicate goodnight
   // (e.g. a fling landing on top of a drag); the fling itself also leans on the
   // Sun's own isCompletionStarted.
@@ -738,10 +723,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
 
   const handleSunContinue = () => {
     cancelCountdown();
-    clearIntentSelectionArmTimeout();
     clearTimeSelectionArmTimeout();
-    setPendingIntent(undefined);
-    setIsIntentSelectionArmed(false);
     setIsTimeSelectionArmed(false);
 
     // Fade the interaction content out; the sun stays on screen and morphs
@@ -763,17 +745,13 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     // sun never detours via the static fallback.
     setIsAdvancingToChoices(true);
     postSunStep.after(QUESTION_FADE_OUT_MS, () => {
-      if (shouldAskIntent(getFrictionLevel())) {
-        showIntentSelectionAfterOverlayTransition();
-      } else {
-        showTimeSelectionAfterOverlayTransition();
-      }
+      showTimeSelectionAfterOverlayTransition();
       enterRestingForChoices();
     });
   };
 
   // A tap on the disc is the app-wide, learned slip-out ("tap the sun to get
-  // past this"), and it always continues into the session's intent/time grant -
+  // past this"), and it always continues into the session's time choice -
   // the bedtime settle included. Tapping the wordless "let the day go" moon now
   // flows straight into that same selection, exactly like any other intervention
   // resolves by itself, instead of a bare dismiss that vanished the moon and then
@@ -818,7 +796,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     }
 
     // Every continue (the bedtime settle now included) hands off to the
-    // intent/time selection, so move focus into that overlay when the keyboard
+    // time selection, so move focus into that overlay when the keyboard
     // triggers it.
     setShouldFocusPostSunOverlay(true);
     handleSunTap();
@@ -874,20 +852,18 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     if (isDisposed || getIsCancellingPostSun()) return;
     hasBreathed = true;
     skipFlow.recordEngagedOrLeft();
-    clearIntentSelectionArmTimeout();
     // Drop the breath origin now the pause is over, so a re-opened pause glides
     // in and re-publishes a fresh clock rather than reading this stale one.
     setBreathStartedAt(undefined);
     // The breath screen fades before the choices replace it (the same
-    // out-then-in beat as intent → time), so its quiet "cancel" eases away
-    // instead of cutting out under the arriving words. Then the same
+    // out-then-in beat as every post-sun hand-off), so its quiet "cancel" eases
+    // away instead of cutting out under the arriving words. Then the same
     // one-motion hand-off as the no-breath path: the sun stays visible as
     // "breathing" for the one frame until the slot is measured, then glides.
     postSunStep.fadeScreenThen(SCREEN_TRANSITION_MS, () => {
       batch(() => {
         setShowBreathPause(false);
-        setIsIntentSelectionArmed(true);
-        setShowIntentSelection(true);
+        showTimeSelectionAfterOverlayTransition();
       });
       enterRestingForChoices();
     });
@@ -895,37 +871,12 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
 
   const handleBreathPauseCancel = () => {
     cancelCountdown();
-    setIsIntentSelectionArmed(false);
+    setIsTimeSelectionArmed(false);
     // The breath origin goes with the screen, so the cue fades out with it.
     cancelPostSunScreen(() => {
-      setPendingIntent(undefined);
       setBreathStartedAt(undefined);
       setShowBreathPause(false);
     });
-  };
-
-  const clearIntentSelectionArmTimeout = () => {
-    if (intentSelectionArmTimeout) {
-      window.clearTimeout(intentSelectionArmTimeout);
-      intentSelectionArmTimeout = undefined;
-    }
-  };
-
-  const showIntentSelectionAfterOverlayTransition = () => {
-    clearIntentSelectionArmTimeout();
-    setShowIntentSelection(true);
-    if (ARM_WINDOW_MS <= 0) {
-      setIsIntentSelectionArmed(true);
-      return;
-    }
-
-    setIsIntentSelectionArmed(false);
-    intentSelectionArmTimeout = window.setTimeout(() => {
-      intentSelectionArmTimeout = undefined;
-      if (isDisposed) return;
-
-      setIsIntentSelectionArmed(true);
-    }, ARM_WINDOW_MS);
   };
 
   const clearTimeSelectionArmTimeout = () => {
@@ -967,7 +918,6 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
 
   const handleTimeSelection = (seconds: number) => {
     skipFlow.recordPass();
-    const intent = getPendingIntent();
     clearTimeSelectionArmTimeout();
     setIsTimeSelectionArmed(false);
     setIsPostSunScreenFading(true);
@@ -981,27 +931,10 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
       setShowTimeSelection(false);
       setInteractionOpacity(1);
       setShowSunInstructions(false);
-      setPendingIntent(undefined);
       if (props.onSetSessionLimit) {
-        props.onSetSessionLimit(seconds, intent);
+        props.onSetSessionLimit(seconds);
       }
     }, SCREEN_TRANSITION_MS);
-  };
-
-  const showTimeSelectionAfterIntent = (intent: SessionIntent | undefined) => {
-    clearIntentSelectionArmTimeout();
-    clearTimeSelectionArmTimeout();
-    setIsIntentSelectionArmed(false);
-    setIsTimeSelectionArmed(false);
-    postSunStep.fadeScreenThen(SCREEN_TRANSITION_MS, () => {
-      advanceIntentSelectionToTime(
-        intent,
-        setPendingIntent,
-        setShowIntentSelection,
-        setShowTimeSelection,
-      );
-      armTimeSelectionAfterOverlayTransition();
-    });
   };
 
   const handleStartBackgroundAnimation = (direction: "up" | "down") => {
@@ -1089,7 +1022,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     // not a let-go and not an escape - ease the phone into the dark rather than
     // hand off to the minded app (the daytime fling) or open the let-go question
     // (the dashboard). The way to stay in the current app is the tap, which
-    // continues into the intent/time grant like any intervention. Don't fade the
+    // continues into the time choice like any intervention. Don't fade the
     // content out and don't wait on the ~3s off-screen glide - show the wordless
     // "Sleep well" beat now and close+lock after it. (The moon still drifts for a
     // fraction of a second before close.)
@@ -1130,8 +1063,6 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
 
     setHasAnswered(true);
     skipFlow.recordEngagedOrLeft();
-    setPendingIntent(undefined);
-    setIsIntentSelectionArmed(false);
     setIsTimeSelectionArmed(false);
     setShowBreathPause(false);
 
@@ -1318,9 +1249,8 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
   });
 
   // Resting sun: measure the live choices block (question + options) and publish
-  // a centre just beneath it so the disc tucks under whatever options are showing
-  // - the 4-option intent screen or the taller 6-option time screen - and glides
-  // down when they swap. Skip mid-drag so a reflow can't yank the disc.
+  // a centre just beneath it so the disc tucks under the time options. Skip
+  // mid-drag so a reflow can't yank the disc.
   // `force` measures even before the phase flips to "resting", so the anchor is
   // ready when the glide starts and the disc moves to its slot in one motion
   // (used as the choices mount; see handleBreathPauseComplete).
@@ -1329,7 +1259,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
       return;
     // Reduced motion has no glide to track the slot, and the snap from the static
     // fallback to a measured px anchor strands the disc; keep the static rest
-    // target (still beneath the intent options) in that mode.
+    // target (still beneath the options) in that mode.
     if (prefersReducedMotion()) {
       setRestingSunAnchor(null);
       return;
@@ -1341,15 +1271,14 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     );
   };
 
-  // Re-measure when the choices mount and when intent↔time swaps the option
-  // count; clear the anchor when the choices leave so the resting role falls back
-  // to the static target and other phases keep their own settle.
+  // Re-measure when the choices mount; clear the anchor when they leave so the
+  // resting role falls back to the static target and other phases keep their
+  // own settle.
   createEffect(() => {
     const overlayShown = getShowTimeSelectionOverlay();
-    const intentShown = getShowIntentSelection();
     const timeShown = getShowTimeSelection();
     const isResting = getSunPhase() === "resting";
-    if (!overlayShown || !isResting || (!intentShown && !timeShown)) {
+    if (!overlayShown || !isResting || !timeShown) {
       setRestingSunAnchor(null);
       return;
     }
@@ -1508,7 +1437,6 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
     for (const timeout of [
       modeTransitionTimeout,
       timeSelectionTimeout,
-      intentSelectionArmTimeout,
       timeSelectionArmTimeout,
       successTimeout,
       initFadeOutTimeout,
@@ -1602,8 +1530,8 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
             restingOverlayEl = el;
             restingSunObserver?.disconnect();
             if (el) {
-              // Observe the overlay so the choices reflow inside it (intent↔time,
-              // async copy) re-measures the slot. The observer also fires once on
+              // Observe the overlay so the choices reflow inside it (async
+              // copy) re-measures the slot. The observer also fires once on
               // observe() - after layout, with the overlay attached - which is the
               // initial measurement (a synchronous read here would see a
               // detached, zero-size element).
@@ -1627,35 +1555,14 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
                 onComplete={handleBreathPauseComplete}
                 onCancel={handleBreathPauseCancel}
               />
-            ) : getShowIntentSelection() ? (
-              <IntentSelection
-                isArmed={getIsIntentSelectionArmed()}
-                isSunGliding
-                onSelectIntent={showTimeSelectionAfterIntent}
-                onCancel={() => {
-                  setIsIntentSelectionArmed(false);
-                  clearIntentSelectionArmTimeout();
-                  cancelPostSunScreen(() =>
-                    cancelIntentSelection(
-                      setPendingIntent,
-                      setShowIntentSelection,
-                    ),
-                  );
-                }}
-                onCancelCountdown={cancelCountdown}
-              />
             ) : (
               <TimeSelection
                 isArmed={getIsTimeSelectionArmed()}
-                isSunGliding={!shouldAskIntent(getFrictionLevel())}
-                intent={getPendingIntent()}
                 onSelectTime={handleTimeSelection}
                 onCancel={() => {
                   setIsTimeSelectionArmed(false);
                   clearTimeSelectionArmTimeout();
-                  cancelPostSunScreen(() =>
-                    cancelTimeSelection(setPendingIntent, setShowTimeSelection),
-                  );
+                  cancelPostSunScreen(() => setShowTimeSelection(false));
                 }}
               />
             )}
@@ -1927,7 +1834,7 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
               eventRoot={props.shadowRoot}
               tapThreshold={SUN_TAP_THRESHOLD}
               // Tap stays live for the bedtime settle - it continues into the
-              // intent/time grant like any other intervention (handleSunTap ->
+              // time choice like any other intervention (handleSunTap ->
               // handleSunContinue), and lights the tap-progress dots as a
               // wordless hint that the moon responds. Only the dashboard
               // (grounding) disables tap, where a back arrow is the way out.

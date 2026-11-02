@@ -94,8 +94,6 @@ export type InteractionModeReason =
   | "strong_friction_pattern_insight"
   | "strong_friction_alternative"
   | "strong_friction_question"
-  | "expired_intent_saved_reason"
-  | "expired_intent_alternative"
   | "energy_missing"
   | "evening_action_advice"
   | "contextual_alternative"
@@ -368,34 +366,14 @@ export const getInteractionModeDecision = (
   // nags), and never the verbal reason/alternative/question cascade below (a
   // survey at the moment of least capacity fails the 90% bar). Returning here
   // for the whole bedtime window keeps every normal-tier bedtime interrupt
-  // wordless, whichever way it resolves. Placed above the expired-intent branch
-  // and the whole cascade below. Deliberately exempt from the anti-repeat: both
+  // wordless, whichever way it resolves. Placed above the whole cascade
+  // below. Deliberately exempt from the anti-repeat: both
   // outcomes are deliberate bedtime repeats, like the hard gates, so they must
   // not be swapped out for variety.
   if (isBedtimeIntervention) {
     return canServeBedtimeSettle
       ? decision("WIND_DOWN_SETTLE", "bedtime_settle", frictionLevel)
       : decision("NOTICE", "bedtime_settled_notice", frictionLevel);
-  }
-
-  if (
-    canApplyInterventionFriction &&
-    context.hasIntentOnExpiredTimerForTarget
-  ) {
-    if (hasReasonAnswers) {
-      return decision(
-        "SHOW_REASON",
-        "expired_intent_saved_reason",
-        frictionLevel,
-      );
-    }
-    if (canShowAlternative) {
-      return decision(
-        "SHOW_ALTERNATIVE",
-        "expired_intent_alternative",
-        frictionLevel,
-      );
-    }
   }
 
   if (context.isEvening && isActionAdviceEligible) {

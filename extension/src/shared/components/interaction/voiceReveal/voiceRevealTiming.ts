@@ -31,7 +31,7 @@ export const VOICE_REVEAL = {
   // voiceReveal.scss.
   FOLLOW_MS: 800,
   // Extra lead for a prompt that mounts while the sun is still gliding into
-  // its slot (the intent/time choices straight from the sun tap, urge-surfing's
+  // its slot (the time choices straight from the sun tap, urge-surfing's
   // settle back from the wave): the sun's glide (<= 650ms) lands before the
   // first word, so the eye follows one moving thing at a time.
   SUN_GLIDE_LEAD_MS: 350,

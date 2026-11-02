@@ -145,7 +145,7 @@ interface SunProps {
   /**
    * Post-interaction resting state. When set, the sun glides to a viewport
    * anchor and holds there (optionally breathing) instead of being hidden -
-   * the same element transforms across the breath pause and the intent/time
+   * the same element transforms across the breath pause and the time
    * choices, so it is never swapped out. null returns it to its interactive
    * position.
    */

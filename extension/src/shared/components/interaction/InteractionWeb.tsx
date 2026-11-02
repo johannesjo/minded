@@ -12,7 +12,7 @@ import {
   updateSyncData,
   countSunTap,
 } from "@src/dataInterface/commonSyncDataInterface";
-import { ActiveTimer, SessionIntent } from "@src/dataInterface/syncData";
+import { ActiveTimer } from "@src/dataInterface/syncData";
 import type { SkipCheckInChoice } from "@src/shared/components/interaction/skipCheckIn/skipCheckIn";
 import type { InteractionMode } from "@src/shared/components/interaction/getInteractionMode";
 import { createActiveTimer } from "@src/shared/components/interaction/sessionLimit";
@@ -152,7 +152,7 @@ export const InteractionWeb: (props: {
     props.onHideAll();
   };
 
-  const setSessionLimit = async (seconds: number, intent?: SessionIntent) => {
+  const setSessionLimit = async (seconds: number) => {
     const now = Date.now();
     const isRestOfDay = seconds < 0;
     const activeTimer: ActiveTimer = createActiveTimer({
@@ -160,7 +160,6 @@ export const InteractionWeb: (props: {
       now,
       target: { kind: "host", id: props.host },
       platform: "web",
-      intent,
     });
 
     await updateSyncData({ activeTimer });

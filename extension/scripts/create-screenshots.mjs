@@ -71,7 +71,7 @@ const desktopShots = [
     target: "q-something-i-am-looking-forward-to",
     theme: "light",
     copyAs: [
-      path.join(chromeWebStoreScreenshotsDir, "05-reflection-question.png"),
+      path.join(chromeWebStoreScreenshotsDir, "04-reflection-question.png"),
     ],
   },
   {
@@ -83,23 +83,15 @@ const desktopShots = [
     file: "draggable-sun.png",
     target: "draggable-sun",
     theme: "light",
-    copyAs: [path.join(chromeWebStoreScreenshotsDir, "04-grounding-pause.png")],
-  },
-  {
-    file: "intent-selection.png",
-    target: "intent-selection",
-    theme: "light",
-    copyAs: [
-      path.join(readmeScreenshotsDir, "intervention.png"),
-      path.join(chromeWebStoreScreenshotsDir, "02-intent-selection.png"),
-    ],
+    copyAs: [path.join(chromeWebStoreScreenshotsDir, "03-grounding-pause.png")],
   },
   {
     file: "duration-selection.png",
     target: "duration-selection",
     theme: "light",
     copyAs: [
-      path.join(chromeWebStoreScreenshotsDir, "03-duration-selection.png"),
+      path.join(readmeScreenshotsDir, "intervention.png"),
+      path.join(chromeWebStoreScreenshotsDir, "02-duration-selection.png"),
     ],
   },
   {
@@ -108,15 +100,10 @@ const desktopShots = [
     theme: "dark",
   },
   {
-    file: "intent-selection-dark.png",
-    target: "intent-selection",
-    theme: "dark",
-    copyAs: [path.join(readmeScreenshotsDir, "intervention-dark.png")],
-  },
-  {
     file: "duration-selection-dark.png",
     target: "duration-selection",
     theme: "dark",
+    copyAs: [path.join(readmeScreenshotsDir, "intervention-dark.png")],
   },
 ].map((shot) => ({
   ...shot,
@@ -152,15 +139,10 @@ const googlePlayPhoneShots = [
     copyAs: [path.join(readmeScreenshotsDir, "mobile", "breathe.png")],
   },
   {
-    file: "intent-selection.png",
-    target: "intent-selection",
-    theme: "light",
-    copyAs: [path.join(readmeScreenshotsDir, "mobile", "intervention.png")],
-  },
-  {
     file: "duration-selection.png",
     target: "duration-selection",
     theme: "light",
+    copyAs: [path.join(readmeScreenshotsDir, "mobile", "intervention.png")],
   },
   {
     file: "draggable-moon-dark.png",
@@ -169,16 +151,16 @@ const googlePlayPhoneShots = [
     copyAs: [path.join(readmeScreenshotsDir, "mobile", "breathe-dark.png")],
   },
   {
-    file: "intent-selection-dark.png",
-    target: "intent-selection",
+    file: "duration-selection-dark.png",
+    target: "duration-selection",
     theme: "dark",
     copyAs: [
       path.join(readmeScreenshotsDir, "mobile", "intervention-dark.png"),
     ],
   },
   {
-    file: "duration-selection-dark.png",
-    target: "duration-selection",
+    file: "question-looking-forward-dark.png",
+    target: "q-something-i-am-looking-forward-to",
     theme: "dark",
     copyAs: [path.join(readmeScreenshotsDir, "mobile", "check-in-dark.png")],
   },
@@ -268,9 +250,6 @@ const prepareShot = async (page, shot) => {
       break;
     case "draggable-sun":
       await page.waitForSelector(".sun-container .minded-sun");
-      break;
-    case "intent-selection":
-      await page.waitForSelector(".intent-selection-wrapper");
       break;
     case "duration-selection":
       await page.waitForSelector(".time-selection-wrapper");

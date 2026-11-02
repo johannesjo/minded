@@ -113,10 +113,9 @@ Developer Dashboard, open minded's **Store listing** and replace the screenshots
 with these files in numeric order:
 
 1. `extension/screenshots/chrome-web-store/01-dashboard.png`
-2. `extension/screenshots/chrome-web-store/02-intent-selection.png`
-3. `extension/screenshots/chrome-web-store/03-duration-selection.png`
-4. `extension/screenshots/chrome-web-store/04-grounding-pause.png`
-5. `extension/screenshots/chrome-web-store/05-reflection-question.png`
+2. `extension/screenshots/chrome-web-store/02-duration-selection.png`
+3. `extension/screenshots/chrome-web-store/03-grounding-pause.png`
+4. `extension/screenshots/chrome-web-store/04-reflection-question.png`
 
 Submit the listing changes for review, then verify the public listing after
 approval.

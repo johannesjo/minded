@@ -194,7 +194,7 @@
   animation: fadeIn var(--dur-gentle) var(--ease-out);
 }
 
-// During the intent/time choices the resting sun rests in a reserved spacer
+// During the time choices the resting sun rests in a reserved spacer
 // beneath the options, so the whole group - question, options, and sun - centres
 // on the page as one unit (the sun is a fixed overlay measured to the spacer's
 // centre; see measureRestingSunAnchor). The spacer is gated on the overlay, not
@@ -216,7 +216,6 @@
   // flow the click-through resting-sun spacer always sits between the options and
   // the cancel, so every choice stays tappable; the choices still read as centred
   // (the flex:1 container above absorbs the slack).
-  .intent-selection-cancel,
   .time-selection-cancel {
     margin-top: auto;
     text-align: center;
@@ -228,7 +227,6 @@
 // fixed sun drift away from the slot that anchors it.
 @media (max-height: 760px) {
   .time-selection-overlay {
-    .intent-selection-wrapper,
     .time-selection-wrapper {
       // Width switches to the larger desktop tokens at 650px; pin only these
       // compact choice screens to the mobile sizes so that boundary cannot clip.
@@ -239,7 +237,6 @@
         max(var(--space-sm), var(--safe-area-inset-bottom));
     }
 
-    .intent-selection-container,
     .time-selection-container {
       min-height: 0;
       padding: var(--space-md) var(--space-xl);
@@ -249,7 +246,6 @@
       }
     }
 
-    .intent-selection-container .intent-options-grid,
     .time-selection-container .time-options-grid {
       gap: var(--space-sm);
     }

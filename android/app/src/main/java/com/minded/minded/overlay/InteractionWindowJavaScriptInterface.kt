@@ -14,29 +14,21 @@ import com.minded.minded.MainActivityJavaScriptInterface
 import com.minded.minded.overlay.data.SharedOverlayViewModel
 import com.minded.minded.util.Haptics
 import com.minded.minded.util.SafeAreaInsetsHolder
-import com.minded.minded.util.SessionIntent
 import com.minded.minded.util.parseJSONQuestion
 import org.json.JSONObject
 
 internal data class SessionLimitPayload(
-    val seconds: Int,
-    val intent: SessionIntent?
+    val seconds: Int
 )
 
 internal fun parseSessionLimitPayload(payloadJson: String): SessionLimitPayload? {
     val trimmed = payloadJson.trim()
     if (!trimmed.startsWith("{")) {
-        return trimmed.toIntOrNull()?.let { SessionLimitPayload(it, null) }
+        return trimmed.toIntOrNull()?.let { SessionLimitPayload(it) }
     }
 
     return try {
-        val payload = JSONObject(trimmed)
-        val intent = payload.optJSONObject("intent")
-            ?.optString("id", "")
-            ?.takeIf { it.isNotBlank() }
-            ?.let { SessionIntent(it) }
-
-        SessionLimitPayload(payload.getInt("seconds"), intent)
+        SessionLimitPayload(JSONObject(trimmed).getInt("seconds"))
     } catch (_: Exception) {
         null
     }
@@ -263,7 +255,7 @@ class InteractionWindowJavaScriptInterface(
             Log.e(logTag, "setSessionLimit - invalid payload: $payloadJson")
             return
         }
-        ctrlSvc.setSessionLimit(payload.seconds, payload.intent)
+        ctrlSvc.setSessionLimit(payload.seconds)
     }
 
     @JavascriptInterface

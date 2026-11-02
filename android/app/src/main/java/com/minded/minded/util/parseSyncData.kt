@@ -64,10 +64,6 @@ data class Answer(
     val ts: Long
 )
 
-data class SessionIntent(
-    val id: String
-)
-
 data class SessionTarget(
     val kind: String,
     val id: String
@@ -78,8 +74,7 @@ data class ActiveTimer(
     val durationS: Int,
     val startedTS: Long? = null,
     val target: SessionTarget? = null,
-    val platform: String? = null,
-    val intent: SessionIntent? = null
+    val platform: String? = null
 )
 
 data class DailyBudget(
@@ -382,17 +377,13 @@ fun parseSyncDataFromJSONObject(jsonObject: JSONObject): SyncData {
             if (kind.isNotBlank() && id.isNotBlank()) SessionTarget(kind, id) else null
         }
         val platform = timerObj.optString("platform", "").takeIf { it.isNotBlank() }
-        val intent = timerObj.optJSONObject("intent")?.let { intentObj ->
-            intentObj.optString("id", "").takeIf { it.isNotBlank() }?.let { SessionIntent(it) }
-        }
 
         ActiveTimer(
             timerObj.optLong("endTS", 0L),
             timerObj.optInt("durationS", 0),
             startedTS,
             target,
-            platform,
-            intent
+            platform
         )
     }
 

@@ -7,28 +7,19 @@ import kotlin.test.assertNull
 class SessionLimitPayloadTest {
 
     @Test
-    fun `parses enriched JSON payload`() {
-        val payload = parseSessionLimitPayload(
-            """
-            {
-              "seconds": 300,
-              "intent": {
-                "id": "check_one_thing"
-              }
-            }
-            """.trimIndent()
-        )
-
-        assertEquals(300, payload?.seconds)
-        assertEquals("check_one_thing", payload?.intent?.id)
-    }
-
-    @Test
-    fun `parses JSON payload without intent`() {
+    fun `parses JSON payload`() {
         val payload = parseSessionLimitPayload("""{"seconds":60}""")
 
         assertEquals(60, payload?.seconds)
-        assertNull(payload?.intent)
+    }
+
+    @Test
+    fun `ignores a legacy intent in the payload`() {
+        val payload = parseSessionLimitPayload(
+            """{"seconds":300,"intent":{"id":"check_one_thing"}}"""
+        )
+
+        assertEquals(300, payload?.seconds)
     }
 
     @Test
@@ -36,7 +27,6 @@ class SessionLimitPayloadTest {
         val payload = parseSessionLimitPayload("900")
 
         assertEquals(900, payload?.seconds)
-        assertNull(payload?.intent)
     }
 
     @Test

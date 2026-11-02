@@ -4,7 +4,7 @@ import { resolve } from "path";
 
 // Regression guard for the choice buttons being silently un-tappable.
 //
-// The intent/time selection's "cancel" used to be pinned as a full-bleed
+// The time selection's "cancel" used to be pinned as a full-bleed
 // absolute band (`position: absolute; left: 0; right: 0; bottom: 48px`) so the
 // choices group could centre on the full page height. But that band spans the
 // whole width and, carrying its own pointer events, floats over - and steals
@@ -25,7 +25,6 @@ const compileInteractionCss = (): string =>
       "@import 'styles/mixins/allTypo';",
       "@import 'shared/components/interaction/InteractionCommon';",
       "@import 'shared/components/interaction/timeSelection/TimeSelection';",
-      "@import 'shared/components/interaction/intentSelection/IntentSelection';",
     ].join("\n"),
     {
       loadPaths: [SRC_DIR],
@@ -34,7 +33,7 @@ const compileInteractionCss = (): string =>
     },
   ).css;
 
-describe("intent/time choice layout", () => {
+describe("time choice layout", () => {
   const css = compileInteractionCss();
   const norm = css.replace(/\s+/g, " ");
   const interactionSource = readFileSync(
@@ -63,13 +62,13 @@ describe("intent/time choice layout", () => {
 
     const compactCss = norm.slice(compactStart);
     expect(compactCss).toMatch(
-      /\.time-selection-overlay \.intent-selection-wrapper,[^{]*\.time-selection-overlay \.time-selection-wrapper \{[^}]*--btn-height: 44px;[^}]*--btn-fz: 18px;[^}]*--fz-xl: 22px;[^}]*padding: max\(var\(--space-sm\), var\(--safe-area-inset-top\)\) 0 max\(var\(--space-sm\), var\(--safe-area-inset-bottom\)\);/,
+      /\.time-selection-overlay \.time-selection-wrapper \{[^}]*--btn-height: 44px;[^}]*--btn-fz: 18px;[^}]*--fz-xl: 22px;[^}]*padding: max\(var\(--space-sm\), var\(--safe-area-inset-top\)\) 0 max\(var\(--space-sm\), var\(--safe-area-inset-bottom\)\);/,
     );
     expect(compactCss).toMatch(
-      /\.time-selection-overlay \.intent-selection-container,[^{]*\.time-selection-overlay \.time-selection-container \{[^}]*min-height: 0;[^}]*padding: var\(--space-md\) var\(--space-xl\);/,
+      /\.time-selection-overlay \.time-selection-container \{[^}]*min-height: 0;[^}]*padding: var\(--space-md\) var\(--space-xl\);/,
     );
     expect(compactCss).toMatch(
-      /\.time-selection-overlay \.intent-selection-container \.intent-options-grid,[^{]*\.time-selection-overlay \.time-selection-container \.time-options-grid \{[^}]*gap: var\(--space-sm\);/,
+      /\.time-selection-overlay \.time-selection-container \.time-options-grid \{[^}]*gap: var\(--space-sm\);/,
     );
     expect(compactCss).toMatch(
       /\.time-selection-overlay \.resting-sun-spacer \{[^}]*flex: 0 1 132px;[^}]*min-height: 0;/,

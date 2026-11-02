@@ -60,7 +60,7 @@ feature decision - read them before proposing changes to interventions.
 - **Intervention routing is already context-driven, not random.**
   `getInteractionMode.ts` branches on a rich present-moment read
   (`interactionContext.ts`: friction level, mood/energy freshness, evening,
-  recent returns, usage, expired intent, alternatives) *before* any probability
+  recent returns, usage, alternatives) *before* any probability
   is rolled; the randomness mostly adds variety among already-eligible options.
   Friction levels are `soft` / `normal` / `strong` (`getFrictionLevel`).
 
@@ -242,7 +242,7 @@ Path aliases change based on build mode to load platform-specific code.
 **The sun's halo - the body may be warm, the light it casts is white:**
 - Amber is **not** a day/night signal and **not** a role badge. On every one of
   minded's own surfaces - companion rest, intervention, breath, urge-surfing,
-  the intent/time choices, the daily questions and their closing bloom - the
+  the time choices, the daily questions and their closing bloom - the
   sun's halo is white (`warmth` omitted on the settle). The warm, sunlit read
   comes from the disc *itself*: the `--minded-sun-face-edge` rim and the thin
   `--sun-shadow` edge ring.

@@ -149,7 +149,7 @@ describe("interaction context", () => {
     expect(context.hasAlternatives).toBe(false);
   });
 
-  it("identifies expired timers for the current target and platform", () => {
+  it("does not treat an expired timer as active", () => {
     const syncData = createMockSyncData({
       activeTimer: {
         endTS: NOW - 1,
@@ -157,7 +157,6 @@ describe("interaction context", () => {
         startedTS: NOW - 301000,
         target: { kind: "host", id: "reddit.com" },
         platform: "web",
-        intent: { id: "check_one_thing" },
       },
     });
 
@@ -169,11 +168,9 @@ describe("interaction context", () => {
     });
 
     expect(context.hasActiveTimer).toBe(false);
-    expect(context.hasExpiredTimerForTarget).toBe(true);
-    expect(context.hasIntentOnExpiredTimerForTarget).toBe(true);
   });
 
-  it("does not treat active or cross-platform timers as expired for the current target", () => {
+  it("treats a running timer for the current target as active", () => {
     const activeTimerData = createMockSyncData({
       activeTimer: {
         endTS: NOW + 1,
@@ -181,7 +178,6 @@ describe("interaction context", () => {
         startedTS: NOW - 299000,
         target: { kind: "host", id: "reddit.com" },
         platform: "web",
-        intent: { id: "check_one_thing" },
       },
     });
 
@@ -193,29 +189,6 @@ describe("interaction context", () => {
     });
 
     expect(activeContext.hasActiveTimer).toBe(true);
-    expect(activeContext.hasExpiredTimerForTarget).toBe(false);
-    expect(activeContext.hasIntentOnExpiredTimerForTarget).toBe(false);
-
-    const crossPlatformTimerData = createMockSyncData({
-      activeTimer: {
-        endTS: NOW - 1,
-        durationS: 300,
-        startedTS: NOW - 301000,
-        target: { kind: "host", id: "reddit.com" },
-        platform: "android",
-        intent: { id: "check_one_thing" },
-      },
-    });
-
-    const crossPlatformContext = getInteractionContext({
-      syncData: crossPlatformTimerData,
-      now: NOW,
-      target: { kind: "host", id: "reddit.com" },
-      platform: "web",
-    });
-
-    expect(crossPlatformContext.hasExpiredTimerForTarget).toBe(false);
-    expect(crossPlatformContext.hasIntentOnExpiredTimerForTarget).toBe(false);
   });
 
   it("does not treat another host's active timer as active for the current target", () => {
@@ -237,7 +210,6 @@ describe("interaction context", () => {
     });
 
     expect(context.hasActiveTimer).toBe(false);
-    expect(context.hasExpiredTimerForTarget).toBe(false);
   });
 });
 

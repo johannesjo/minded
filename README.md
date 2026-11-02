@@ -23,7 +23,7 @@ A mindfulness layer that sits between you and the apps and sites that pull you i
     <td width="50%">
       <picture>
         <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/intervention-dark.png" />
-        <img src="docs/screenshots/intervention.png" alt="minded pausing a distracting site to ask what you actually came to do" />
+        <img src="docs/screenshots/intervention.png" alt="minded pausing a distracting site to ask how long you want to stay" />
       </picture>
     </td>
     <td width="50%">
@@ -34,7 +34,7 @@ A mindfulness layer that sits between you and the apps and sites that pull you i
     </td>
   </tr>
   <tr>
-    <td align="center"><em>A pause before the scroll - name what you actually came to do.</em></td>
+    <td align="center"><em>A pause before the scroll - choose how long you want to stay.</em></td>
     <td align="center"><em>A calm dashboard of the day's intentions and check-ins.</em></td>
   </tr>
 </table>
@@ -58,7 +58,7 @@ A mindfulness layer that sits between you and the apps and sites that pull you i
     <td width="33%">
       <picture>
         <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/mobile/intervention-dark.png" />
-        <img src="docs/screenshots/mobile/intervention.png" alt="minded asking what you came to do on Android" />
+        <img src="docs/screenshots/mobile/intervention.png" alt="minded asking how long you want to stay on Android" />
       </picture>
     </td>
   </tr>

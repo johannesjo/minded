@@ -10,7 +10,6 @@ import {
 } from "@src/shared/data/questions";
 import { EnergyLvlInteraction } from "@src/shared/components/interaction/energyLvl/EnergyLvlInteraction";
 import { Question } from "@src/shared/components/interaction/Question";
-import { IntentSelection } from "@src/shared/components/interaction/intentSelection/IntentSelection";
 import { TimeSelection } from "@src/shared/components/interaction/timeSelection/TimeSelection";
 import InteractionCommon from "@src/shared/components/interaction/InteractionCommon";
 import Sun from "@src/shared/components/interaction/sun/Sun";
@@ -30,7 +29,6 @@ type ScreenshotTarget =
   | "browser-intervention"
   | "energy-lvl"
   | "draggable-sun"
-  | "intent-selection"
   | "duration-selection"
   | "pattern-insight"
   | "q-something-i-am-looking-forward-to"
@@ -49,7 +47,6 @@ const SCREENSHOT_TARGETS: ScreenshotTarget[] = [
   "browser-intervention",
   "energy-lvl",
   "draggable-sun",
-  "intent-selection",
   "duration-selection",
   "pattern-insight",
   "q-something-i-am-looking-forward-to",
@@ -63,8 +60,6 @@ const BROWSER_SITES: BrowserSite[] = [
   "tiktok",
   "instagram",
 ];
-
-const SCREENSHOT_SESSION_INTENT = { id: "check_one_thing" } as const;
 
 const SCREENSHOT_PATTERN_INSIGHT: PatternInsight = {
   id: "screenshot-return-loop",
@@ -886,21 +881,9 @@ const Screenshots = (): JSX.Element => {
 
           {target() === "draggable-sun" && <DraggableSunShot theme={theme} />}
 
-          {target() === "intent-selection" && (
-            <PostSunFlowFrame>
-              <IntentSelection
-                isArmed={true}
-                onCancel={() => undefined}
-                onCancelCountdown={() => undefined}
-                onSelectIntent={() => undefined}
-              />
-            </PostSunFlowFrame>
-          )}
-
           {target() === "duration-selection" && (
             <PostSunFlowFrame>
               <TimeSelection
-                intent={SCREENSHOT_SESSION_INTENT}
                 isArmed={true}
                 onCancel={() => undefined}
                 onSelectTime={() => undefined}

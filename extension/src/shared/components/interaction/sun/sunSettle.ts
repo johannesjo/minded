@@ -16,7 +16,7 @@ import {
  * **The sun's body may be warm; the light it casts is white.** Amber is *not* a
  * day/night signal and *not* a role badge. On every surface we control the sun
  * always glows white - companion rest, interaction, breath, urge-surfing, the
- * intent/time choices, the daily-questions carry and its closing bloom. The
+ * time choices, the daily-questions carry and its closing bloom. The
  * warm read comes from the disc itself (the `--minded-sun-face-edge` rim the
  * resting companion warms to `#fff5dc`, and the thin `--sun-shadow` edge ring),
  * never from an orange halo around it.
@@ -125,7 +125,7 @@ export const sunSurfSettle = (): SunSettle => ({
 });
 
 /**
- * Intent/time choices: the question + options ride at the top of the screen and
+ * Time choices: the question + options ride at the top of the screen and
  * the sun settles into the open space beneath them (see the `.has-resting-sun`
  * layout). A smaller, calmer disc that reads as a steady companion below the
  * choices rather than a banner above them.
@@ -133,8 +133,7 @@ export const sunSurfSettle = (): SunSettle => ({
  * This static target is only the fallback used until the choices block is
  * measured; the live flow replaces it with `sunRestingSettle` anchored just
  * beneath the measured options (see `restingSunAnchorFromRect`), so the disc
- * tucks under both the 4-option intent screen and the taller 6-option time
- * screen and glides down when the extra options appear.
+ * tucks under the options whatever their height.
  */
 export const SUN_REST_SETTLE: SunSettle = {
   anchorYRatio: 0.74, // sits below the question + options
@@ -162,7 +161,7 @@ export const sunRestingSettle = (anchor: {
  * beneath the options inside the centred choices group (see the
  * `.resting-sun-spacer` element / measureRestingSunAnchor). Because the spacer
  * lives in the flow, the disc lands inside the centred group and tracks it across
- * intent↔time and viewport changes without any clamping. Pure so the real flow
+ * viewport changes without any clamping. Pure so the real flow
  * and the styleguide harness compute the same point and can't drift.
  */
 export const restingSunAnchorFromRect = (spacerRect: {

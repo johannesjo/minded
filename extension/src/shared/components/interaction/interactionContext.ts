@@ -6,10 +6,7 @@ import type {
 import { getIsoDate } from "@src/util/getIsoDate";
 import { getRecentSunTapTimestamps } from "@src/dataInterface/sunTapHistory";
 import { getAlternativesForTarget } from "@src/shared/components/interaction/alternatives/getAlternatives";
-import {
-  hasActiveTimerInScope,
-  hasExpiredTimerInScope,
-} from "@src/util/activeTimerScope";
+import { hasActiveTimerInScope } from "@src/util/activeTimerScope";
 import { resolveNightId } from "@src/shared/components/sleepWindDown/sleepWindDown.util";
 
 export type FrictionLevel = "soft" | "normal" | "strong";
@@ -39,8 +36,6 @@ export interface InteractionContext {
   todaySunTaps: number;
   recentSunTaps: number;
   hasActiveTimer: boolean;
-  hasExpiredTimerForTarget: boolean;
-  hasIntentOnExpiredTimerForTarget: boolean;
 }
 
 export interface InteractionContextInput {
@@ -74,9 +69,6 @@ export const getInteractionContext = ({
   ).length;
   const activeTimer = syncData.activeTimer;
   const canResolveTimerScope = !!target && !!platform;
-  const hasExpiredTimerForTarget = canResolveTimerScope
-    ? hasExpiredTimerInScope(syncData, target, platform, now)
-    : false;
   const bedtimeCfg = syncData.cfg.sleepWindDown;
   const bedtimeNightId = bedtimeCfg
     ? resolveNightId(bedtimeCfg, nowDate)
@@ -105,9 +97,6 @@ export const getInteractionContext = ({
     hasActiveTimer: canResolveTimerScope
       ? hasActiveTimerInScope(syncData, target, platform, now)
       : !!activeTimer && activeTimer.endTS > now,
-    hasExpiredTimerForTarget,
-    hasIntentOnExpiredTimerForTarget:
-      hasExpiredTimerForTarget && !!activeTimer?.intent,
   };
 };
 
@@ -122,12 +111,7 @@ export const getFrictionLevel = (
     return "strong";
   }
 
-  if (
-    context.hasFewAnswers ||
-    !context.hasFreshEnergy ||
-    context.isEvening ||
-    context.hasIntentOnExpiredTimerForTarget
-  ) {
+  if (context.hasFewAnswers || !context.hasFreshEnergy || context.isEvening) {
     return "normal";
   }
 

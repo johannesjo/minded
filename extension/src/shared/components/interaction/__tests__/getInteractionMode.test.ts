@@ -881,9 +881,9 @@ describe("getInteractionMode", () => {
     });
 
     it("keeps the post-skip bedtime interrupt wordless even with data that would go verbal", () => {
-      // Answers + a saved reason + an expired intent would drive the daytime
-      // cascade to a verbal SHOW_REASON/QUESTION; at bedtime, post-skip, it must
-      // still land on the wordless NOTICE, never a survey at least capacity.
+      // Answers + a saved reason would drive the daytime cascade to a verbal
+      // SHOW_REASON/QUESTION; at bedtime, post-skip, it must still land on the
+      // wordless NOTICE, never a survey at least capacity.
       expect(
         atBedtime(
           baseSyncData({
@@ -894,14 +894,6 @@ describe("getInteractionMode", () => {
               answer("2"),
               answer("r", QuestionCategoryId.WhyReduceBrowsing),
             ],
-            activeTimer: {
-              endTS: BEDTIME - 1000,
-              durationS: 300,
-              startedTS: BEDTIME - 301000,
-              target: { kind: "host", id: "youtube.com" },
-              platform: "web",
-              intent: { id: "check_one_thing" },
-            },
           }),
           { target: { kind: "host", id: "youtube.com" }, platform: "web" },
         ),
@@ -986,36 +978,6 @@ describe("getInteractionMode", () => {
         mode: "WIND_DOWN_SETTLE",
         reason: "bedtime_settle_strong",
         frictionLevel: "strong",
-      });
-    });
-
-    it("settles over an expired-intent verbal prompt at bedtime", () => {
-      // An expired intent with a saved reason would normally open SHOW_REASON
-      // (a verbal prompt) - but at bedtime the wordless settle must win, since
-      // the settle sits above the expired-intent branch.
-      const decision = atBedtime(
-        baseSyncData({
-          cfg: bedtimeCfg(),
-          answers: [
-            answer("1"),
-            answer("2"),
-            answer("r", QuestionCategoryId.WhyReduceBrowsing),
-          ],
-          activeTimer: {
-            endTS: BEDTIME - 1000,
-            durationS: 300,
-            startedTS: BEDTIME - 301000,
-            target: { kind: "host", id: "youtube.com" },
-            platform: "web",
-            intent: { id: "check_one_thing" },
-          },
-        }),
-        { target: { kind: "host", id: "youtube.com" }, platform: "web" },
-      );
-      expect(decision).toEqual({
-        mode: "WIND_DOWN_SETTLE",
-        reason: "bedtime_settle",
-        frictionLevel: "normal",
       });
     });
 

@@ -88,13 +88,7 @@ describe("button presentation", () => {
     expect(selectedBodies.join("\n")).not.toMatch(/opacity:\s*1/);
   });
 
-  it("presents intent and duration actions as quiet typographic choices", () => {
-    const intent = readSource(
-      "src/shared/components/interaction/intentSelection/IntentSelection.tsx",
-    );
-    const intentStyles = readSource(
-      "src/shared/components/interaction/intentSelection/IntentSelection.scss",
-    );
+  it("presents duration actions as quiet typographic choices", () => {
     const time = readSource(
       "src/shared/components/interaction/timeSelection/TimeSelection.tsx",
     );
@@ -102,13 +96,8 @@ describe("button presentation", () => {
       "src/shared/components/interaction/timeSelection/TimeSelection.scss",
     );
 
-    expect(intent).not.toContain('variant="toggle"');
     expect(time).not.toContain('variant="toggle"');
-    expect(intent.match(/<Btn\s+plain/g)).toHaveLength(2);
     expect(time).toMatch(/<Btn\s+plain\s+class="time-option"/);
-    expect(ruleBody(intentStyles, ".intent-options-grid")).toMatch(
-      /display:\s*grid[\s\S]*grid-template-columns:\s*1fr/,
-    );
     expect(ruleBody(timeStyles, ".time-options-grid")).toMatch(
       /display:\s*grid[\s\S]*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)/,
     );

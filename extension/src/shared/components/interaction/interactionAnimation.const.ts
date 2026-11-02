@@ -21,7 +21,7 @@ export const ANIMATION_TIMING = {
     sunInstructionsFadeIn: 600,
     wrapperFadeStart: 2000,
     /**
-     * Intent/time option buttons are actionable as soon as they are visible.
+     * Time option buttons are actionable as soon as they are visible.
      * A delayed arming window makes quick taps look focused/hovered while the
      * click handler still returns before selecting.
      */

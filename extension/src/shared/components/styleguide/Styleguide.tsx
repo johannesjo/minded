@@ -25,7 +25,7 @@ import Btn from "@src/shared/components/ui/Btn";
 import BreathingExercise from "@src/shared/components/interaction/breathingExercise/BreathingExercise";
 import { NoticeInteraction } from "@src/shared/components/interaction/notice/NoticeInteraction";
 import { SkipCheckIn } from "@src/shared/components/interaction/skipCheckIn/SkipCheckInInteraction";
-import { IntentSelection } from "@src/shared/components/interaction/intentSelection/IntentSelection";
+import { TimeSelection } from "@src/shared/components/interaction/timeSelection/TimeSelection";
 import { VoiceReveal } from "@src/shared/components/interaction/voiceReveal/VoiceReveal";
 import { voiceFollowStyle } from "@src/shared/components/interaction/voiceReveal/voiceRevealTiming";
 import Sun from "@src/shared/components/interaction/sun/Sun";
@@ -209,7 +209,7 @@ const Styleguide = (): JSX.Element => {
   const [textVal, setTextVal] = createSignal("hello");
   const [timeVal, setTimeVal] = createSignal("09:00");
   const [wrapperVisible, setWrapperVisible] = createSignal(true);
-  const [intentArmed, setIntentArmed] = createSignal(true);
+  const [timeArmed, setTimeArmed] = createSignal(true);
   // Bumped to remount the <VoiceReveal> demo, replaying its one arrival.
   const [voiceRevealRun, setVoiceRevealRun] = createSignal(1);
   const [groundingOpen, setGroundingOpen] = createSignal(false);
@@ -626,11 +626,11 @@ const Styleguide = (): JSX.Element => {
               <div
                 id="sg-voice-reveal-demo"
                 class="voice-follow-scope"
-                style={voiceFollowStyle("What do you want to do here?")}
+                style={voiceFollowStyle("How long do you want?")}
               >
                 <VoiceReveal
                   class="txtBig interaction-heading"
-                  text="What do you want to do here?"
+                  text="How long do you want?"
                 />
                 <Btn plain class="voice-follow">
                   follows after the last word
@@ -640,16 +640,15 @@ const Styleguide = (): JSX.Element => {
           </div>
         </Subsection>
 
-        <Subsection label="<IntentSelection>">
+        <Subsection label="<TimeSelection>">
           <div class={styles.interactionFrame}>
-            <Btn outline onClick={() => setIntentArmed((v) => !v)}>
-              isArmed: {String(intentArmed())}
+            <Btn outline onClick={() => setTimeArmed((v) => !v)}>
+              isArmed: {String(timeArmed())}
             </Btn>
-            <IntentSelection
-              isArmed={intentArmed()}
-              onSelectIntent={(i) => console.log("intent:", i)}
-              onCancel={() => console.log("intent cancel")}
-              onCancelCountdown={() => undefined}
+            <TimeSelection
+              isArmed={timeArmed()}
+              onSelectTime={(s) => console.log("time:", s)}
+              onCancel={() => console.log("time cancel")}
             />
           </div>
         </Subsection>
@@ -1028,11 +1027,10 @@ const SunMorphHarness = (): JSX.Element => {
               style={{ "z-index": 1100 }}
             >
               <div class="post-sun-screen">
-                <IntentSelection
+                <TimeSelection
                   isArmed={true}
-                  onSelectIntent={() => undefined}
+                  onSelectTime={() => undefined}
                   onCancel={() => setPhase("interactive")}
-                  onCancelCountdown={() => undefined}
                 />
               </div>
             </div>

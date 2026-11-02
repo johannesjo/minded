@@ -137,10 +137,9 @@ const [getInteractiveSunAnchor, setInteractiveSunAnchor] =
 
 /**
  * Measured viewport-px centre for the resting sun - the point just beneath the
- * live intent/time choices block (see InteractionCommon). While the choices are
- * up the disc tucks under the options here, gliding down when the taller time
- * options replace the intent ones. null when no choices are on screen, in which
- * case the resting role falls back to the static SUN_REST_SETTLE.
+ * live time choices block (see InteractionCommon). While the choices are up
+ * the disc tucks under the options here. null when no choices are on screen,
+ * in which case the resting role falls back to the static SUN_REST_SETTLE.
  */
 const [getRestingSunAnchor, setRestingSunAnchor] =
   createSignal<SunPosition | null>(null, {

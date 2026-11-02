@@ -18,7 +18,7 @@ describe("shouldShowSunInstructionsOverlay", () => {
   });
 
   // Regression: the instructions overlay used to stay mounted through the
-  // intent/time choices, stacked above them, flickering over / stealing taps from
+  // time choices, stacked above them, flickering over / stealing taps from
   // the "How long do you want?" options (see predicate docs). It must unmount the
   // moment the post-sun choices/breath overlay is up.
   it("hides them once the post-sun overlay (choices/breath) is showing", () => {

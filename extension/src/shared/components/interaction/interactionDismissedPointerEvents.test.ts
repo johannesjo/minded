@@ -3,7 +3,7 @@ import { resolve } from "path";
 
 // Regression guard for the dismissed-content tap-stealing bug.
 //
-// During the intent/time choices the faded previous screen (`.is-dismissed`)
+// During the time choices the faded previous screen (`.is-dismissed`)
 // sits at z-index 1101, above the choices overlay (1100), and must be fully
 // click-through. The CSS `*` selector does NOT match pseudo-elements, and every
 // `.btnToggleSelect` carries an `::after` hit-area expander with
