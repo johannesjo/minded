@@ -44,6 +44,9 @@ val SMALL_MSG_CYCLE_DURATION = 240
 val REQUESTION_CYCLE_DURATION_IN_S = SMALL_MSG_CYCLE_DURATION * 10
 
 private const val REVALIDATION_GRACE_PERIOD_MS = 3000L
+// How often the re-validation tick may re-decide another blocked app in front
+// while that decision keeps being skipped - a full check is too much per second.
+private const val RECHECK_INTERVAL_MS = 5000L
 
 @Suppress("DEPRECATION")
 class LittleSunWindow(
@@ -55,6 +58,7 @@ class LittleSunWindow(
     override val logTag = javaClass.simpleName
     private var initialTime = 0
     private var windowShownAt = 0L
+    private var lastRecheckMs = 0L
     private var pendingExpiredApp: String? = null
     private var pendingExpiredWasWindDownSnooze = false
 
@@ -279,7 +283,9 @@ class LittleSunWindow(
                                 hideWindow()
                                 return
                             }
-                            if (fg != boundApp && canHandOverTo(fg)) {
+                            val nowMs = System.currentTimeMillis()
+                            if (canHandOverTo(fg) && nowMs - lastRecheckMs >= RECHECK_INTERVAL_MS) {
+                                lastRecheckMs = nowMs
                                 // In another blocked app, but the switch's own
                                 // check was skipped (a debounce, a stale read):
                                 // re-decide it, so this time doesn't keep running
@@ -712,6 +718,14 @@ class LittleSunWindow(
         ) { appAtBreak ->
             // The bubble may have gone (the user left) between the break and
             // this post; only a still-waiting bubble hands back.
+            if (!isAwaitingBreak || !isWindowShown()) return@await
+            // Straight into another blocked app: that app decides, so the sun
+            // is handed over in place (or glides into its pause) rather than
+            // vanishing and fading back in over it.
+            if (appAtBreak != awaitingApp && canHandOverTo(appAtBreak)) {
+                ctrlSvc.recheckForegroundApp(appAtBreak)
+            }
+            // Not handed over (that decision was skipped): hand back as ever.
             if (isAwaitingBreak && isWindowShown()) handBackNow(appAtBreak, false)
         }
         return false
