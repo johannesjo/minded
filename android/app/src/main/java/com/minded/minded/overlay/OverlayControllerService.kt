@@ -918,14 +918,15 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
                 "blocked=${blockedApps.contains(currentPackageName)} package=$currentPackageName"
         )
 
+        // Reset the app being opened, by name: the view model's currentApp
+        // still points at the *previous* app here (showOverlay sets it only
+        // afterwards), so resetting "the current app" wiped the wrong entry.
+        // The opened app then kept its old, used-up unlocked time, and its
+        // grace bubble handed back to the full pause within a second.
         fun resetStaleSessionDurationIfNeeded() {
-            val currentAppData = sharedOverlayViewModel.sharedData.value.appMap[currentPackageName]
-            if (currentAppData != null && currentAppData.lastUsed.isBefore(
-                    Instant.now().minusSeconds(RESET_APP_USAGE_DURATION_THRESHOLD_IN_S.toLong())
-                )
-            ) {
-                Log.v(logTag, "reset sessionDurationInS to 0")
-                sharedOverlayViewModel.updateCurrentAppSessionDuration(0)
+            if (isSessionStale) {
+                Log.v(logTag, "reset session for $currentPackageName")
+                sharedOverlayViewModel.resetSession(currentPackageName)
             }
         }
 

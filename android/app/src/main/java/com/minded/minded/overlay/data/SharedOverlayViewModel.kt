@@ -123,6 +123,20 @@ class SharedOverlayViewModel(
         _sharedData.update { currentData.copy(appMap = newAppMap) }
     }
 
+    /** Starts [appName]'s session over: its counted and unlocked time go back to 0. */
+    fun resetSession(appName: String) {
+        _sharedData.update { data ->
+            val appEntry = data.appMap[appName] ?: return@update data
+            data.copy(
+                appMap = data.appMap + (appName to appEntry.copy(
+                    lastUsed = Instant.now(),
+                    sessionDurationInS = 0,
+                    unlockedSessionS = 0,
+                ))
+            )
+        }
+    }
+
     fun updateCurrentAppSessionEndTime(endTime: Instant?) {
         val appName =
             sharedData.value.currentApp ?: return // Prevent crash if app not set
