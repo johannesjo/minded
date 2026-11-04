@@ -799,6 +799,11 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         showWindDownSnoozeTimer(currentApp, syncData)
     }
 
+    /** The Little Sun saw a blocked app other than its own in front: decide it. */
+    internal fun recheckForegroundApp(packageName: String) {
+        checkToShowOverlay(packageName)
+    }
+
     fun onLittleSunTimerExpired(currentApp: String, wasWindDownSnooze: Boolean) {
         if (Looper.myLooper() != Looper.getMainLooper()) {
             Handler(Looper.getMainLooper()).post {

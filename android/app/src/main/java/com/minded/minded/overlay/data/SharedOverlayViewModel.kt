@@ -151,7 +151,6 @@ class SharedOverlayViewModel(
             lastUsed = Instant.now(),
             sessionEndTime = endTime
         )
-        Log.v(lt, "updateCurrentAppSessionEndTime() ${appName} $endTime")
         _sharedData.update { currentData.copy(appMap = newAppMap) }
     }
 

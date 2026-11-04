@@ -273,10 +273,19 @@ class LittleSunWindow(
                     val foregroundResult = getForegroundAppReliable(ctrlSvc)
                     when (foregroundResult) {
                         is ForegroundAppResult.Success -> {
-                            if (!ctrlSvc.isBlockedPackage(foregroundResult.packageName)) {
-                                Log.d(logTag, "Re-validation: user left blocked app (now in ${foregroundResult.packageName}), hiding overlay")
+                            val fg = foregroundResult.packageName
+                            if (!ctrlSvc.isBlockedPackage(fg)) {
+                                Log.d(logTag, "Re-validation: user left blocked app (now in $fg), hiding overlay")
                                 hideWindow()
                                 return
+                            }
+                            if (fg != boundApp && canHandOverTo(fg)) {
+                                // In another blocked app, but the switch's own
+                                // check was skipped (a debounce, a stale read):
+                                // re-decide it, so this time doesn't keep running
+                                // on the app just left. Posted after this tick, so
+                                // a hand-over's restarted timer is the only one.
+                                handler.post { ctrlSvc.recheckForegroundApp(fg) }
                             }
                         }
                         // Continue timer for Stale/Error/NoPermission - don't hide on uncertain data
@@ -326,11 +335,12 @@ class LittleSunWindow(
 
     /**
      * Whether the sun, resting over another app, can be handed over to
-     * [app] in place: not mid-drag or mid-leave, not already handing back to
-     * the pause, and not a wind-down snooze (bedtime's timer is not per app).
+     * [app] in place: not fading out (a restarted timer would outlive the
+     * window), not mid-drag or mid-leave, not already handing back to the
+     * pause, and not a wind-down snooze (bedtime's timer is not per app).
      */
     fun canHandOverTo(app: String): Boolean =
-        isWindowShown() &&
+        isWindowShown() && !isFadingOut() &&
             boundApp != null && boundApp != app &&
             zoneView == null && !isLeaveCommitted &&
             pendingExpiredApp == null &&

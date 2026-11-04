@@ -81,6 +81,9 @@ open class CommonWindow(
         return window != null
     }
 
+    /** Whether a hideWindow() fade-out is in flight (the window is still up). */
+    protected fun isFadingOut(): Boolean = synchronized(this) { isHiding }
+
 
     @Composable
     open fun Cmp() {
