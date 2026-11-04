@@ -45,4 +45,17 @@ class SharedOverlayViewModelTest {
 
         assertEquals(data, vm.sharedData.value)
     }
+
+    @Test
+    fun `a session end time lands on the named app, not the current one`() {
+        val end = Instant.now().plusSeconds(300)
+        val vm = SharedOverlayViewModel(
+            SharedOverlayData(currentApp = "tiktok", appMap = mapOf("tiktok" to AppEntry()))
+        )
+
+        vm.updateSessionEndTime("instagram", end)
+
+        assertEquals(end, vm.sharedData.value.appMap.getValue("instagram").sessionEndTime)
+        assertEquals(null, vm.sharedData.value.appMap.getValue("tiktok").sessionEndTime)
+    }
 }

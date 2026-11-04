@@ -81,6 +81,13 @@ class LittleSunWindow(
     // activePauseAtSessionS, but kept after the hand-back is armed.
     private var isGraceBubble = false
 
+    // The app this appearance keeps time for. When the user goes straight
+    // from it into another blocked app the sun stays put and takes over that
+    // app's time instead (see handOver), so one app's stay never eats into
+    // another app's grace.
+    var boundApp: String? = null
+        private set
+
     // Session seconds toward that hand-back, counted only while the screen is
     // on and unlocked: a locked phone never "stays a while", so nobody unlocks
     // straight into a pause. Seeded from, and written back to, the app's entry
@@ -297,6 +304,7 @@ class LittleSunWindow(
             initPosition()
             activePauseAtSessionS = pauseAtSessionS
             isGraceBubble = pauseAtSessionS != null
+            boundApp = sharedOverlayViewModel.sharedData.value.currentApp
             // A fresh appearance starts its own while - and must not replay
             // the last glint when the new composition first reads the count.
             secondsWithSun = 0
@@ -314,6 +322,34 @@ class LittleSunWindow(
         window?.let { measureWindowOrigin(it) }
         windowShownAt = System.currentTimeMillis()
         Log.d(logTag, "showWindow() completed, window=${window != null}")
+    }
+
+    /**
+     * Whether the sun, resting over another app, can be handed over to
+     * [app] in place: not mid-drag or mid-leave, not already handing back to
+     * the pause, and not a wind-down snooze (bedtime's timer is not per app).
+     */
+    fun canHandOverTo(app: String): Boolean =
+        isWindowShown() &&
+            boundApp != null && boundApp != app &&
+            zoneView == null && !isLeaveCommitted &&
+            pendingExpiredApp == null &&
+            ctrlSvc.getWindDownSnoozeTimerEndTime() == null
+
+    /**
+     * The user went straight into another blocked app (already the view
+     * model's currentApp): the sun stays where it is - there is only ever one
+     * - and from now on keeps that app's session and grace ([pauseAtSessionS],
+     * set by the controller like for any show). A pending hand-back belonged
+     * to the app just left, so it goes.
+     */
+    fun handOver() {
+        cancelAwaitingBreak()
+        activePauseAtSessionS = pauseAtSessionS
+        isGraceBubble = pauseAtSessionS != null
+        boundApp = sharedOverlayViewModel.sharedData.value.currentApp
+        windowShownAt = System.currentTimeMillis()
+        startTimer(sharedOverlayViewModel.getCurrentAppDuration())
     }
 
     /**
@@ -730,6 +766,7 @@ class LittleSunWindow(
 
     override fun hideWindowImmediate() {
         cancelAwaitingBreak()
+        stopTimer()
         ctrlSvc.onBellHostLeaving(BellHost.Kind.LITTLE_SUN)
         if (!isLeaveCommitted) removeZoneImmediate()
         super.hideWindowImmediate()

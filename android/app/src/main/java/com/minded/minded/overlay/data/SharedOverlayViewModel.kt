@@ -140,6 +140,10 @@ class SharedOverlayViewModel(
     fun updateCurrentAppSessionEndTime(endTime: Instant?) {
         val appName =
             sharedData.value.currentApp ?: return // Prevent crash if app not set
+        updateSessionEndTime(appName, endTime)
+    }
+
+    fun updateSessionEndTime(appName: String, endTime: Instant?) {
         val currentData = sharedData.value
         val newAppMap = currentData.appMap.toMutableMap()
         val appEntry = newAppMap[appName] ?: AppEntry()
