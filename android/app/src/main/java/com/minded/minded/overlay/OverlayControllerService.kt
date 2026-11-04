@@ -571,7 +571,11 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
 
                 OverlayName.LITTLE_SUN_OVERLAY -> {
                     littleSunOverlayWindow.pauseAtSessionS = littleSunPauseAtSessionS
-                    littleSunOverlayWindow.showWindow()
+                    if (appName != null && littleSunOverlayWindow.canHandOverTo(appName)) {
+                        littleSunOverlayWindow.handOver()
+                    } else {
+                        littleSunOverlayWindow.showWindow()
+                    }
                 }
 
                 OverlayName.SMALL_MSG_OVERLAY -> {
@@ -795,6 +799,11 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
         showWindDownSnoozeTimer(currentApp, syncData)
     }
 
+    /** The Little Sun saw a blocked app other than its own in front: decide it. */
+    internal fun recheckForegroundApp(packageName: String) {
+        checkToShowOverlay(packageName)
+    }
+
     fun onLittleSunTimerExpired(currentApp: String, wasWindDownSnooze: Boolean) {
         if (Looper.myLooper() != Looper.getMainLooper()) {
             Handler(Looper.getMainLooper()).post {
@@ -877,6 +886,15 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
             else -> entryForCurrentApp.unlockedSessionS.coerceAtLeast(0)
         }
 
+        // Straight from the app the Little Sun rests over into another blocked
+        // app. Before, the sun read as "already showing" and the new app was
+        // skipped, so its time ran on the first app's grace. Now the new app
+        // is decided as if freshly opened, and the sun is handed over to it.
+        val isLittleSunHandOver = littleSunOverlayWindow.canHandOverTo(currentPackageName) &&
+            !interactionOverlayWindow.isWindowShown() &&
+            !smallMsgOverlayWindow.isWindowShown() &&
+            !successSunOverlayWindow.isWindowShown()
+
         val decision = overlayDecisionEngine.decide(
             currentPackageName,
             OverlayState(
@@ -887,11 +905,12 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
                 hideToShowDebounceMs = HIDE_TO_SHOW_DEBOUNCE_MS,
                 lastGoToAppTimestamp = lastGoToAppTimestamp,
                 appSwitchDebounceMs = APP_SWITCH_DEBOUNCE_MS,
-                isAnyOverlayShowing =
+                isAnyOverlayShowing = !isLittleSunHandOver && (
                     littleSunOverlayWindow.isWindowShown() ||
                         interactionOverlayWindow.isWindowShown() ||
                         smallMsgOverlayWindow.isWindowShown() ||
-                        successSunOverlayWindow.isWindowShown(),
+                        successSunOverlayWindow.isWindowShown()
+                    ),
                 isSleepWindDownOverlayShowing = sleepWindDownOverlayWindow.isWindowShown(),
                 appSessionEndTime = entryForCurrentApp?.sessionEndTime?.toEpochMilli(),
                 activeTimerEndTime = activeTimer?.endTS,
@@ -918,14 +937,15 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
                 "blocked=${blockedApps.contains(currentPackageName)} package=$currentPackageName"
         )
 
+        // Reset the app being opened, by name: the view model's currentApp
+        // still points at the *previous* app here (showOverlay sets it only
+        // afterwards), so resetting "the current app" wiped the wrong entry.
+        // The opened app then kept its old, used-up unlocked time, and its
+        // grace bubble handed back to the full pause within a second.
         fun resetStaleSessionDurationIfNeeded() {
-            val currentAppData = sharedOverlayViewModel.sharedData.value.appMap[currentPackageName]
-            if (currentAppData != null && currentAppData.lastUsed.isBefore(
-                    Instant.now().minusSeconds(RESET_APP_USAGE_DURATION_THRESHOLD_IN_S.toLong())
-                )
-            ) {
-                Log.v(logTag, "reset sessionDurationInS to 0")
-                sharedOverlayViewModel.updateCurrentAppSessionDuration(0)
+            if (isSessionStale) {
+                Log.v(logTag, "reset session for $currentPackageName")
+                sharedOverlayViewModel.resetSession(currentPackageName)
             }
         }
 
@@ -946,7 +966,8 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
                 resetStaleSessionDurationIfNeeded()
                 if (isWithinSessionLimit && entryForCurrentApp?.sessionEndTime == null && activeTimerEndTime != null) {
                     // Keep per-app map in sync so Little Sun countdown can restore after process restarts.
-                    sharedOverlayViewModel.updateCurrentAppSessionEndTime(activeTimerEndTime)
+                    // By name, like the stale reset: currentApp isn't this app yet.
+                    sharedOverlayViewModel.updateSessionEndTime(currentPackageName, activeTimerEndTime)
                 }
                 showOverlay(OverlayName.LITTLE_SUN_OVERLAY, null, currentPackageName)
             }
@@ -964,11 +985,15 @@ class OverlayControllerService : Service(), LifecycleOwner, SavedStateRegistryOw
             OverlayDecision.ShowIntervention -> {
                 resetStaleSessionDurationIfNeeded()
                 Log.v(logTag, "No active session, SHOW FRESH INTERACTION OVERLAY for: $currentPackageName")
+                // The new app's grace is used up: the sun resting over the
+                // app just left glides out of its corner into the pause, as
+                // on a timer hand-back, rather than fading while one pops in.
+                if (isLittleSunHandOver) littleSunOverlayWindow.hideWindowImmediate()
                 showOverlay(
                     OverlayName.INTERACTION_OVERLAY,
                     OverlayMode.INTERACTION_OVERLAY__FRESH,
                     currentPackageName,
-                    morphInFromCorner = morphInterventionFromCorner
+                    morphInFromCorner = morphInterventionFromCorner || isLittleSunHandOver
                 )
             }
 

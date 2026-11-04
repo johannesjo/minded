@@ -44,6 +44,9 @@ val SMALL_MSG_CYCLE_DURATION = 240
 val REQUESTION_CYCLE_DURATION_IN_S = SMALL_MSG_CYCLE_DURATION * 10
 
 private const val REVALIDATION_GRACE_PERIOD_MS = 3000L
+// How often the re-validation tick may re-decide another blocked app in front
+// while that decision keeps being skipped - a full check is too much per second.
+private const val RECHECK_INTERVAL_MS = 5000L
 
 @Suppress("DEPRECATION")
 class LittleSunWindow(
@@ -55,6 +58,7 @@ class LittleSunWindow(
     override val logTag = javaClass.simpleName
     private var initialTime = 0
     private var windowShownAt = 0L
+    private var lastRecheckMs = 0L
     private var pendingExpiredApp: String? = null
     private var pendingExpiredWasWindDownSnooze = false
 
@@ -80,6 +84,13 @@ class LittleSunWindow(
     // the bubble at 0:00 instead of counting up. Snapshotted like
     // activePauseAtSessionS, but kept after the hand-back is armed.
     private var isGraceBubble = false
+
+    // The app this appearance keeps time for. When the user goes straight
+    // from it into another blocked app the sun stays put and takes over that
+    // app's time instead (see handOver), so one app's stay never eats into
+    // another app's grace.
+    var boundApp: String? = null
+        private set
 
     // Session seconds toward that hand-back, counted only while the screen is
     // on and unlocked: a locked phone never "stays a while", so nobody unlocks
@@ -266,10 +277,21 @@ class LittleSunWindow(
                     val foregroundResult = getForegroundAppReliable(ctrlSvc)
                     when (foregroundResult) {
                         is ForegroundAppResult.Success -> {
-                            if (!ctrlSvc.isBlockedPackage(foregroundResult.packageName)) {
-                                Log.d(logTag, "Re-validation: user left blocked app (now in ${foregroundResult.packageName}), hiding overlay")
+                            val fg = foregroundResult.packageName
+                            if (!ctrlSvc.isBlockedPackage(fg)) {
+                                Log.d(logTag, "Re-validation: user left blocked app (now in $fg), hiding overlay")
                                 hideWindow()
                                 return
+                            }
+                            val nowMs = System.currentTimeMillis()
+                            if (canHandOverTo(fg) && nowMs - lastRecheckMs >= RECHECK_INTERVAL_MS) {
+                                lastRecheckMs = nowMs
+                                // In another blocked app, but the switch's own
+                                // check was skipped (a debounce, a stale read):
+                                // re-decide it, so this time doesn't keep running
+                                // on the app just left. Posted after this tick, so
+                                // a hand-over's restarted timer is the only one.
+                                handler.post { ctrlSvc.recheckForegroundApp(fg) }
                             }
                         }
                         // Continue timer for Stale/Error/NoPermission - don't hide on uncertain data
@@ -297,6 +319,7 @@ class LittleSunWindow(
             initPosition()
             activePauseAtSessionS = pauseAtSessionS
             isGraceBubble = pauseAtSessionS != null
+            boundApp = sharedOverlayViewModel.sharedData.value.currentApp
             // A fresh appearance starts its own while - and must not replay
             // the last glint when the new composition first reads the count.
             secondsWithSun = 0
@@ -314,6 +337,35 @@ class LittleSunWindow(
         window?.let { measureWindowOrigin(it) }
         windowShownAt = System.currentTimeMillis()
         Log.d(logTag, "showWindow() completed, window=${window != null}")
+    }
+
+    /**
+     * Whether the sun, resting over another app, can be handed over to
+     * [app] in place: not fading out (a restarted timer would outlive the
+     * window), not mid-drag or mid-leave, not already handing back to the
+     * pause, and not a wind-down snooze (bedtime's timer is not per app).
+     */
+    fun canHandOverTo(app: String): Boolean =
+        isWindowShown() && !isFadingOut() &&
+            boundApp != null && boundApp != app &&
+            zoneView == null && !isLeaveCommitted &&
+            pendingExpiredApp == null &&
+            ctrlSvc.getWindDownSnoozeTimerEndTime() == null
+
+    /**
+     * The user went straight into another blocked app (already the view
+     * model's currentApp): the sun stays where it is - there is only ever one
+     * - and from now on keeps that app's session and grace ([pauseAtSessionS],
+     * set by the controller like for any show). A pending hand-back belonged
+     * to the app just left, so it goes.
+     */
+    fun handOver() {
+        cancelAwaitingBreak()
+        activePauseAtSessionS = pauseAtSessionS
+        isGraceBubble = pauseAtSessionS != null
+        boundApp = sharedOverlayViewModel.sharedData.value.currentApp
+        windowShownAt = System.currentTimeMillis()
+        startTimer(sharedOverlayViewModel.getCurrentAppDuration())
     }
 
     /**
@@ -666,6 +718,14 @@ class LittleSunWindow(
         ) { appAtBreak ->
             // The bubble may have gone (the user left) between the break and
             // this post; only a still-waiting bubble hands back.
+            if (!isAwaitingBreak || !isWindowShown()) return@await
+            // Straight into another blocked app: that app decides, so the sun
+            // is handed over in place (or glides into its pause) rather than
+            // vanishing and fading back in over it.
+            if (appAtBreak != awaitingApp && canHandOverTo(appAtBreak)) {
+                ctrlSvc.recheckForegroundApp(appAtBreak)
+            }
+            // Not handed over (that decision was skipped): hand back as ever.
             if (isAwaitingBreak && isWindowShown()) handBackNow(appAtBreak, false)
         }
         return false
@@ -730,6 +790,7 @@ class LittleSunWindow(
 
     override fun hideWindowImmediate() {
         cancelAwaitingBreak()
+        stopTimer()
         ctrlSvc.onBellHostLeaving(BellHost.Kind.LITTLE_SUN)
         if (!isLeaveCommitted) removeZoneImmediate()
         super.hideWindowImmediate()
