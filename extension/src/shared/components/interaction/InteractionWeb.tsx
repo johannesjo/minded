@@ -17,6 +17,11 @@ import type { SkipCheckInChoice } from "@src/shared/components/interaction/skipC
 import type { InteractionMode } from "@src/shared/components/interaction/getInteractionMode";
 import { createActiveTimer } from "@src/shared/components/interaction/sessionLimit";
 import { prefersReducedMotion } from "@src/util/prefersReducedMotion";
+import { ANIMATION_TIMING } from "@src/shared/components/interaction/interactionAnimation.const";
+import {
+  announceInterventionPassed,
+  onInterventionPassedInOtherTab,
+} from "@src/shared/components/interaction/interventionPassSync";
 
 // NOTE: val also needs to be set in css
 
@@ -124,6 +129,7 @@ export const InteractionWeb: (props: {
       }
 
       isDismissing = true;
+      if (!getIsShowLittleSun()) announceInterventionPassed(props.host);
       if (wrapperEl) {
         fadeOut(wrapperEl, 150).promise.then(() => teardown());
       } else {
@@ -133,6 +139,36 @@ export const InteractionWeb: (props: {
   };
 
   const shadowKeyboardEventTarget = props.shadowRoot;
+
+  // Got past the pause in another tab of this site: follow it to the Little
+  // Sun here too, fading out rather than cutting.
+  // When the pause now on screen appeared: only a pass after it counts.
+  let shownSinceTS = Date.now();
+  const followPassFromOtherTab = () => {
+    if (getIsShowLittleSun() || isDismissing) return;
+    const showLittleSun = () => {
+      // Re-check: a choice or Escape here during the fade comes first.
+      if (getIsShowLittleSun() || isDismissing) return;
+      setQuestion(undefined);
+      setIsShowLittleSun(true);
+    };
+    if (wrapperEl?.isConnected) {
+      fadeOut(wrapperEl, ANIMATION_TIMING.fadeOut.standard).promise.then(
+        showLittleSun,
+      );
+    } else {
+      showLittleSun();
+    }
+  };
+  onMount(() => {
+    onCleanup(
+      onInterventionPassedInOtherTab(
+        props.host,
+        () => shownSinceTS,
+        followPassFromOtherTab,
+      ),
+    );
+  });
 
   onMount(() => {
     // Capture on document so Escape also works while focus is still on the host page.
@@ -193,6 +229,7 @@ export const InteractionWeb: (props: {
     setQuestion(undefined);
     stopAllVideos();
     if (choice === "off" || choice === "bell") {
+      announceInterventionPassed(props.host);
       teardown();
       return;
     }
@@ -209,6 +246,9 @@ export const InteractionWeb: (props: {
       console.error("Failed to start the session over", error);
     } finally {
       setIsShowLittleSun(true);
+      // After the "later" reset lands, so a following tab reads the fresh
+      // session, not the long one that would bring the pause straight back.
+      announceInterventionPassed(props.host);
     }
   };
 
@@ -226,6 +266,7 @@ export const InteractionWeb: (props: {
               host={props.host}
               teardown={teardown}
               onShowFreshInteraction={(morph) => {
+                shownSinceTS = Date.now();
                 // Set the morph flag on every hand-back (true only when the timer
                 // genuinely ran out), so it's always fresh for the next mount and
                 // can't go stale into a later re-question/tap re-show.
@@ -286,9 +327,11 @@ export const InteractionWeb: (props: {
                   currentMode = mode;
                 }}
                 onAfterInteractionFadeout={() => {
+                  announceInterventionPassed(props.host);
                   setIsShowLittleSun(true);
                 }}
                 onSkip={() => {
+                  announceInterventionPassed(props.host);
                   setIsShowLittleSun(true);
                 }}
                 onInteractionSubmitted={() => {

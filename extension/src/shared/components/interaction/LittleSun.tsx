@@ -17,6 +17,7 @@ import { bro } from "@src/util/browser";
 import { getLittleSunTimerSource } from "@src/shared/components/interaction/littleSunTimerSource";
 import { waitForNaturalBreak } from "@src/shared/components/interaction/naturalBreak";
 import { isTimeUpMidSession } from "@src/util/isShowFullMinder";
+import { onInterventionPassedInOtherTab } from "@src/shared/components/interaction/interventionPassSync";
 import {
   getWebHostSessionTarget,
   isActiveTimerInScope,
@@ -131,6 +132,7 @@ export const LittleSunComponent: (props: {
   // (the timer clearing, read back through storage) can't call the wait off
   // before the stored marker is visible.
   let hasPauseDue = false;
+  let stopFollowingPasses: (() => void) | undefined;
 
   const consumePauseDue = () => {
     hasPauseDue = false;
@@ -389,6 +391,11 @@ export const LittleSunComponent: (props: {
     }
 
     void maybeShowHint();
+    stopFollowingPasses = onInterventionPassedInOtherTab(
+      props.host,
+      () => passSeenSinceTS,
+      followPassFromOtherTab,
+    );
     bro.storage.onChanged.addListener(handleStorageChange);
     document.addEventListener("visibilitychange", handleVisibilityChange);
   });
@@ -400,6 +407,7 @@ export const LittleSunComponent: (props: {
     window.clearTimeout(glintTimeout);
     window.clearInterval(currentSessionInterval);
     cancelArrival();
+    stopFollowingPasses?.();
     bro.storage.onChanged.removeListener(handleStorageChange);
     document.removeEventListener("visibilitychange", handleVisibilityChange);
   });
@@ -518,6 +526,30 @@ export const LittleSunComponent: (props: {
     };
 
     currentSessionInterval = window.setInterval(tick, 1000);
+  };
+
+  // Another tab on this site got past the pause, so this tab has too. Start
+  // over the way a sun fresh from a skip does - nothing waiting to come back,
+  // no grace run-out of its own, a fresh re-question clock - or switching
+  // back here would bring the very pause just passed. A chosen time still
+  // running is the user's own and carries on.
+  let passSeenSinceTS = Date.now();
+  const followPassFromOtherTab = () => {
+    passSeenSinceTS = Date.now();
+    if ((getRemainingSeconds() ?? 0) > 0) return;
+    cancelArrival();
+    hasCountedGrace = false;
+    reQuestionStartS = undefined;
+    const wasPauseDue = hasPauseDue;
+    hasPauseDue = false;
+    const clearDue = wasPauseDue
+      ? updateHostsEntry(props.host, { pauseDueTS: 0 })
+      : Promise.resolve();
+    clearDue
+      .then(refreshTimerSource)
+      .catch((error: unknown) =>
+        console.error("Failed to follow the pause passed elsewhere", error),
+      );
   };
 
   const handleClick = () => {
