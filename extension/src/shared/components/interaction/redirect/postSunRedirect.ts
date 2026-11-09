@@ -18,8 +18,8 @@ import {
  *   the gentlest close is to let it be enough and step away. Opening something
  *   else would be one more act.
  * - "alternative": an enabled alternative exists for this platform and the
- *   prompt wasn't already about alternatives - "Try X instead?" leads.
- * - "stay": today's behaviour - the time choice, with the quiet leave beside it.
+ *   prompt hadn't already offered one - "Try X instead?" leads.
+ * - "stay": the time choice, with the quiet leave beside it.
  *
  * A sleep wind-down branch was considered and left out: the guided wind-down
  * is its own native Android overlay, chosen by the overlay service, with no
@@ -36,22 +36,22 @@ export type PostSunRedirect =
 
 /**
  * Attention practices that are themselves "not acting": sitting with the urge,
- * the screen-off minute, listening a bell down into silence, resting a finger
- * still, one guided breath. Each is only *completed* by sitting through it, so
- * completing one is observed behaviour, not a guess.
+ * listening a bell down into silence, one guided breath. Each is only
+ * *completed* by sitting through it, so completing one is observed behaviour,
+ * not a guess.
  *
- * SCREEN_OFF already ends on its own leave when completed, so in practice it
- * only lands here via a sun tap (not completed); it is listed so the rule reads
- * whole. NOTICE stays out: it is a one-glance noticing tapped "done", often on
- * soft friction - too light to read as the user having let the pull go.
- * Grounding is not an intervention mode (it is the dashboard's down-drag offer,
- * which never reaches the time choice).
+ * Deliberately out:
+ * - SCREEN_OFF never reports a completion: it closes on its own leave, so it
+ *   only reaches this surface via a sun tap past it.
+ * - NOTICE is a one-glance noticing tapped "done", and FINGER_REST completes
+ *   on a touch barely longer than a tap (FINGER_REST_MIN_MS) - both too light
+ *   to read as the user having let the pull go.
+ * - Grounding is not an intervention mode (it is the dashboard's down-drag
+ *   offer, which never reaches the time choice).
  */
 export const LETTING_BE_MODES: readonly InteractionMode[] = [
   "URGE_SURFING",
-  "SCREEN_OFF",
   "BELL",
-  "FINGER_REST",
   "BREATH",
 ];
 
@@ -81,10 +81,13 @@ export const getPostSunRedirect = ({
   if (!mode) return { lead: "stay" };
 
   // The bedtime moon's tap is the "staying up a little longer" path - its own
-  // drag-down is the goodnight. And "still on purpose" on a pattern insight is
-  // the user telling us they mean to be here. Both already chose: honour it.
-  if (mode === "WIND_DOWN_SETTLE") return { lead: "stay" };
-  if (mode === "PATTERN_INSIGHT" && hasCompleted) return { lead: "stay" };
+  // drag-down is the goodnight. A pattern insight puts "still on purpose",
+  // its alternative and "leave now" side by side: whether the user answered
+  // it or tapped past all three, both other exits were just declined.
+  // Both already chose: honour it.
+  if (mode === "WIND_DOWN_SETTLE" || mode === "PATTERN_INSIGHT") {
+    return { lead: "stay" };
+  }
 
   if (hasCompleted && LETTING_BE_MODES.includes(mode)) {
     return { lead: "leave" };

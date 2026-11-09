@@ -68,12 +68,23 @@ describe("getPostSunRedirect", () => {
     ).toEqual({ lead: "stay" });
   });
 
-  it.each<InteractionMode>(["NOTICE", "QUESTION", "EMOTION_LABELING"])(
-    "keeps the time choice leading after %s",
-    (mode) => {
-      expect(getPostSunRedirect(input({ mode }))).toEqual({ lead: "stay" });
-    },
-  );
+  it.each<InteractionMode>([
+    "NOTICE",
+    "FINGER_REST",
+    "SCREEN_OFF",
+    "QUESTION",
+    "EMOTION_LABELING",
+  ])("keeps the time choice leading after %s", (mode) => {
+    expect(getPostSunRedirect(input({ mode }))).toEqual({ lead: "stay" });
+  });
+
+  it("names exactly the practices that are sat through", () => {
+    expect([...LETTING_BE_MODES].sort()).toEqual([
+      "BELL",
+      "BREATH",
+      "URGE_SURFING",
+    ]);
+  });
 
   it("leads with opening an enabled alternative", () => {
     expect(getPostSunRedirect(input({ alternative: website }))).toEqual({
@@ -116,22 +127,20 @@ describe("getPostSunRedirect", () => {
     ).toEqual({ lead: "stay" });
   });
 
-  it("honours 'still on purpose' on a pattern insight", () => {
-    expect(
-      getPostSunRedirect(
-        input({ mode: "PATTERN_INSIGHT", alternative: website }),
-      ),
-    ).toEqual({ lead: "stay" });
-    expect(
-      getPostSunRedirect(
-        input({
-          mode: "PATTERN_INSIGHT",
-          hasCompleted: false,
-          alternative: website,
-        }),
-      ).lead,
-    ).toBe("alternative");
-  });
+  it.each([true, false])(
+    "never re-asks what a pattern insight just offered (completed: %s)",
+    (hasCompleted) => {
+      expect(
+        getPostSunRedirect(
+          input({
+            mode: "PATTERN_INSIGHT",
+            hasCompleted,
+            alternative: website,
+          }),
+        ),
+      ).toEqual({ lead: "stay" });
+    },
+  );
 
   it("speaks in short, plain, judgment-free words", () => {
     for (const line of [LEAVE_QUESTION, LEAVE_LABEL, STAY_LABEL, LEAVE_BEAT]) {
