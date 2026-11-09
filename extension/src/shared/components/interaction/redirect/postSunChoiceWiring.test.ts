@@ -20,7 +20,18 @@ describe("post-sun choice wiring", () => {
 
   it("keeps the unchanged time choice, with leaving beside it", () => {
     expect(choice).toContain("<TimeSelection");
-    expect(choice).toMatch(/onLeave=\{leave\}/);
+    // Beside the time choice when it leads - not again after "Stay", which
+    // has just declined leaving.
+    expect(choice).toContain(
+      'onLeave={redirect.lead === "stay" ? leave : undefined}',
+    );
+  });
+
+  it("writes no alternative stat for a tap that is ignored", () => {
+    // The guard comes before the stat write is started.
+    expect(choice).toMatch(
+      /if \(isLeaving \|\| !props\.isArmed\) return;[\s\S]*?const ready = prepare\(\);/,
+    );
   });
 
   it("rests on a beat before leaving, and stands down once disposed", () => {

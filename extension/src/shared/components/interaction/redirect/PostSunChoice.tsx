@@ -73,7 +73,9 @@ const pickRedirect = (
  *
  * - Stay leads: the time choice shows straight away, with "Let go" beneath it.
  * - Leave / an alternative leads: that one choice, with a quiet "Stay" that
- *   crossfades to the time choice. No extra step for anyone else.
+ *   crossfades to the time choice. "Stay" has just answered the question, so
+ *   the time choice it reaches does not ask about leaving again - the sun
+ *   fling stays the way out there, as everywhere.
  *
  * Leaving ends on a short serif beat, then the platform's plain leave (the
  * fling's own path) - or, for an alternative, opens it like ShowAlternative.
@@ -100,6 +102,7 @@ export const PostSunChoice: Component<{
   );
   const [getBeat, setBeat] = createSignal("");
   const screenFade = createScreenFade(ALTERNATIVE_SCREEN_FADE_MS);
+  let rootEl: HTMLDivElement | undefined;
   let beatTimeout: number | undefined;
   let isLeaving = false;
   let isDisposed = false;
@@ -117,21 +120,34 @@ export const PostSunChoice: Component<{
 
   const toScreen = (screen: Screen, onShown?: () => void) =>
     screenFade.toScreen(() => {
+      // The swap unmounts the button that was just pressed. Hand keyboard
+      // focus to the overlay (the focus target the sun's own keyboard path
+      // uses) rather than letting it fall out of the pause to the page.
+      const root = rootEl?.getRootNode() as Document | ShadowRoot | undefined;
+      const hadFocus = !!rootEl?.contains(root?.activeElement ?? null);
       setScreen(screen);
+      if (hadFocus) {
+        rootEl
+          ?.closest<HTMLElement>(".time-selection-overlay")
+          ?.focus({ preventScroll: true });
+      }
       requestAnimationFrame(() => !isDisposed && props.onReflow());
       onShown?.();
     });
 
   // Fade to the calm beat, rest on it, then go. `ready` is awaited so a stat
   // write never races the tab or app being closed under it.
+  // `prepare` runs only once the leave is committed, so a tap that is ignored
+  // (not armed yet, already leaving) never writes a stat.
   const leaveWithBeat = (
     beat: string,
-    ready: Promise<unknown>,
+    prepare: () => Promise<unknown>,
     open?: () => boolean,
   ) => {
     if (isLeaving || !props.isArmed) return;
     isLeaving = true;
     const onLeave = props.onLeave;
+    const ready = prepare();
     setBeat(beat);
     toScreen("beat", () => {
       beatTimeout = window.setTimeout(() => {
@@ -141,19 +157,19 @@ export const PostSunChoice: Component<{
     });
   };
 
-  const leave = () => leaveWithBeat(LEAVE_BEAT, Promise.resolve());
+  const leave = () => leaveWithBeat(LEAVE_BEAT, () => Promise.resolve());
 
   const acceptAlternative = () => {
     if (redirect.lead !== "alternative") return;
     const { alternative, target } = redirect;
     // Counted as an opened alternative only - no sun tap: like every leave,
     // stepping out to the better thing must not raise the next friction.
-    const marked = (async () => {
+    const marked = async () => {
       await shownPromise;
       await markAlternativeOpened(alternative).catch((error) =>
         console.error("Failed to mark alternative opened", error),
       );
-    })();
+    };
     leaveWithBeat(
       ALTERNATIVE_ACCEPT_BEAT,
       marked,
@@ -173,6 +189,7 @@ export const PostSunChoice: Component<{
 
   return (
     <div
+      ref={rootEl}
       class="post-sun-choice"
       style={{
         opacity: screenFade.opacity(),
@@ -188,7 +205,9 @@ export const PostSunChoice: Component<{
             isArmed={props.isArmed}
             onSelectTime={props.onSelectTime}
             onCancel={props.onCancel}
-            onLeave={leave}
+            // Only where the time choice is the first thing shown: reached
+            // through "Stay", leaving was just declined.
+            onLeave={redirect.lead === "stay" ? leave : undefined}
           />
         </Match>
         <Match when={getScreen() === "lead"}>

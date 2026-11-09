@@ -14,7 +14,8 @@ interface TimeSelectionProps {
   isArmed: boolean;
   /**
    * Leaving as an equal choice beside staying (redirect/PostSunChoice), not
-   * only the fling. Omitted where there is nothing to leave (onboarding).
+   * only the fling. Omitted where there is nothing to leave (onboarding) and
+   * where leaving was just declined (reached through "Stay").
    */
   onLeave?: () => void;
 }

@@ -1043,10 +1043,17 @@ const SunMorphHarness = (): JSX.Element => {
               style={{ "z-index": 1100 }}
             >
               <div class="post-sun-screen">
-                <TimeSelection
+                {/* What the real flow mounts here: the time choice leading,
+                    with leaving beside it. */}
+                <PostSunChoice
+                  mode={undefined}
+                  hasCompleted={false}
+                  syncData={undefined}
                   isArmed={true}
                   onSelectTime={() => undefined}
                   onCancel={() => setPhase("interactive")}
+                  onLeave={() => undefined}
+                  onReflow={measureRestingAnchor}
                 />
               </div>
             </div>
