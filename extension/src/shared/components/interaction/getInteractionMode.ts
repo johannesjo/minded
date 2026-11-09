@@ -288,8 +288,9 @@ export const getInteractionModeDecision = (
   // onboarding QUESTION at bedtime is a textbook 90%-bar violation ("a form at
   // the moment of least capacity"), so inside a bedtime intervention this gate
   // is skipped entirely - the window falls through to the wordless settle (or,
-  // once settled, the ordinary cascade). It still fires normally outside the bedtime window. (The energy
-  // check-in below is dashboard-only, so it can never meet a bedtime interrupt.)
+  // once settled, the ordinary cascade). It still fires normally outside the
+  // bedtime window. (The energy check-in below is dashboard-only, so it can
+  // never meet a bedtime interrupt.)
   if (context.hasFewAnswers && !isBedtimeIntervention) {
     return decision("QUESTION", "few_answers_question", frictionLevel);
   }

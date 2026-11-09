@@ -9,8 +9,8 @@
   gap: var(--space-md);
   text-align: center;
   color: var(--c-fg-full-emphasis);
-  // Cross-screen fade between intro → surf → close. The
-  // opacity itself is driven from the component (getScreenOpacity).
+  // Cross-screen fade between intro → surf → close. The opacity itself is
+  // driven from the component (screenFade.opacity).
   transition: opacity var(--dur-soft) var(--ease-out);
 
   @media (prefers-reduced-motion: reduce) {
