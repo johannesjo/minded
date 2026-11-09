@@ -301,6 +301,25 @@ describe("friction level", () => {
     expect(getFrictionLevel(context)).toBe("soft");
   });
 
+  it("does not hold a missing energy answer against the soft tier", () => {
+    // Interventions no longer ask for energy (#190); a user who never opens
+    // the dashboard check-in must still be able to meet a soft pause.
+    const context = getInteractionContext({
+      syncData: createMockSyncData({
+        answers: answers(3),
+        moodCheckTS: NOW,
+        attempts: { [TODAY]: 1 },
+        sunTaps: { [TODAY]: 0 },
+      }),
+      now: NOW,
+      target: { kind: "host", id: "reddit.com" },
+      platform: "web",
+    });
+
+    expect(context.hasFreshEnergy).toBe(false);
+    expect(getFrictionLevel(context)).toBe("soft");
+  });
+
   describe("bedtime window", () => {
     const NIGHT_RANGE = { start: "22:00", end: "07:00" };
     const bedtimeCfg = {

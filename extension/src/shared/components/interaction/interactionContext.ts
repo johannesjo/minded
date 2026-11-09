@@ -111,7 +111,10 @@ export const getFrictionLevel = (
     return "strong";
   }
 
-  if (context.hasFewAnswers || !context.hasFreshEnergy || context.isEvening) {
+  // Deliberately not keyed to a missing energy answer: interventions no longer
+  // ask for it (#190), so a user who skips the dashboard check-in would
+  // otherwise never meet the soft tier at all.
+  if (context.hasFewAnswers || context.isEvening) {
     return "normal";
   }
 

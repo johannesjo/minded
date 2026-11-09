@@ -375,7 +375,7 @@
 .energyLvl {
   // Centred across, never down: a vertical auto margin would float the block
   // to the middle of a grid row stretched by taller reflections beside it,
-  // dropping "your energy level today" below its neighbours' labels.
+  // dropping "your energy today" below its neighbours' labels.
   margin: 0 auto;
 
   div:first-child {
