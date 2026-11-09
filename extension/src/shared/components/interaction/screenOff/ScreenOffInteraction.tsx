@@ -24,7 +24,16 @@ import { prefersReducedMotion } from "@src/util/prefersReducedMotion";
  * closes with: the minute is the invitation, not a bar to clear. Coming back
  * early is met exactly like coming back after the minute - no "almost", no
  * retry, no "nice" - because timing the break and grading it turned stepping
- * away into a test the user could fail.
+ * away into a test the user could fail. So nothing here reads a clock: there
+ * is no minimum time away, not even a short one.
+ *
+ * The close is wordless. Every return ends in leaving the app, and on a real
+ * unlock the native side is already doing that: OverlayControllerService's
+ * restoreOverlayAfterUnlock hides an intervention and goes home half a second
+ * after the unlock, whatever this screen is showing. A closing line would be
+ * cut off mid-sentence there, and a greeting ("Welcome back.") contradicts
+ * the leave that follows it. The armed copy fades, the sun rests alone for a
+ * beat, and the leave runs.
  */
 
 type ScreenOffPhase = "intro" | "armed" | "done";
@@ -32,18 +41,18 @@ type ScreenOffPhase = "intro" | "armed" | "done";
 const SCREEN_OFF_HEADINGS: Record<ScreenOffPhase, string> = {
   intro: "Put your phone down for a minute?",
   armed: "Lock your phone now - come back in a minute.",
-  done: "Welcome back.",
+  // Wordless - see above.
+  done: "",
 };
-
-/**
- * Delay between showing the closing line and closing the app: long enough
- * for the screen fade and the line's word-by-word arrival to land and rest a
- * moment - the goodbye is never cut off mid-sentence.
- */
-const DONE_EXIT_DELAY_MS = 2600;
 
 /** Cross-screen fade between phases - the same soft swap urge surfing uses. */
 const SCREEN_FADE_MS = 480;
+
+/**
+ * Delay between the return and closing the app: the armed screen's fade-out,
+ * then a short rest on the sun alone - the leave never cuts into the fade.
+ */
+const DONE_EXIT_DELAY_MS = SCREEN_FADE_MS + 600;
 
 export const ScreenOffInteraction: (props: {
   onSkip: () => void;
@@ -78,7 +87,7 @@ export const ScreenOffInteraction: (props: {
   let doneTimeoutId: number | undefined;
   let isDisposed = false;
 
-  const welcomeBack = (): void => {
+  const closeAfterReturn = (): void => {
     // Read outside the timeout callback so the reactive `props` access does
     // not trip the solid/reactivity lint rule (as StrongFrictionBreathPause does).
     const onLeaveNow = props.onLeaveNow;
@@ -108,7 +117,7 @@ export const ScreenOffInteraction: (props: {
     // Back after any time away - a full minute or a few seconds - is simply
     // back: no timing, no fail state.
     if (hasBeenAway) {
-      welcomeBack();
+      closeAfterReturn();
     }
   };
 
@@ -161,9 +170,7 @@ export const ScreenOffInteraction: (props: {
           </Btn>
         </Match>
 
-        <Match when={getShownPhase() === "done"}>
-          <VoiceReveal class="txtBig interaction-heading" text={heading()} />
-        </Match>
+        {/* "done" renders nothing: the close is wordless (see the header). */}
       </Switch>
     </div>
   );
