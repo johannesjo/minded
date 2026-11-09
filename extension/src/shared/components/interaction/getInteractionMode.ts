@@ -242,7 +242,13 @@ export const getInteractionModeDecision = (
   const hasReasonAnswers = getReasonAnswerCount(syncData, isAppMode) > 0;
   const canShowAlternative = !isMainView && context.hasAlternatives;
   const canAskForAlternative = !isMainView && !context.hasAlternatives;
+  // The energy check-in belongs to the dashboard, never to a real
+  // intervention: routing never reads the answer (only whether one exists), so
+  // as the first pause of the day it was a rating form standing in the doorway
+  // of every morning (#190). The dashboard - its daily questions, and a pause
+  // the user starts there themselves - keeps it.
   const isEnergyEligible =
+    isMainView &&
     context.localHour >= TODAY_START_HOUR &&
     context.localHour < ENERGY_LVL_MAX_HOURS;
   const isActionAdviceEligible =
@@ -279,16 +285,17 @@ export const getInteractionModeDecision = (
   }
 
   // Never open a bedtime interrupt with a verbal survey. A first-night
-  // onboarding QUESTION or a pre-19:00 ENERGY_LVL prompt at bedtime is a
-  // textbook 90%-bar violation ("a form at the moment of least capacity"), so
-  // inside a bedtime intervention these gates are skipped entirely - the window
-  // falls through to the wordless settle (or, once settled, the ordinary
-  // cascade). They still fire normally outside the bedtime window.
+  // onboarding QUESTION at bedtime is a textbook 90%-bar violation ("a form at
+  // the moment of least capacity"), so inside a bedtime intervention this gate
+  // is skipped entirely - the window falls through to the wordless settle (or,
+  // once settled, the ordinary cascade). It still fires normally outside the
+  // bedtime window. (The energy check-in below is dashboard-only, so it can
+  // never meet a bedtime interrupt.)
   if (context.hasFewAnswers && !isBedtimeIntervention) {
     return decision("QUESTION", "few_answers_question", frictionLevel);
   }
 
-  if (isEnergyEligible && !context.hasFreshEnergy && !isBedtimeIntervention) {
+  if (isEnergyEligible && !context.hasFreshEnergy) {
     return decision("ENERGY_LVL", "energy_missing", frictionLevel);
   }
 
@@ -496,8 +503,8 @@ export const getInteractionModeDecision = (
   // last intervention already opened with QUESTION, offer the gentle no-typing
   // NOTICE anchor instead (it exists for exactly this "nothing more specific is
   // due" moment), so the everyday loop alternates rather than repeats. The hard
-  // gates above (few answers, missing energy, strong-friction prompts) are
-  // intentional repeats and are deliberately left untouched.
+  // gates above (few answers, the dashboard's energy check-in, strong-friction
+  // prompts) are intentional repeats and are deliberately left untouched.
   if (syncData.lastInteractionMode === "QUESTION") {
     return decision("NOTICE", "fallback_anti_repeat_notice", frictionLevel);
   }

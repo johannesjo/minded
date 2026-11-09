@@ -571,7 +571,7 @@ export const DashboardGroups: (props: {
               const dge = dg as DashboardGroupEnergyLvl;
               return (
                 <div class={styles.energyLvl}>
-                  <div class="dashboardHeading">your energy level today</div>
+                  <div class="dashboardHeading">your energy today</div>
                   <Rating isShowOnly={true} value={dge.energyLvl} />
                 </div>
               );

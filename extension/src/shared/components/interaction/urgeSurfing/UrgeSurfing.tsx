@@ -1,22 +1,16 @@
 import {
   createEffect,
   createSignal,
-  For,
   JSX,
   Match,
   onCleanup,
   Switch,
 } from "solid-js";
-import { IS_APP } from "@src/dataInterface/commonSyncDataInterface";
 import type { FrictionLevel } from "@src/shared/components/interaction/interactionContext";
 import { prefersReducedMotion } from "@src/util/prefersReducedMotion";
 import { createScreenFade } from "@src/util/screenFade";
 import Btn from "@src/shared/components/ui/Btn";
-import {
-  getSurfCue,
-  getSurfDurationMs,
-  URGE_INTENSITY_STEPS,
-} from "./urgeSurfing.const";
+import { getSurfCue, getSurfDurationMs } from "./urgeSurfing.const";
 import { VoiceReveal } from "@src/shared/components/interaction/voiceReveal/VoiceReveal";
 import {
   VOICE_REVEAL,
@@ -25,13 +19,20 @@ import {
 
 /**
  * Urge surfing: rather than acting on the pull to open a distracting site, the
- * user rates how strong it feels, watches it crest and fall like a wave, then
- * notices how it changed. The before/after ratings stay in local state; their
- * value is the in-the-moment realisation that the urge passes on its own, not a
- * stored metric.
+ * user watches it crest and fall like a wave, led by the sun, and is met by one
+ * quiet line at the end.
+ *
+ * Deliberately no ratings and no verdict (#183), in the register grounding
+ * closes with: no before/after scale, no echoed number, no "that's the
+ * practice". A rating whose answer goes nowhere is a question that only costs
+ * the user, and any close that grades the outcome - eased, held, tougher - is
+ * a judgment the app cannot honestly make. Every wave ends on the same line.
  */
 
-type UrgeSurfingPhase = "intro" | "rateBefore" | "surf" | "rateAfter" | "done";
+type UrgeSurfingPhase = "intro" | "surf" | "done";
+
+/** The one close for every wave: present tense, no praise, no number. */
+const URGE_SURFING_CLOSE = "The wave moves on its own.";
 
 /** How often the wave timer ticks while surfing. */
 const TICK_MS = 200;
@@ -50,8 +51,6 @@ interface UrgeSurfingProps {
 export const UrgeSurfing = (props: UrgeSurfingProps): JSX.Element => {
   const [getPhase, setPhase] = createSignal<UrgeSurfingPhase>("intro");
   const [getFraction, setFraction] = createSignal(0);
-  const [getBefore, setBefore] = createSignal(0);
-  const [getAfter, setAfter] = createSignal(0);
 
   const FADE_MS = 480;
   // Hold the first surf cue back this long so the pulsing sun reads on its own
@@ -62,7 +61,7 @@ export const UrgeSurfing = (props: UrgeSurfingProps): JSX.Element => {
   const CUE_FADE_MS = 900;
   let intervalId: ReturnType<typeof setInterval> | undefined;
 
-  // Cross-screen fade between the phases (intro → rate → surf → after → done).
+  // Cross-screen fade between the phases (intro → surf → done).
   // The shared handler drops opacity to 0, swaps the screen while hidden, then
   // eases back in (bound to .urge-surfing's opacity below). Matches FADE_MS to
   // the CSS transition on .urge-surfing.
@@ -145,8 +144,8 @@ export const UrgeSurfing = (props: UrgeSurfingProps): JSX.Element => {
       setFraction(fraction);
       if (fraction >= 1) {
         stopTimer();
-        // Settle the sun back as the surf screen fades to the after-rating.
-        goToPhase("rateAfter", onSunWaveEnd);
+        // Settle the sun back as the surf screen fades to the close.
+        goToPhase("done", onSunWaveEnd);
       }
     }, TICK_MS);
   };
@@ -157,30 +156,12 @@ export const UrgeSurfing = (props: UrgeSurfingProps): JSX.Element => {
   // completed wave would make diligent practice *escalate* the next
   // intervention (and double-count the tap the subsequent submit records).
 
-  const handleRate = (value: number): void => {
+  const handleSurf = (): void => {
     props.onCancelCountdown();
-    if (getPhase() === "rateBefore") {
-      setBefore(value);
-      // Start the wave now (the sun begins its swell); the screen cross-fades
-      // from the rating to the surf cue over it.
-      startSurf();
-      goToPhase("surf");
-    } else {
-      setAfter(value);
-      goToPhase("done");
-    }
-  };
-
-  const reflection = (): string => {
-    const before = getBefore();
-    const after = getAfter();
-    if (after < before) {
-      return `The wave passed. It eased from ${before} to ${after}.`;
-    }
-    if (after === before) {
-      return "You stayed with it instead of acting. That's the practice.";
-    }
-    return "Tougher than it looked, and you still didn't act on it. That's the practice.";
+    // Start the wave now (the sun begins its swell); the screen cross-fades
+    // from the intro to the surf cue over it.
+    startSurf();
+    goToPhase("surf");
   };
 
   onCleanup(() => {
@@ -192,24 +173,18 @@ export const UrgeSurfing = (props: UrgeSurfingProps): JSX.Element => {
     switch (getPhase()) {
       case "intro":
         return "There's an urge to open this.";
-      case "rateBefore":
-        return IS_APP
-          ? "How strong is the pull to open this app right now?"
-          : "How strong is the pull to open this website right now?";
-      case "rateAfter":
-        return "And now, how strong is it?";
       case "done":
-        return reflection();
+        return URGE_SURFING_CLOSE;
       default:
         return "";
     }
   };
 
   // Coming back from the wave, the sun glides home from its surf anchor as the
-  // after-rating swaps in (onSunWaveEnd at the swap): let it land before the
-  // question is spoken, so the eye follows one moving thing at a time.
+  // close swaps in (onSunWaveEnd at the swap): let it land before the line is
+  // spoken, so the eye follows one moving thing at a time.
   const headingLead = (): number =>
-    getPhase() === "rateAfter" ? VOICE_REVEAL.SUN_GLIDE_LEAD_MS : 0;
+    getPhase() === "done" ? VOICE_REVEAL.SUN_GLIDE_LEAD_MS : 0;
 
   return (
     <div
@@ -232,34 +207,9 @@ export const UrgeSurfing = (props: UrgeSurfingProps): JSX.Element => {
           {/* No "skip" here: triple-tapping (or flinging) the persistent sun is
               the universal way out of any interaction, so a second button would
               be redundant. */}
-          <Btn
-            voice
-            class="voice-follow"
-            onClick={() => goToPhase("rateBefore")}
-          >
+          <Btn voice class="voice-follow" onClick={handleSurf}>
             Surf it
           </Btn>
-        </Match>
-
-        <Match when={getPhase() === "rateBefore" || getPhase() === "rateAfter"}>
-          <VoiceReveal
-            class="txtBig interaction-heading"
-            text={heading()}
-            lead={headingLead()}
-          />
-          <div class="urge-surfing-scale voice-follow">
-            <For each={[...URGE_INTENSITY_STEPS]}>
-              {(step) => (
-                <Btn variant="toggle" small onClick={() => handleRate(step)}>
-                  {step}
-                </Btn>
-              )}
-            </For>
-          </div>
-          <div class="urge-surfing-scale-labels voice-follow">
-            <span>barely</span>
-            <span>intense</span>
-          </div>
         </Match>
 
         <Match when={getPhase() === "surf"}>
@@ -280,7 +230,11 @@ export const UrgeSurfing = (props: UrgeSurfingProps): JSX.Element => {
         </Match>
 
         <Match when={getPhase() === "done"}>
-          <VoiceReveal class="txtBig interaction-heading" text={heading()} />
+          <VoiceReveal
+            class="txtBig interaction-heading"
+            text={heading()}
+            lead={headingLead()}
+          />
           <Btn class="voice-follow" onClick={() => props.onSuccess()}>
             Continue
           </Btn>

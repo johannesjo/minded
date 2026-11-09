@@ -7,7 +7,7 @@ import { voiceFollowStyle } from "@src/shared/components/interaction/voiceReveal
 
 // once on app load
 
-const ENERGY_QUESTION = "How would you rate your energy level today?";
+const ENERGY_QUESTION = "How is your energy right now?";
 
 export const EnergyLvlInteraction: (props: {
   onSuccess: () => void;

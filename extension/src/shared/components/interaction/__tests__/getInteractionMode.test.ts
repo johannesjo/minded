@@ -189,7 +189,7 @@ describe("getInteractionMode", () => {
     expect(decision.frictionLevel).toBe("strong");
   });
 
-  it("does not let strong friction preempt required energy checks", () => {
+  it("never opens a strong-friction intervention with the energy check-in", () => {
     const decision = decide(
       baseSyncData({
         energyLvlTS: 99,
@@ -201,11 +201,8 @@ describe("getInteractionMode", () => {
       },
     );
 
-    expect(decision).toEqual({
-      mode: "ENERGY_LVL",
-      reason: "energy_missing",
-      frictionLevel: "strong",
-    });
+    expect(decision.mode).not.toBe("ENERGY_LVL");
+    expect(decision.frictionLevel).toBe("strong");
   });
 
   it("uses alternatives for strong friction when no saved reason exists", () => {
@@ -513,11 +510,29 @@ describe("getInteractionMode", () => {
     });
   });
 
-  it("asks for missing energy data during daytime", () => {
-    expect(decide(baseSyncData({ energyLvlTS: 99 }))).toEqual({
+  it("asks for missing energy data on the dashboard during daytime", () => {
+    expect(
+      decide(baseSyncData({ energyLvlTS: 99 }), { isMainView: true }),
+    ).toEqual({
       mode: "ENERGY_LVL",
       reason: "energy_missing",
-      frictionLevel: "normal",
+      frictionLevel: "soft",
+    });
+  });
+
+  it("never routes a real intervention to the energy check-in (#190)", () => {
+    // The first pause of the day used to be a rating form. Routing only ever
+    // read whether an answer existed, so the check-in lives on the dashboard
+    // alone - a real intervention falls through to the ordinary cascade.
+    expect(
+      decide(baseSyncData({ energyLvlTS: 99 }), {
+        isMainView: false,
+        target: { kind: "host", id: "youtube.com" },
+      }),
+    ).toEqual({
+      mode: "QUESTION",
+      reason: "fallback_question",
+      frictionLevel: "soft",
     });
   });
 
@@ -983,8 +998,8 @@ describe("getInteractionMode", () => {
 
     it("suppresses a pre-19:00 energy survey inside a window that starts early", () => {
       // A window starting before 19:00 overlaps the energy-eligible hours; a
-      // stale energy reading would normally force ENERGY_LVL, but the bedtime
-      // interrupt must stay wordless.
+      // stale energy reading must not reach a bedtime interrupt (the check-in
+      // is dashboard-only), which stays wordless.
       const EARLY_RANGE = { start: "18:00", end: "07:00" };
       const earlyCfg = {
         sleepWindDown: {
@@ -1030,7 +1045,7 @@ describe("getInteractionMode", () => {
       ).toEqual({
         mode: "NOTICE",
         reason: "bedtime_settled_notice",
-        frictionLevel: "normal",
+        frictionLevel: "soft",
       });
     });
 
@@ -1074,7 +1089,7 @@ describe("getInteractionMode", () => {
       ).not.toBe("SKIP_CHECK_IN");
     });
 
-    it("outranks the other hard gates (onboarding question, energy)", () => {
+    it("outranks the other hard gates (onboarding question)", () => {
       expect(
         intervention(
           baseSyncData({

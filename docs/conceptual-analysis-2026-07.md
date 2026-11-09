@@ -171,6 +171,10 @@ Two related findings:
 was a countdown-to-success gate - the one surfaced remaining-count in the
 app. **Fixed:** the copy is now "Almost - stay away a little longer." and the
 remaining-time value was removed from `screenOffEval` entirely.
+**Superseded:** the gate itself then went (#183) - screen-off has no fail
+state and no timing at all (`screenOffEval` is deleted); any return closes
+wordlessly and leaves. Urge surfing lost both of its ratings in the same
+pass and ends every wave on one line.
 
 ### Philosophy–implementation gaps (the code letting the concept down)
 

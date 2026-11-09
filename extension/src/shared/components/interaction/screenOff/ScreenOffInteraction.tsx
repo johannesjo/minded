@@ -9,10 +9,6 @@ import {
   Switch,
 } from "solid-js";
 import Btn from "@src/shared/components/ui/Btn";
-import {
-  evaluateScreenOff,
-  SCREEN_OFF_TARGET_MS,
-} from "@src/shared/components/interaction/screenOff/screenOffEval";
 import { VoiceReveal } from "@src/shared/components/interaction/voiceReveal/VoiceReveal";
 import { voiceFollowStyle } from "@src/shared/components/interaction/voiceReveal/voiceRevealTiming";
 import { createScreenFade } from "@src/util/screenFade";
@@ -20,29 +16,43 @@ import { prefersReducedMotion } from "@src/util/prefersReducedMotion";
 
 /**
  * "Screen-Off Minute" - an Android-only strong-friction intervention that
- * asks the user to physically lock their phone for a minute. Success is
- * verified via the page `visibilitychange` event (the WebView reports hidden
+ * invites the user to physically lock their phone for a minute. The return is
+ * noticed via the page `visibilitychange` event (the WebView reports hidden
  * when the screen turns off / the app is backgrounded).
+ *
+ * Deliberately no fail state and no verdict (#183), in the register grounding
+ * closes with: the minute is the invitation, not a bar to clear. Coming back
+ * early is met exactly like coming back after the minute - no "almost", no
+ * retry, no "nice" - because timing the break and grading it turned stepping
+ * away into a test the user could fail. So nothing here reads a clock: there
+ * is no minimum time away, not even a short one.
+ *
+ * The close is wordless. Every return ends in leaving the app, and on a real
+ * unlock the native side is already doing that: OverlayControllerService's
+ * restoreOverlayAfterUnlock hides an intervention and goes home half a second
+ * after the unlock, whatever this screen is showing. A closing line would be
+ * cut off mid-sentence there, and a greeting ("Welcome back.") contradicts
+ * the leave that follows it. The armed copy fades, the sun rests alone for a
+ * beat, and the leave runs.
  */
 
-type ScreenOffPhase = "intro" | "armed" | "tooEarly" | "done";
+type ScreenOffPhase = "intro" | "armed" | "done";
 
 const SCREEN_OFF_HEADINGS: Record<ScreenOffPhase, string> = {
   intro: "Put your phone down for a minute?",
   armed: "Lock your phone now - come back in a minute.",
-  tooEarly: "Almost - stay away a little longer.",
-  done: "Nice - enjoy the break.",
+  // Wordless - see above.
+  done: "",
 };
-
-/**
- * Delay between showing the success message and closing the app: long enough
- * for the screen fade and the line's word-by-word arrival to land and rest a
- * moment - the goodbye is never cut off mid-sentence.
- */
-const DONE_EXIT_DELAY_MS = 2600;
 
 /** Cross-screen fade between phases - the same soft swap urge surfing uses. */
 const SCREEN_FADE_MS = 480;
+
+/**
+ * Delay between the return and closing the app: the armed screen's fade-out,
+ * then a short rest on the sun alone - the leave never cuts into the fade.
+ */
+const DONE_EXIT_DELAY_MS = SCREEN_FADE_MS + 600;
 
 export const ScreenOffInteraction: (props: {
   onSkip: () => void;
@@ -73,18 +83,18 @@ export const ScreenOffInteraction: (props: {
   );
 
   // Plain refs - these never need to drive rendering.
-  let hiddenAt: number | undefined;
+  let hasBeenAway = false;
   let doneTimeoutId: number | undefined;
   let isDisposed = false;
 
-  const completeSuccessfully = (): void => {
+  const closeAfterReturn = (): void => {
     // Read outside the timeout callback so the reactive `props` access does
     // not trip the solid/reactivity lint rule (as StrongFrictionBreathPause does).
     const onLeaveNow = props.onLeaveNow;
     setPhase("done");
     // Deliberately NO countSunTap here: sun taps feed the friction level and
     // the return-loop insight - they measure returns to the pull, not practice.
-    // Counting a completed screen-off minute would make the calming practice
+    // Counting a screen-off break would make the calming practice
     // escalate the next intervention (and no other leave path counts a tap).
     doneTimeoutId = window.setTimeout(() => {
       doneTimeoutId = undefined;
@@ -93,48 +103,27 @@ export const ScreenOffInteraction: (props: {
   };
 
   const handleVisibilityChange = (): void => {
-    const phase = getPhase();
-    // Only an active ("armed") or just-failed ("tooEarly") attempt counts -
-    // visibility changes during intro/done are ignored.
-    if (phase !== "armed" && phase !== "tooEarly") {
+    // Only the armed screen listens - visibility changes during intro/done are
+    // ignored.
+    if (getPhase() !== "armed") {
       return;
     }
 
     if (document.hidden) {
-      // Locking the phone (re)starts the attempt, even straight from the
-      // "too early" screen without tapping "Try again" first.
-      hiddenAt = Date.now();
-      if (phase === "tooEarly") {
-        setPhase("armed");
-      }
+      hasBeenAway = true;
       return;
     }
 
-    if (hiddenAt === undefined) {
-      return;
+    // Back after any time away - a full minute or a few seconds - is simply
+    // back: no timing, no fail state.
+    if (hasBeenAway) {
+      closeAfterReturn();
     }
-
-    const result = evaluateScreenOff({
-      hiddenAt,
-      shownAt: Date.now(),
-      targetMs: SCREEN_OFF_TARGET_MS,
-    });
-    hiddenAt = undefined;
-
-    if (result.success) {
-      completeSuccessfully();
-      return;
-    }
-
-    setPhase("tooEarly");
   };
 
-  /** Begin (or restart) a screen-off attempt. */
   const arm = (): void => {
-    hiddenAt = undefined;
+    hasBeenAway = false;
     setPhase("armed");
-    // Re-adding the same handler reference is a no-op per the DOM spec,
-    // so calling arm() again from "Try again" is safe.
     document.addEventListener("visibilitychange", handleVisibilityChange);
   };
 
@@ -155,7 +144,7 @@ export const ScreenOffInteraction: (props: {
         ...voiceFollowStyle(heading()),
         opacity: screenFade.opacity(),
         // The outgoing screen's buttons go inert as it fades - e.g. "Just go
-        // in" must not fire once a successful unlock has already moved on.
+        // in" must not fire once the return has already moved on.
         "pointer-events": screenFade.isFading() ? "none" : undefined,
         transition: prefersReducedMotion()
           ? "none"
@@ -181,21 +170,7 @@ export const ScreenOffInteraction: (props: {
           </Btn>
         </Match>
 
-        {/* No seconds-remaining count here - a ticking target would gamify
-            the break ("beat the clock"), the one register the app avoids. */}
-        <Match when={getShownPhase() === "tooEarly"}>
-          <VoiceReveal class="txtBig interaction-heading" text={heading()} />
-          <Btn class="voice-follow" onClick={arm}>
-            Try again
-          </Btn>
-          <Btn class="voice-follow" onClick={() => props.onSkip()}>
-            Just go in
-          </Btn>
-        </Match>
-
-        <Match when={getShownPhase() === "done"}>
-          <VoiceReveal class="txtBig interaction-heading" text={heading()} />
-        </Match>
+        {/* "done" renders nothing: the close is wordless (see the header). */}
       </Switch>
     </div>
   );

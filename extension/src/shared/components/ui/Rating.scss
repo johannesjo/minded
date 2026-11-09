@@ -74,10 +74,9 @@
     }
   }
 
-  // Quiet end labels beneath the dots (same treatment as the urge-surfing
-  // scale's "barely"/"intense"): direction, not chrome. A block child of the
-  // shrink-wrapped .rating, so it spans exactly the dots' row and the labels
-  // sit under the outermost dots in any container.
+  // Quiet end labels beneath the dots: direction, not chrome. A block child of
+  // the shrink-wrapped .rating, so it spans exactly the dots' row and the
+  // labels sit under the outermost dots in any container.
   .ratingAnchors {
     display: flex;
     justify-content: space-between;
