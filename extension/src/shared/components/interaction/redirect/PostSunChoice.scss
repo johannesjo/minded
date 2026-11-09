@@ -1,0 +1,16 @@
+// Layout only: the post-sun choice reuses the time choice's wrapper, container,
+// spacer and cancel (TimeSelection.scss, InteractionCommon.scss) so every
+// screen of it lays the resting sun out the same way.
+.post-sun-choice {
+  width: 100%;
+  height: 100%;
+}
+
+// The leading choice and the quiet "Stay" share one row, as ShowAlternative's
+// accept and its secondary do.
+.post-sun-choice-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-md);
+}
