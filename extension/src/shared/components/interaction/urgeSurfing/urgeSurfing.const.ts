@@ -15,9 +15,6 @@ const SURF_DURATION_MS_BY_FRICTION: Record<FrictionLevel, number> = {
 export const getSurfDurationMs = (frictionLevel: FrictionLevel): number =>
   SURF_DURATION_MS_BY_FRICTION[frictionLevel];
 
-/** Intensity steps offered before and after the wave. */
-export const URGE_INTENSITY_STEPS = [1, 2, 3, 4, 5] as const;
-
 /**
  * Guiding cues shown during the wave, keyed by how far through it we are.
  * Each entry applies until the next `untilFraction` threshold.
