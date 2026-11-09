@@ -1,4 +1,5 @@
-import { Component, For } from "solid-js";
+import { Component, For, Show } from "solid-js";
+import { LEAVE_LABEL } from "@src/shared/components/interaction/redirect/postSunRedirect";
 import { getTimeOptions } from "@src/shared/components/interaction/timeSelection/timeSelectionOptions";
 import Btn from "@src/shared/components/ui/Btn";
 import { VoiceReveal } from "@src/shared/components/interaction/voiceReveal/VoiceReveal";
@@ -11,6 +12,12 @@ interface TimeSelectionProps {
   onSelectTime: (seconds: number) => void;
   onCancel: () => void;
   isArmed: boolean;
+  /**
+   * Leaving as an equal choice beside staying (redirect/PostSunChoice), not
+   * only the fling. Omitted where there is nothing to leave (onboarding) and
+   * where leaving was just declined (reached through "Stay").
+   */
+  onLeave?: () => void;
 }
 
 const TIME_QUESTION = "How long do you want?";
@@ -61,6 +68,20 @@ export const TimeSelection: Component<TimeSelectionProps> = (props) => {
             )}
           </For>
         </div>
+
+        <Show when={props.onLeave}>
+          {(onLeave) => (
+            <div class="time-selection-leave voice-follow">
+              <Btn
+                plain
+                disabled={!props.isArmed}
+                onClick={() => props.isArmed && onLeave()()}
+              >
+                {LEAVE_LABEL}
+              </Btn>
+            </div>
+          )}
+        </Show>
 
         {/* Reserves the resting sun's footprint beneath the options so the disc
             sits inside the centred choices group (see measureRestingSunAnchor).

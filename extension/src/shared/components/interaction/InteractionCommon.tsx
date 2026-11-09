@@ -70,7 +70,7 @@ import {
 import { shouldShowSunInstructionsOverlay } from "@src/shared/components/interaction/sunInstructionsVisibility";
 import type { SkipCheckInChoice } from "@src/shared/components/interaction/skipCheckIn/skipCheckIn";
 import { createSkipCheckInFlow } from "@src/shared/components/interaction/skipCheckIn/skipCheckInFlow";
-import { TimeSelection } from "@src/shared/components/interaction/timeSelection/TimeSelection";
+import { PostSunChoice } from "@src/shared/components/interaction/redirect/PostSunChoice";
 import {
   calculateFadeProgress,
   calculateOpacity,
@@ -1561,7 +1561,10 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
                 onCancel={handleBreathPauseCancel}
               />
             ) : (
-              <TimeSelection
+              <PostSunChoice
+                mode={getMode()}
+                hasCompleted={getHasAnswered()}
+                syncData={getSyncDataI()}
                 isArmed={getIsTimeSelectionArmed()}
                 onSelectTime={handleTimeSelection}
                 onCancel={() => {
@@ -1569,6 +1572,12 @@ const InteractionCommon: Component<InteractionCommonProps> = (props) => {
                   clearTimeSelectionArmTimeout();
                   cancelPostSunScreen(() => setShowTimeSelection(false));
                 }}
+                // The fling's own leave; an alternative is opened instead
+                // when it can be, and falls back to it when it can't.
+                onLeave={(open) =>
+                  skipFlow.leave(() => open?.() || props.onFlingAway())
+                }
+                onReflow={() => measureRestingSunAnchor()}
               />
             )}
           </div>

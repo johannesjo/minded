@@ -26,6 +26,7 @@ import BreathingExercise from "@src/shared/components/interaction/breathingExerc
 import { NoticeInteraction } from "@src/shared/components/interaction/notice/NoticeInteraction";
 import { SkipCheckIn } from "@src/shared/components/interaction/skipCheckIn/SkipCheckInInteraction";
 import { TimeSelection } from "@src/shared/components/interaction/timeSelection/TimeSelection";
+import { PostSunChoice } from "@src/shared/components/interaction/redirect/PostSunChoice";
 import { VoiceReveal } from "@src/shared/components/interaction/voiceReveal/VoiceReveal";
 import { voiceFollowStyle } from "@src/shared/components/interaction/voiceReveal/voiceRevealTiming";
 import Sun from "@src/shared/components/interaction/sun/Sun";
@@ -653,6 +654,21 @@ const Styleguide = (): JSX.Element => {
           </div>
         </Subsection>
 
+        <Subsection label="<PostSunChoice> - leaving leads (after urge surfing)">
+          <div class={styles.interactionFrame}>
+            <PostSunChoice
+              mode="URGE_SURFING"
+              hasCompleted={true}
+              syncData={undefined}
+              isArmed={true}
+              onSelectTime={(s) => console.log("time:", s)}
+              onCancel={() => console.log("choice cancel")}
+              onLeave={() => console.log("leave")}
+              onReflow={() => undefined}
+            />
+          </div>
+        </Subsection>
+
         <Subsection label="<GroundingOverlay> - dashboard down-drag">
           <p class={styles.muted}>
             On the dashboard, dragging the sun down offers a moment to ground
@@ -1027,10 +1043,17 @@ const SunMorphHarness = (): JSX.Element => {
               style={{ "z-index": 1100 }}
             >
               <div class="post-sun-screen">
-                <TimeSelection
+                {/* What the real flow mounts here: the time choice leading,
+                    with leaving beside it. */}
+                <PostSunChoice
+                  mode={undefined}
+                  hasCompleted={false}
+                  syncData={undefined}
                   isArmed={true}
                   onSelectTime={() => undefined}
                   onCancel={() => setPhase("interactive")}
+                  onLeave={() => undefined}
+                  onReflow={measureRestingAnchor}
                 />
               </div>
             </div>

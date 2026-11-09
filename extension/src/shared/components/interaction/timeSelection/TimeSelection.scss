@@ -44,6 +44,12 @@
     white-space: nowrap;
   }
 
+  // Leaving sits just under the durations: one more choice in the same quiet
+  // style, set slightly apart so it never reads as another length of time.
+  .time-selection-leave {
+    margin-top: var(--space-md);
+  }
+
   @include onSmallScreens() {
     padding-inline: 0;
 

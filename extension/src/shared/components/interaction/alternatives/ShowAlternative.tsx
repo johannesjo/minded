@@ -8,30 +8,25 @@ import {
   Show,
 } from "solid-js";
 import {
-  IS_ANDROID,
-  IS_APP,
-  IS_WEB_EXT,
-  IS_IOS,
   markAlternativeOpened,
   markAlternativeOpenedAndCountSunTap,
   markAlternativeShown,
 } from "@src/dataInterface/commonSyncDataInterface";
-import type {
-  Alternative,
-  SessionPlatform,
-  SyncData,
-} from "@src/dataInterface/syncData";
-import { androidInterface } from "@src/dataInterface/android/androidInterface";
+import type { Alternative, SyncData } from "@src/dataInterface/syncData";
 import { getAlternativesForTarget } from "@src/shared/components/interaction/alternatives/getAlternatives";
 import { getAlternativeCandidate } from "@src/shared/components/interaction/alternatives/getAlternativeCandidate";
 import {
   ALTERNATIVE_ACCEPT_BEAT,
   ALTERNATIVE_ACCEPT_BEAT_MS,
   ALTERNATIVE_SCREEN_FADE_MS,
-  type AlternativeOpenTarget,
   getAlternativeAcceptLabel,
   getAlternativeOpenTarget,
 } from "@src/shared/components/interaction/alternatives/alternativeRedirect";
+import {
+  getAlternativeOpenCapabilities,
+  getAlternativePlatform,
+  openAlternativeTarget,
+} from "@src/shared/components/interaction/alternatives/openAlternative";
 import { VoiceReveal } from "@src/shared/components/interaction/voiceReveal/VoiceReveal";
 import Btn from "@src/shared/components/ui/Btn";
 import { createScreenFade } from "@src/util/screenFade";
@@ -61,9 +56,6 @@ export const ShowAlternativeInteraction: (props: {
     window.clearTimeout(beatTimeout);
   });
 
-  const getPlatform = (): SessionPlatform =>
-    IS_APP ? (IS_IOS ? "ios" : "android") : "web";
-
   const markCandidateShown = (candidate: Alternative | undefined) => {
     if (candidate && shownAlternativeId !== candidate.id) {
       shownAlternativeId = candidate.id;
@@ -83,7 +75,11 @@ export const ShowAlternativeInteraction: (props: {
     }
 
     const candidate = getAlternativeCandidate(
-      getAlternativesForTarget(props.syncData, undefined, getPlatform()),
+      getAlternativesForTarget(
+        props.syncData,
+        undefined,
+        getAlternativePlatform(),
+      ),
     );
     setAlternative(candidate);
     markCandidateShown(candidate);
@@ -92,32 +88,9 @@ export const ShowAlternativeInteraction: (props: {
   const getOpenTarget = createMemo(() => {
     const alternative = getAlternative();
     return alternative
-      ? getAlternativeOpenTarget(alternative, {
-          canOpenUrl: IS_WEB_EXT,
-          canOpenApp: IS_ANDROID && !!androidInterface.openAppNamed,
-        })
+      ? getAlternativeOpenTarget(alternative, getAlternativeOpenCapabilities())
       : undefined;
   });
-
-  // Hand over to the alternative. False when nothing opened, so the caller
-  // falls back to the plain leave rather than stranding the user.
-  const openTarget = (target: AlternativeOpenTarget): boolean => {
-    if (target.kind === "url") {
-      // The redirect takes over this tab. The sky stays up until the page
-      // unloads - fading it first would bare the very feed being left (and a
-      // back-navigation would restore an invisible, click-eating overlay).
-      window.location.href = target.href;
-      return true;
-    }
-
-    try {
-      // Native resolves and launches the app, then fades its window out.
-      return androidInterface.openAppNamed?.(target.label) === true;
-    } catch (error) {
-      console.error("Failed to open alternative", error);
-      return false;
-    }
-  };
 
   // The accept: a quiet "Enjoy." beat, then the redirect itself - the named
   // site/app when we can open it, otherwise the plain leave, which releases the
@@ -153,7 +126,7 @@ export const ShowAlternativeInteraction: (props: {
         void marked.then(() => {
           // A sun tap/fling during the beat already chose the next step.
           if (isDisposed || isSuperseded()) return;
-          if (!target || !openTarget(target)) onLeaveNow();
+          if (!target || !openAlternativeTarget(target)) onLeaveNow();
         });
       }, ALTERNATIVE_ACCEPT_BEAT_MS);
     });
