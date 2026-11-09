@@ -31,7 +31,11 @@ describe("alternative redirect wiring", () => {
       ),
       "utf8",
     );
+    // The opener is shared by ShowAlternative and the post-sun choice.
     expect(read("ShowAlternative.tsx")).toContain(
+      "openAlternativeTarget(target)",
+    );
+    expect(read("openAlternative.ts")).toContain(
       "androidInterface.openAppNamed?.(",
     );
     expect(kotlin).toMatch(
